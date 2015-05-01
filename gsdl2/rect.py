@@ -14,24 +14,29 @@ class Rect(object):
     __i2a = {0: 'x', 1: 'y', 2: 'w', 3: 'h'}
 
     def __init__(self, *args):
-        self.__dim = []
+        # self.__dim = []
         self.__cdata = sdl_ffi.new('SDL_Rect *')
+        r = self
         if len(args) == 4:
-            self.__dim[:] = args[:]
+            # self.__dim[:] = args[:]
+            r.x, r.y, r.w, r.h = args
         elif len(args) == 2:
-            self.__dim[:2] = args[0][:]
-            self.__dim[2:] = args[1][:]
+            # self.__dim[:2] = args[0][:]
+            # self.__dim[2:] = args[1][:]
+            r.x, r.y = args[0]
+            r.w, r.h = args[1]
         elif len(args) == 1:
-            self.__dim[:] = args[0][:]
+            # self.__dim[:] = args[0][:]
+            r.x, r.y, r.w, r.h = args[0]
         else:
             # TODO: proper exception
             raise Exception('Rect.__init__(): wrong number of arguments')
-        d = self.__dim
-        c = self.__cdata
-        c.x = int(d[0])
-        c.y = int(d[1])
-        c.w = int(d[2])
-        c.h = int(d[3])
+        # d = self.__dim
+        # c = self.__cdata
+        # c.x = int(d[0])
+        # c.y = int(d[1])
+        # c.w = int(d[2])
+        # c.h = int(d[3])
 
     def _get_sdl_rect(self):
         return self.__cdata
@@ -53,17 +58,19 @@ class Rect(object):
     # simple edges: x, y, left, top, right, bottom
 
     def __getx(self):
-        return self.__dim[0]
+        # return self.__dim[0]
+        return self.__cdata.x
     def __setx(self, x):
-        self.__dim[0] = x
+        # self.__dim[0] = x
         self.__cdata.x = int(x)
     x = property(__getx, __setx)
     left = x
 
     def __gety(self):
-        return self.__dim[1]
+        # return self.__dim[1]
+        return self.__cdata.y
     def __sety(self, y):
-        self.__dim[1] = y
+        # self.__dim[1] = y
         self.__cdata.y = int(y)
     y = property(__gety, __sety)
     top = y
@@ -83,18 +90,20 @@ class Rect(object):
     # dimensions: w, width, h, height, size
 
     def __getw(self):
-        return self.__dim[2]
+        # return self.__dim[2]
+        return self.__cdata.w
     def __setw(self, width):
-        self.__dim[2] = width
-        self.__cdata.w = width
+        # self.__dim[2] = width
+        self.__cdata.w = int(width)
     w = property(__getw, __setw)
     width = w
 
     def __geth(self):
-        return self.__dim[3]
+        # return self.__dim[3]
+        return self.__cdata.h
     def __seth(self, height):
-        self.__dim[3] = height
-        self.__cdata.h = height
+        # self.__dim[3] = height
+        self.__cdata.h = int(height)
     h = property(__geth, __seth)
     height = h
 
@@ -238,17 +247,21 @@ class Rect(object):
         return rect
 
     def __getitem__(self, i):
-        return self.__dim[i]
+        # return self.__dim[i]
+        return getattr(self.__cdata, self.__i2a[i])
 
     def __setitem__(self, key, value):
         for i, attr in iter(self.__i2a.items()):
             setattr(self, attr, value[i])
 
     def __iter__(self):
-        return iter(self.__dim)
+        # return iter(self.__dim)
+        r = self.__cdata
+        return iter((r.x, r.y, r.w, r.h))
 
     def __len__(self):
-        return len(self.__dim)
+        # return len(self.__dim)
+        return 4
 
     def __str__(self):
         return '<Rect({}, {}, {}, {})>'.format(*self)
