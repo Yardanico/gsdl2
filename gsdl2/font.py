@@ -17,6 +17,7 @@ from .sdlconstants import (
     TTF_HINTING_MONO,
     TTF_HINTING_NONE,
 )
+from .locals import utf8
 
 
 log = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class Font(object):
         self.__pointsize = pointsize
         assert os.access(filename, os.F_OK)
 
-        self.__sdl_font = ttf_lib.TTF_OpenFont(filename, pointsize)
+        self.__sdl_font = ttf_lib.TTF_OpenFont(utf8(filename), pointsize)
         if self.__sdl_font == sdl_ffi.NULL:
             log.critical(sdl_ffi.string(sdl_lib.SDL_GetError()).decode('utf-8'))
             raise SDLError()
@@ -76,7 +77,7 @@ class Font(object):
         """
         if encoding == 'utf-8':
             sdl_surf = ttf_lib.TTF_RenderUTF8_Shaded(
-                self.__sdl_font, text, color.sdl_color[0], background.sdl_color[0])
+                self.__sdl_font, utf8(text), color.sdl_color[0], background.sdl_color[0])
         elif encoding == 'ascii':
             sdl_surf = ttf_lib.TTF_RenderText_Shaded(
                 self.__sdl_font, text, color.sdl_color[0], background.sdl_color[0])
@@ -98,7 +99,7 @@ class Font(object):
         SDL_Surface * TTF_RenderGlyph_Solid(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
         if encoding == 'utf-8':
-            sdl_surf = ttf_lib.TTF_RenderUTF8_Solid(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = ttf_lib.TTF_RenderUTF8_Solid(self.__sdl_font, utf8(text), color.sdl_color[0])
         elif encoding == 'ascii':
             sdl_surf = ttf_lib.TTF_RenderText_Solid(self.__sdl_font, text, color.sdl_color[0])
         elif encoding == 'unicode':
@@ -116,7 +117,8 @@ class Font(object):
         SDL_Surface * TTF_RenderUNICODE_Blended_Wrapped(TTF_Font *font, const Uint16 *text, SDL_Color fg, Uint32 wrapLength);
         """
         if encoding == 'utf-8':
-            sdl_surf = ttf_lib.TTF_RenderUTF8_Blended_Wrapped(self.__sdl_font, text, color.sdl_color[0], wrap_length)
+            sdl_surf = ttf_lib.TTF_RenderUTF8_Blended_Wrapped(
+                self.__sdl_font, utf8(text), color.sdl_color[0], wrap_length)
         elif encoding == 'ascii':
             sdl_surf = ttf_lib.TTF_RenderText_Blended_Wrapped(self.__sdl_font, text, color.sdl_color[0], wrap_length)
         elif encoding == 'unicode':
@@ -135,7 +137,7 @@ class Font(object):
         SDL_Surface * TTF_RenderGlyph_Blended(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
         if encoding == 'utf-8':
-            sdl_surf = ttf_lib.TTF_RenderUTF8_Blended(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = ttf_lib.TTF_RenderUTF8_Blended(self.__sdl_font, utf8(text), color.sdl_color[0])
         elif encoding == 'ascii':
             sdl_surf = ttf_lib.TTF_RenderText_Blended(self.__sdl_font, text, color.sdl_color[0])
         elif encoding == 'unicode':
@@ -155,7 +157,7 @@ class Font(object):
         cdef_w = ttf_ffi.new('int *')
         cdef_h = ttf_ffi.new('int *')
         if encoding == 'utf-8':
-            ttf_lib.TTF_SizeUTF8(self.__sdl_font, text, cdef_w, cdef_h)
+            ttf_lib.TTF_SizeUTF8(self.__sdl_font, utf8(text), cdef_w, cdef_h)
         elif encoding == 'ascii':
             ttf_lib.TTF_SizeText(self.__sdl_font, text, cdef_w, cdef_h)
         elif encoding == 'unicode':

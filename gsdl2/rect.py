@@ -109,48 +109,42 @@ class Rect(object):
 
     def __getsize(self):
         return self.w, self.h
-    def __setsize(self, (width, height)):
-        self.w = width
-        self.h = height
+    def __setsize(self, size):
+        self.w, self.h = size
     size = property(__getsize, __setsize)
 
     # corners: topleft, bottomleft, topright, bottomright
 
     def __gettopleft(self):
         return self.left, self.top
-    def __settopleft(self, (x, y)):
-        self.left = x
-        self.top = y
+    def __settopleft(self, pos):
+        self.left, self.top = pos
     topleft = property(__gettopleft, __settopleft)
 
     def __getbottomleft(self):
         return self.left, self.bottom
-    def __setbottomleft(self, (x, y)):
-        self.left = x
-        self.bottom = y
+    def __setbottomleft(self, pos):
+        self.left, self.bottom = pos
     bottomleft = property(__getbottomleft, __setbottomleft)
 
     def __gettopright(self):
         return self.right, self.top
-    def __settopright(self, (x, y)):
-        self.right = x
-        self.top = y
+    def __settopright(self, pos):
+        self.right, self.top = pos
     topright = property(__gettopright, __settopright)
 
     def __getbottomright(self):
         return self.right, self.bottom
-    def __setbottomright(self, (x, y)):
-        self.right = x
-        self.bottom = y
+    def __setbottomright(self, pos):
+        self.right, self.bottom = pos
     bottomright = property(__getbottomright, __setbottomright)
 
     # centers: center, centerx, centery, midtop, midleft, midbottom, midright
 
     def __getcenter(self):
         return self.centerx, self.centery
-    def __setcenter(self, (x, y)):
-        self.centerx = x
-        self.centery = y
+    def __setcenter(self, pos):
+        self.centerx, self.centery = pos
     center = property(__getcenter, __setcenter)
 
     def __getcenterx(self):
@@ -167,30 +161,26 @@ class Rect(object):
 
     def __getmidtop(self):
         return self.centerx, self.top
-    def __setmidtop(self, (x, y)):
-        self.centerx = x
-        self.top = y
+    def __setmidtop(self, pos):
+        self.centerx, self.top = pos
     midtop = property(__getmidtop, __setmidtop)
 
     def __getmidleft(self):
         return self.left, self.centery
-    def __setmidleft(self, (x, y)):
-        self.left = x
-        self.centery = y
+    def __setmidleft(self, pos):
+        self.left, self.centery = pos
     midleft = property(__getmidleft, __setmidleft)
 
     def __getmidbottom(self):
         return self.centerx, self.bottom
-    def __setmidbottom(self, (x, y)):
-        self.centerx = x
-        self.bottom = y
+    def __setmidbottom(self, pos):
+        self.centerx, self.bottom = pos
     midbottom = property(__getmidbottom, __setmidbottom)
 
     def __getmidright(self):
         return self.right, self.centery
-    def __setmidright(self, (x, y)):
-        self.right = x
-        self.centery = y
+    def __setmidright(self, pos):
+        self.right, self.centery = pos
     midright = property(__getmidright, __setmidright)
 
     # utilities

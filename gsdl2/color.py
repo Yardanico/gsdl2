@@ -75,6 +75,9 @@ class Color(object):
         self.b = c[2]
         self.a = c[3]
 
+    def __hash__(self):
+        return id(self)
+
     def __eq__(self, other):
         return tuple(self) == tuple(other)
 

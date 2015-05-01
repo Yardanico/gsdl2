@@ -3,6 +3,7 @@ import logging
 from .sdllibs import sdl_lib
 from .sdlconstants import SDL_WINDOWPOS_UNDEFINED
 from .surface import Surface
+from .locals import utf8
 
 
 __all__ = ['Window']
@@ -20,7 +21,7 @@ def get_list():
 class Window(object):
 
     def __init__(self, title='gsdl2', x=SDL_WINDOWPOS_UNDEFINED, y=SDL_WINDOWPOS_UNDEFINED, w=0, h=0, flags=0):
-        self.__sdl_window = sdl_lib.SDL_CreateWindow(title, x, y, w, h, flags)
+        self.__sdl_window = sdl_lib.SDL_CreateWindow(utf8(title), x, y, w, h, flags)
         open_windows.append(self)
 
     def __getsurface(self):
@@ -39,7 +40,7 @@ class Window(object):
         sdl_lib.SDL_UpdateWindowSurface(self.__sdl_window)
 
     def set_window_title(self, title):
-        sdl_lib.SDL_SetWindowTitle(self.__sdl_window, title)
+        sdl_lib.SDL_SetWindowTitle(self.__sdl_window, utf8(title))
 
     def close(self):
         if self in open_windows:

@@ -1,6 +1,5 @@
-from collections import deque
-
 from .sdllibs import mixer_lib
+from .locals import utf8
 
 
 class _globals:
@@ -13,7 +12,7 @@ class _globals:
 def load(filename):
     if get_busy():
         stop()
-    _globals.current = mixer_lib.Mix_LoadMUS(filename)
+    _globals.current = mixer_lib.Mix_LoadMUS(utf8(filename))
     _globals.queue = None
     set_volume(1.0)
 
@@ -84,7 +83,7 @@ def queue(filename):
         load(filename)
         play()
     else:
-        _globals.queue = mixer_lib.Mix_LoadMUS(filename)
+        _globals.queue = mixer_lib.Mix_LoadMUS(utf8(filename))
 
 
 def set_endevent(type_):

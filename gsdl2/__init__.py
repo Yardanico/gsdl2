@@ -1,8 +1,8 @@
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
-    'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib',
-    'color', 'display', 'event', 'font', 'gameclock', 'image', 'mixer', 'rect', 'renderer', 'surface', 'time',
-    'texture', 'window',
+    'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib', 'color',
+    'display', 'event', 'font', 'gameclock', 'image', 'mixer', 'music', 'rect', 'renderer', 'surface', 'time',
+    'texture', 'window', 'utf8'
 ]
 
 
@@ -27,7 +27,6 @@ import logging
 from . import sdlffi
 from . import sdllibs
 from . import sdlconstants
-# from . import sdlkeys
 
 sdl_ffi = sdlffi.sdl_ffi
 sdl_lib = sdllibs.sdl_lib
@@ -62,6 +61,7 @@ from . import color
 from . import event
 from . import image
 from . import mixer
+from . import music
 from . import rect
 from . import renderer
 from . import surface
@@ -77,9 +77,9 @@ from . import locals
 # Classes and constants
 #-----------------------------------
 
-from color import Color
+from .color import Color
 from ._time import Clock, GameClock
-from font import Font, SysFont
+from .font import Font, SysFont
 from .rect import Rect
 from .renderer import Renderer
 from .surface import Surface
@@ -101,7 +101,7 @@ def init():
         logging.log(logging.ERROR, 'SDL2 failed to initialize')
         raise Exception('SDL2: failed to initialize')
 
-    rc = sdl_lib.SDL_SetHint(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY, "1")
+    rc = sdl_lib.SDL_SetHint(utf8(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY), utf8("1"))
     if rc == 0:
         logging.log(logging.ERROR, 'SDL2: failed to set hint {}'.format(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY))
         logging.log(logging.ERROR, sdl_lib.SDL_GetError())

@@ -11,6 +11,7 @@ from .sdllibs import mixer_lib, sdl_lib, SDLError
 from .sdlffi import sdl_ffi, mixer_ffi
 from .sdlconstants import MIX_DEFAULT_FORMAT, SDL_INIT_AUDIO
 from . import music
+from .locals import utf8
 
 
 log = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ class Sound(object):
     def __init__(self, filename):
         self.__filename = filename
 
-        self.__sdl_chunk = mixer_lib.Mix_LoadWAV_RW(sdl_lib.SDL_RWFromFile(filename, 'rb'), 1)
+        self.__sdl_chunk = mixer_lib.Mix_LoadWAV_RW(sdl_lib.SDL_RWFromFile(utf8(filename), utf8('rb')), 1)
         if self.__sdl_chunk == sdl_ffi.NULL:
             raise SDLError()
 

@@ -110,9 +110,10 @@ class Surface(object):
             setattr(r, k, v)
         return r
 
-    def get_at(self, (x, y)):
+    def get_at(self, pos):
         # TODO; I think this is causing random segfaults
 
+        x, y = pos
         surf = self.__sdl_surface
         format = surf.format
         bpp = format.BytesPerPixel
@@ -148,9 +149,10 @@ class Surface(object):
         # TODO: return tuple instead?
         return color.Color(*rgba)
 
-    def set_at(self, (x, y), color_):
+    def set_at(self, pos, color_):
         # TODO: test it
 
+        x, y = pos
         surf = self.__sdl_surface
         format = surf.format
         bpp = format.BytesPerPixel
