@@ -15,7 +15,7 @@ except ImportError:
     sys.path.append('.')
     sys.path.append('..')
     import gsdl2
-from gsdl2 import sdl_lib
+from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_SPACE
 
 
 print('Python: {}'.format(sys.executable))
@@ -126,12 +126,12 @@ class Game(object):
 
     def update_events(self):
         for e in gsdl2.event.get():
-            if e.type == sdl_lib.SDL_KEYDOWN:
-                if e.key == gsdl2.sdlkeys.SDLK_SPACE:
+            if e.type == KEYDOWN:
+                if e.scancode == S_SPACE:
                     self.use_renderer = not self.use_renderer
-                elif e.key == gsdl2.sdlkeys.SDLK_ESCAPE:
+                elif e.scancode == S_ESCAPE:
                     self.running = False
-            elif e.type == sdl_lib.SDL_QUIT:
+            elif e.type == QUIT:
                 self.running = False
 
     def draw(self):

@@ -15,8 +15,8 @@ except ImportError:
     sys.path.append('.')
     sys.path.append('..')
     import gsdl2
-from gsdl2 import sdlkeys
 from gsdl2 import sdlpixels
+from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_SPACE, S_RETURN
 
 
 print('Python: {}'.format(sys.executable))
@@ -161,19 +161,19 @@ class Game(object):
 
     def update_events(self):
         for e in gsdl2.event.get():
-            if e.type == gsdl2.sdl_lib.SDL_KEYDOWN:
-                if e.key == sdlkeys.SDLK_SPACE:
+            if e.type == KEYDOWN:
+                if e.scancode == S_SPACE:
                     self.use_renderer = not self.use_renderer
-                elif e.key == sdlkeys.SDLK_ESCAPE:
+                elif e.scancode == S_ESCAPE:
                     self.running = False
-                elif e.key == sdlkeys.SDLK_RETURN:
+                elif e.scancode == S_RETURN:
                     fmt = formats.pop(0)
                     formats.append(fmt)
                     print('new format={}'.format(sdlpixels.pixel_format_name(fmt)))
                     Ball.surface = Ball.orig_surface.convert_alpha(fmt)
                     if fmt == last_format:
                         print('==== end of formats reached ====')
-            elif e.type == gsdl2.sdl_lib.SDL_QUIT:
+            elif e.type == QUIT:
                 self.running = False
 
     def draw(self):
