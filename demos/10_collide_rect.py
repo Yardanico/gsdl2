@@ -37,7 +37,7 @@ ball.fill(white, ball_rect.scale(0.25, 0.25))
 ball.fill(purple, ball_rect.scale(0.1, 0.1))
 ball.set_colorkey(white)
 
-for i in range(400):
+for i in range(600):
     clock.tick(fps)
 
     for e in gsdl2.event.get():
