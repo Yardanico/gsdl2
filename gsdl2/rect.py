@@ -60,6 +60,7 @@ class Rect(object):
     def __getx(self):
         # return self.__dim[0]
         return self.__cdata.x
+
     def __setx(self, x):
         # self.__dim[0] = x
         self.__cdata.x = int(x)
@@ -69,6 +70,7 @@ class Rect(object):
     def __gety(self):
         # return self.__dim[1]
         return self.__cdata.y
+
     def __sety(self, y):
         # self.__dim[1] = y
         self.__cdata.y = int(y)
@@ -77,12 +79,14 @@ class Rect(object):
 
     def __getright(self):
         return self.x + self.w
+
     def __setright(self, x):
         self.x = x - self.w
     right = property(__getright, __setright)
 
     def __getbottom(self):
         return self.y + self.h
+
     def __setbottom(self, y):
         self.y = y - self.h
     bottom = property(__getbottom, __setbottom)
@@ -92,6 +96,7 @@ class Rect(object):
     def __getw(self):
         # return self.__dim[2]
         return self.__cdata.w
+
     def __setw(self, width):
         # self.__dim[2] = width
         self.__cdata.w = int(width)
@@ -101,6 +106,7 @@ class Rect(object):
     def __geth(self):
         # return self.__dim[3]
         return self.__cdata.h
+
     def __seth(self, height):
         # self.__dim[3] = height
         self.__cdata.h = int(height)
@@ -109,6 +115,7 @@ class Rect(object):
 
     def __getsize(self):
         return self.w, self.h
+
     def __setsize(self, size):
         self.w, self.h = size
     size = property(__getsize, __setsize)
@@ -117,24 +124,28 @@ class Rect(object):
 
     def __gettopleft(self):
         return self.left, self.top
+
     def __settopleft(self, pos):
         self.left, self.top = pos
     topleft = property(__gettopleft, __settopleft)
 
     def __getbottomleft(self):
         return self.left, self.bottom
+
     def __setbottomleft(self, pos):
         self.left, self.bottom = pos
     bottomleft = property(__getbottomleft, __setbottomleft)
 
     def __gettopright(self):
         return self.right, self.top
+
     def __settopright(self, pos):
         self.right, self.top = pos
     topright = property(__gettopright, __settopright)
 
     def __getbottomright(self):
         return self.right, self.bottom
+
     def __setbottomright(self, pos):
         self.right, self.bottom = pos
     bottomright = property(__getbottomright, __setbottomright)
@@ -143,42 +154,49 @@ class Rect(object):
 
     def __getcenter(self):
         return self.centerx, self.centery
+
     def __setcenter(self, pos):
         self.centerx, self.centery = pos
     center = property(__getcenter, __setcenter)
 
     def __getcenterx(self):
         return self.x + self.w // 2
+
     def __setcenterx(self, x):
         self.x = x - self.w // 2
     centerx = property(__getcenterx, __setcenterx)
 
     def __getcentery(self):
         return self.y + self.h // 2
+
     def __setcentery(self, y):
         self.y = y - self.h // 2
     centery = property(__getcentery, __setcentery)
 
     def __getmidtop(self):
         return self.centerx, self.top
+
     def __setmidtop(self, pos):
         self.centerx, self.top = pos
     midtop = property(__getmidtop, __setmidtop)
 
     def __getmidleft(self):
         return self.left, self.centery
+
     def __setmidleft(self, pos):
         self.left, self.centery = pos
     midleft = property(__getmidleft, __setmidleft)
 
     def __getmidbottom(self):
         return self.centerx, self.bottom
+
     def __setmidbottom(self, pos):
         self.centerx, self.bottom = pos
     midbottom = property(__getmidbottom, __setmidbottom)
 
     def __getmidright(self):
         return self.right, self.centery
+
     def __setmidright(self, pos):
         self.right, self.centery = pos
     midright = property(__getmidright, __setmidright)
@@ -203,30 +221,11 @@ class Rect(object):
         bx, by, bw, bh = b
         ar, ab = ax + aw, ay + ah
         br, bb = bx + bw, by + bh
-        return (ax >= bx and ax < br or bx >= ax and bx < ar) and (ay >= by and ay < bb or by >= ay and by < ab)
+        # return (ax >= bx and ax < br or bx >= ax and bx < ar) and (ay >= by and ay < bb or by >= ay and by < ab)
+        return (bx <= ax < br or ax <= bx < ar) and (by <= ay < bb or ay <= by < ab)
 
     def colliderect(self, other):
         return self._do_rect_intersect(self, other)
-
-    # FIXME:
-    # def scale_ip(self, factor_x, factor_y):
-    #     self.__scale_rect(self, factor_x, factor_y)
-    #     return self
-    #
-    # def scale(self, factor_x, factor_y):
-    #     rect = Rect(self)
-    #     rect.w = rect.w
-    #     self.__scale_rect(rect, factor_x, factor_y)
-    #     return rect
-    #
-    # def __scale_rect(self, rect, factor_x, factor_y):
-    #     center = rect.center
-    #     x, y, w, h = rect
-    #     w *= factor_x
-    #     h *= factor_y
-    #     rect.w = w
-    #     rect.h = h
-    #     rect.center = center
 
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
@@ -235,6 +234,13 @@ class Rect(object):
         rect = Rect(x, y, w, h)
         rect.center = self.center
         return rect
+
+    def scale_ip(self, factor_x, factor_y):
+        c = self.center
+        self.w *= factor_x
+        self.h *= factor_y
+        self.center = c
+        return self
 
     def __getitem__(self, i):
         # return self.__dim[i]
