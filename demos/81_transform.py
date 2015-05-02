@@ -151,7 +151,7 @@ class Game(object):
         self.elapsed += dt
         if self.elapsed >= 1.0:
             gsdl2.display.set_caption('{} fps | Balls: {} | Screen: {}x{} | Renderer: {} | Rotation: {}'.format(
-                int(self.clock.get_fps()), NUM_BALLS if self.use_renderer else NUM_BALLS / 3,
+                int(self.clock.get_fps()), NUM_BALLS if self.use_renderer else NUM_BALLS // 3,
                 self.screen_rect.w, self.screen_rect.h, self.use_renderer, self.rotation_msg[self.use_renderer]))
             self.elapsed -= 1.0
 
@@ -184,10 +184,11 @@ class Game(object):
 
     def blit_balls(self):
         self.screen.fill(self.fill_color)
-        for ball in self.balls[:NUM_BALLS / 3]:
+        for ball in self.balls[:NUM_BALLS // 3]:
             # TODO: software rotate here
             scale = ball.scale
-            self.screen.blit_scaled(ball.surface, ball.rect.scale(scale, scale))
+            r = ball.rect.scale(scale, scale)
+            self.screen.blit_scaled(ball.surface, r)
         gsdl2.display.flip()
 
     def render_balls(self):
