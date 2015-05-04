@@ -21,6 +21,7 @@ del sys
 #
 
 FIRSTEVENT = 0                  # Unused (do not remove)
+NOEVENT = FIRSTEVENT            # Gumm note: Pygame legacy?
 
 # Application events
 QUIT = 0x100                    # User-requested quit
