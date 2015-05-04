@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from .sdllibs import sdl_lib
+from .sdllibs import sdl_lib, SDLError
 from .sdlffi import sdl_ffi
 from .locals import (
     QUIT, WINDOWEVENT, SYSWMEVENT,
@@ -12,6 +12,7 @@ from .locals import (
     FINGERDOWN, FINGERUP, FINGERMOTION, DOLLARGESTURE, DOLLARRECORD, MULTIGESTURE,
     CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT,
 )
+from .sdlconstants import SDL_INIT_VIDEO
 
 
 # TODO: __all__
@@ -207,11 +208,14 @@ _event = _Event()
 
 
 def pump():
-    # TODO
-    pass
+    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        sdl_lib.PumpEvents()
 
 
 def get(filter_type=None):
+    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        return
+
     events = []
     append = events.append
     e = _event
@@ -258,13 +262,23 @@ def get(filter_type=None):
 # Uint32 SDL_RegisterEvents(int numevents);
 
 def poll():
-    # TODO
-    pass
+    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        sdl_lib.SDL_PollEvent(_event)
+        factory = _factories.get(_event.type, None)
+        if factory:
+            e_obj = factory(_event)
+            return e_obj
 
 
 def wait():
-    # TODO
-    pass
+    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        status = sdl_lib.SDL_WaitEvent(_event)
+        if not status:
+            raise SDLError()
+        factory = _factories.get(_event.type, None)
+        if factory:
+            e_obj = factory(_event)
+            return e_obj
 
 
 def peek(filter_type):
