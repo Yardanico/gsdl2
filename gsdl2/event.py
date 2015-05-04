@@ -10,7 +10,7 @@ from .locals import (
     CONTROLLERAXISMOTION, CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED,
     CONTROLLERDEVICEREMAPPED,
     FINGERDOWN, FINGERUP, FINGERMOTION, DOLLARGESTURE, DOLLARRECORD, MULTIGESTURE,
-    CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT,
+    CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT, NOEVENT
 )
 from .sdlconstants import SDL_INIT_VIDEO
 
@@ -18,6 +18,7 @@ from .sdlconstants import SDL_INIT_VIDEO
 # TODO: __all__
 
 
+NoEvent = namedtuple('NoEvent', 'type')
 QuitEvent = namedtuple('QuitEvent', 'type')
 WindowEvent = namedtuple('WindowEvent', 'type window event data1 data2')
 SysWMEvent = namedtuple('SysWMEvent', 'type msg')
@@ -42,6 +43,11 @@ DropEvent = namedtuple('MouseWheelEvent', 'type file')
 UserEvent = namedtuple('MouseWheelEvent', 'type window code data1 data2')
 
 
+def _NoEvent(e):
+    e = sdl_ffi.cast('SDL_CommonEvent *', e)
+    return NoEvent(e.type)
+
+
 def _QuitEvent(e):
     e = sdl_ffi.cast('SDL_QuitEvent *', e)
     return QuitEvent(e.type)
@@ -53,7 +59,7 @@ def _WindowEvent(e):
 
 
 def _SysWMEvent(e):
-    e = sdl_ffi.cast('SDL_QuitEvent *')
+    e = sdl_ffi.cast('SDL_SysWMEvent *')
     return SysWMEvent(e.type, e.msg)
 
 
@@ -166,6 +172,7 @@ def _UserEvent(e):
 
 # Map event type to a factory.
 _factories = {
+    NOEVENT: _NoEvent,
     QUIT: _QuitEvent,
     # QUIT: _OSEvent,  # ??? see SDL_event.h
     WINDOWEVENT: _WindowEvent,
@@ -263,8 +270,9 @@ def get(filter_type=None):
 
 def poll():
     if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        _event.type = NOEVENT  # dunno if this is necessary
         sdl_lib.SDL_PollEvent(_event)
-        factory = _factories.get(_event.type, None)
+        factory = _factories.get(_event.type, _factories[NOEVENT])
         if factory:
             e_obj = factory(_event)
             return e_obj
