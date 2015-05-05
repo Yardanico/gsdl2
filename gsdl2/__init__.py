@@ -70,6 +70,7 @@ from . import _time as time
 from . import texture
 from . import window
 from . import display
+from . import draw
 from . import locals
 
 
