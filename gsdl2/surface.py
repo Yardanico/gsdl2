@@ -321,6 +321,10 @@ class Surface(object):
         return self.__sdl_surface
     sdl_surface = property(__getsdlsurface)
 
+    def __str__(self):
+        return '<{}({}, {}) x {}>'.format(
+            self.__class__.__name__, self.get_width(), self.get_height(), self.get_bitsize())
+
     def __del__(self):
         # TODO: unreliable
         if self.__sdl_surface:
