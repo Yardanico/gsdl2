@@ -1,7 +1,7 @@
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
     'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib', 'color',
-    'display', 'event', 'font', 'gameclock', 'image', 'mixer', 'music', 'rect', 'renderer', 'surface', 'time',
+    'display', 'draw', 'event', 'font', 'gameclock', 'image', 'mixer', 'music', 'rect', 'renderer', 'surface', 'time',
     'texture', 'window', 'utf8'
 ]
 
