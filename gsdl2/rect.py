@@ -38,9 +38,9 @@ class Rect(object):
         # c.w = int(d[2])
         # c.h = int(d[3])
 
-    def _get_sdl_rect(self):
+    def __get_sdl_rect(self):
         return self.__cdata
-    sdl_rect = property(_get_sdl_rect)
+    sdl_rect = property(__get_sdl_rect)
 
     # The following directly access __dim and/or perform calculations:
     #
@@ -223,6 +223,9 @@ class Rect(object):
         br, bb = bx + bw, by + bh
         # return (ax >= bx and ax < br or bx >= ax and bx < ar) and (ay >= by and ay < bb or by >= ay and by < ab)
         return (bx <= ax < br or ax <= bx < ar) and (by <= ay < bb or ay <= by < ab)
+
+    def copy(self):
+        return Rect(self)
 
     def colliderect(self, other):
         return self._do_rect_intersect(self, other)
