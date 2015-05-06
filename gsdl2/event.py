@@ -102,38 +102,40 @@ def _MouseWheelEvent(e):
 
 def _JoyAxisEvent(e):
     e = sdl_ffi.cast('SDL_JoyAxisEvent *', e)
-    return JoyAxisEvent(e.type, e.which.data, e.axis, e.value)
+    value = (e.value + 32767) / 2.0 / 32767
+    print(e.value, value)
+    return JoyAxisEvent(e.type, e.which, e.axis, value)
 
 
 def _JoyBallEvent(e):
     e = sdl_ffi.cast('SDL_JoyBallEvent *', e)
     rel = e.xrel, e.yrel
-    return JoyBallEvent(e.type, e.which.data, e.ball, rel)
+    return JoyBallEvent(e.type, e.which, e.ball, rel)
 
 
 def _JoyHatEvent(e):
     e = sdl_ffi.cast('SDL_JoyHatEvent *', e)
-    return JoyHatEvent(e.type, e.which.data, e.hat, e.value)
+    return JoyHatEvent(e.type, e.which, e.hat, e.value)
 
 
 def _JoyButtonEvent(e):
     e = sdl_ffi.cast('SDL_JoyButtonEvent *', e)
-    return JoyButtonEvent(e.type, e.which.data, e.button, e.state)
+    return JoyButtonEvent(e.type, e.which, e.button, e.state)
 
 
 def _JoyDeviceEvent(e):
     e = sdl_ffi.cast('SDL_JoyDeviceEvent *', e)
-    return JoyDeviceEvent(e.type, e.which.data)
+    return JoyDeviceEvent(e.type, e.which)
 
 
 def _ControllerAxisEvent(e):
     e = sdl_ffi.cast('SDL_ControllerAxisEvent *', e)
-    return ControllerAxisEvent(e.type, e.which.data, e.axis, e.value)
+    return ControllerAxisEvent(e.type, e.which, e.axis, e.value)
 
 
 def _ControllerButtonEvent(e):
     e = sdl_ffi.cast('SDL_ControllerButtonEvent *', e)
-    return ControllerButtonEvent(e.type, e.which.data, e.button, e.state)
+    return ControllerButtonEvent(e.type, e.which, e.button, e.state)
 
 
 def _ControllerDeviceEvent(e):
