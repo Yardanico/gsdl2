@@ -4,6 +4,7 @@ __all__ = ['Color']
 import logging
 
 from .sdlffi import sdl_ffi
+from .colordict import THECOLORS
 
 
 log = logging.getLogger(__name__)
@@ -21,7 +22,15 @@ class Color(object):
         self.__sdl_color = sdl_ffi.new('SDL_Color *')
 
         if isinstance(args[0], str):
-            raise NotImplemented
+            color_name = args[0]
+            if color_name in THECOLORS:
+                c = THECOLORS[color_name]
+                self.r = c[0]
+                self.g = c[1]
+                self.b = c[2]
+                self.a = c[3]
+            else:
+                raise Exception('invalid color name {}'.format(color_name))
         else:
             self.r = args[0]
             self.g = args[1]
