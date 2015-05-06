@@ -102,8 +102,7 @@ def _MouseWheelEvent(e):
 
 def _JoyAxisEvent(e):
     e = sdl_ffi.cast('SDL_JoyAxisEvent *', e)
-    value = (e.value + 32767) / 2.0 / 32767
-    print(e.value, value)
+    value = e.value / 32767.0
     return JoyAxisEvent(e.type, e.which, e.axis, value)
 
 
