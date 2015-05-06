@@ -7,7 +7,7 @@ from .color import Color
 from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN
 
 
-debug = 1
+debug = 0
 
 
 def trunc(d):
