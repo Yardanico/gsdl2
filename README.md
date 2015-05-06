@@ -14,10 +14,11 @@ Note: This project is a reboot of pypygame.
     * (Optional) Install [pypy 2.5](http://pypy.org/download.html)
     * Fix environment to use pypy (e.g. set PATH in Windows, or use virtualenv) so that pip will work
     * Install [pip](https://pip.pypa.io/en/latest/installing.html)
-    * pip install [pysdl2-cffi](https://bitbucket.org/dholth/pysdl2-cffi). Or install cffi and pycparser by another means. (Note: this project does not require or use pysdl2-cffi. pysdl2-cffi does provide a nice and easy installation of cffi and pycparser, though.)
-    * Install dynamic libraries for [SDL 2.0](https://www.libsdl.org/download-2.0.php), [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/), [SDL_ttf 2.0](https://www.libsdl.org/projects/SDL_ttf/), and [SDL_mixer 2.0](https://www.libsdl.org/projects/SDL_mixer/).
+    * pip install cffi  (if necessary)
+    * pip install pycparser
+    * Install dynamic libraries for [SDL 2.0](https://www.libsdl.org/download-2.0.php), [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/), [SDL_ttf 2.0](https://www.libsdl.org/projects/SDL_ttf/), and [SDL_mixer 2.0](https://www.libsdl.org/projects/SDL_mixer/). On Windows, for pypy I simply copied *.dll to the C:\pypy25 folder, and for CPython to the DLLs folder.
 
-So far I periodically check that the updates work with CPython 2.7, but the focus is pypy. Probably rects and other spammy bytecode objects are going to require the JIT compiler. Certainly the 20,000 balls in 80_megaballs.py is a CPU killer in CPython.
+So far I periodically check that the updates work with CPython 2.7, but the focus is pypy. Probably rects and other spammy bytecode objects are going to require pypy's JIT compiler, or some savvy optimizations for CPython. Certainly the 20,000 balls in 80_megaballs.py is a CPU killer: I can barely get 2,000 in CPython.
 
 ### Contribution guidelines ###
 
