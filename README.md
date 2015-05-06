@@ -4,8 +4,11 @@
 
 Note: This project is a reboot of pypygame, this time using a manually constructed FFI interface. Personally, I need this because the pkgapi mechanism is not kind to PyCharm's inspection.
 
-* gsdl2 is a proof-of-concept Pythonic likeness of pygame for SDL2 using pypy and cffi. Some effort is made to keep pygame drop-in compatibility, but there are performance considerations and features new to SDL2 that will factor into decisions.
-* Version 0.0 - got a lot of the pygame staples done. Even a demo game, pymike's Bubbman. See downloads. =)
+gsdl2 is a proof-of-concept Pythonic likeness of pygame for SDL2 using pypy and cffi. Some effort is made to keep pygame drop-in compatibility, but there are performance considerations and features new to SDL2 that will factor into decisions.
+
+Version 0.0 - a lot of the pygame staples are done. Bug warning: here be monsters. I have tried to be thorough in documenting known bugs with FIXME comments.
+
+There is a demo game already, pymike's Bubbman. See downloads. =)
 
 ### How do I get set up? ###
 
