@@ -1,8 +1,8 @@
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
     'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib', 'color',
-    'display', 'draw', 'event', 'font', 'gameclock', 'image', 'mixer', 'music', 'rect', 'renderer', 'surface', 'time',
-    'texture', 'window', 'utf8'
+    'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'image', 'joystick', 'mixer', 'music', 'rect',
+    'renderer', 'surface', 'time', 'texture', 'window', 'utf8'
 ]
 
 
@@ -58,8 +58,10 @@ mixer_lib = sdllibs.mixer_lib
 #-----------------------------------
 
 from . import color
+from . import colordict
 from . import event
 from . import image
+from . import joystick
 from . import mixer
 from . import music
 from . import rect
