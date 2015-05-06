@@ -7,7 +7,7 @@ from .color import Color
 from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN
 
 
-debug = 0
+debug = 1
 
 
 def trunc(d):
@@ -641,7 +641,7 @@ def circle(surface, color, center, radius, width=1):
     surface.lock()
 
     if not width:
-        draw_fillellipse(surf, posx, posy, radius, radius, color)
+        draw_fillellipse(surface, posx, posy, radius, radius, color)
     else:
         # for (loop=0; loop<width; ++loop)
         for loop in range(width):
@@ -1845,24 +1845,28 @@ def drawhorzline(surface, color, x1, y1, x2):
     else:
         end = pixel + x1 * surf.format.BytesPerPixel
         pixel += x2 * surf.format.BytesPerPixel
+
     if surf.format.BytesPerPixel == 1:
         pixel = sdl_ffi.cast('Uint8 *', pixel)
         colorptr = sdl_ffi.cast('Uint8 *', colorptr)
+        # for(; pixel <= end; ++pixel) {
         while pixel <= end:
+            pixel += 1  # TODO: ++pixel is bug in the original code?
             pixel[0] = colorptr[0]
-            pixel += 1
     elif surf.format.BytesPerPixel == 2:
         pixel = sdl_ffi.cast('Uint16 *', pixel)
         colorptr = sdl_ffi.cast('Uint16 *', colorptr)
+        # for(; pixel <= end; pixel+=2) {
         while pixel <= end:
             pixel[0] = colorptr[0]
-            pixel += 2
+            pixel += 1
     elif surf.format.BytesPerPixel == 3:
         pixel = sdl_ffi.cast('Uint8 *', pixel)
         colorptr = sdl_ffi.cast('Uint8 *', colorptr)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
             colorptr[0] <<= 8
+        # for(; pixel <= end; pixel+=3) {
         while pixel <= end:
             pixel[0] = colorptr[0]
             pixel[1] = colorptr[1]
@@ -2132,9 +2136,143 @@ def draw_ellipse(surface, x, y, rx, ry, color):
         # } while(i > h);
 
 
-def draw_fillellipse():
+def draw_fillellipse(surface, x, y, rx, ry, color):
+    # FIXME: this has a bug somewhere; the color is off and there is an unfilled line down the horiz center
+    # surf = gsdl2.Surface((128, 128), depth=depth)
+    # rect = surf.get_rect()
+    # x1 = 0
+    # y1 = surf.get_height() // 2
+    # y2 = surf.get_width()
+    # gsdl2.draw.circle(surf, gsdl2.Color('red'), rect.center, rect.w // 2, width)
     if debug:
         print('gsdl.draw.draw_fillellipse')
+# 	int ix, iy;
+# 	int h, i, j, k;
+# 	int oh, oi, oj, ok;
+
+    set_at = surface.set_at
+
+# 	if (rx==0 && ry==0) {  /* Special case - draw a single pixel */
+# 		set_at( dst, x, y, color);
+# 		return;
+# 	}
+    if rx == 0 and ry == 0:  # Special case - draw a single pixel
+        set_at((x, y), color)
+        return
+
+# 	if (rx==0) { /* Special case for rx=0 - draw a vline */
+# 		drawvertlineclip( dst, color, x, (Sint16)(y-ry), (Sint16)(y+ry) );
+# 		return;
+# 	}
+    if rx == 0:  # Special case for rx=0 - draw a vline
+        drawvertlineclip(surface, color, y - ry, y + ry)
+        return
+
+# 	if (ry==0) { /* Special case for ry=0 - draw a hline */
+# 		drawhorzlineclip( dst, color, (Sint16)(x-rx), y, (Sint16)(x+rx) );
+# 		return;
+# 	}
+    if ry == 0:  # Special case for ry=0 - draw a hline
+        drawhorzlineclip(surface, color, x - rx, y, x + rx)
+        return
+
+# 	/* Init vars */
+# 	oh = oi = oj = ok = 0xFFFF;
+    # Init vars
+    oh = oi = oj = ok = 0
+
+# 	/* Draw */
+# 	if (rx >= ry) {
+# 		ix = 0;
+# 		iy = rx * 64;
+    # Draw
+    if rx >= ry:
+        ix = 0
+        iy = rx * 64
+
+# 		do {
+# 			h = (ix + 8) >> 6;
+# 			i = (iy + 8) >> 6;
+# 			j = (h * ry) / rx;
+# 			k = (i * ry) / rx;
+        h = (ix + 8) >> 6
+        i = (iy + 8) >> 6
+        while i > h:
+            h = (ix + 8) >> 6
+            i = (iy + 8) >> 6
+            j = (h * ry) / rx
+            k = (i * ry) / rx
+# 			if ((ok!=k) && (oj!=k) && (k<ry)) {
+# 				drawhorzlineclip(dst, color, x-h, y-k-1, x+h-1);
+# 				drawhorzlineclip(dst, color, x-h, y+k, x+h-1);
+# 				ok=k;
+# 			}
+            if ok != k and oj != k and k < ry:
+                drawhorzlineclip(surface, color, x - h, y - k - 1, x + h - 1)
+                drawhorzlineclip(surface, color, x - h, y + k, x + h - 1)
+                ok = k
+# 			if ((oj!=j) && (ok!=j) && (k!=j))  {
+# 				drawhorzlineclip(dst, color, x-i, y+j, x+i-1);
+# 				drawhorzlineclip(dst, color, x-i, y-j-1, x+i-1);
+# 				oj=j;
+# 			}
+            if oj != j and ok != j and k != j:
+                drawhorzlineclip(surface, color, x - i, y + j, x + i - 1)
+                drawhorzlineclip(surface, color, x - i, y - j - 1, x + i - 1)
+                oj = j
+# 			ix = ix + iy / rx;
+# 			iy = iy - ix / rx;
+            ix += iy / rx
+            iy -= ix / rx
+#
+# 		} while (i > h);
+
+# 	} else {
+    else:
+# 		ix = 0;
+# 		iy = ry * 64;
+        ix = 0
+        iy = ry * 64
+
+# 		do {
+# 			h = (ix + 8) >> 6;
+# 			i = (iy + 8) >> 6;
+# 			j = (h * rx) / ry;
+# 			k = (i * rx) / ry;
+        h = (ix + 8) >> 6
+        i = (iy + 8) >> 6
+        while i > h:
+            h = (ix + 8) >> 6
+            i = (iy + 8) >> 6
+            j = (h * rx) / ry
+            k = (i * rx) / ry
+
+# 			if ((oi!=i) && (oh!=i) && (i<ry)) {
+# 				drawhorzlineclip(dst, color, x-j, y+i, x+j-1);
+# 				drawhorzlineclip(dst, color, x-j, y-i-1, x+j-1);
+# 				oi=i;
+# 			}
+            if oi != i and oh != i and i < ry:
+                drawhorzlineclip(surface, color, x - j, y + i, x + j - 1)
+                drawhorzlineclip(surface, color, x - j, y - i - 1, x + j - 1)
+                oi = i
+
+# 			if ((oh!=h) && (oi!=h) && (i!=h)) {
+# 				drawhorzlineclip(dst, color, x-k, y+h, x+k-1);
+# 				drawhorzlineclip(dst, color, x-k, y-h-1, x+k-1);
+# 				oh=h;
+# 			}
+            if oh != h and oi != h and i != h:
+                drawhorzlineclip(surface, color, x - k, y + h, x + k - 1)
+                drawhorzlineclip(surface, color, x - k, y - h - 1, x + k - 1)
+                oh = h
+
+# 			ix = ix + iy / ry;
+# 			iy = iy - ix / ry;
+            ix += iy / ry
+            iy -= ix / ry
+
+# 		} while(i > h);
 
 
 # static void draw_fillellipse(SDL_Surface *dst, int x, int y, int rx, int ry, Uint32 color)
