@@ -2243,7 +2243,7 @@ def draw_fillpoly(surface, vx, vy, n, color):
 # 	}
     miny = vy[0]
     maxy = vy[0]
-    for i in range(n):
+    for i in range(1, n):
         miny = min(miny, vy[i])
         maxy = max(maxy, vy[i])
 
@@ -2296,7 +2296,7 @@ def draw_fillpoly(surface, vx, vy, n, color):
 # 				polyints[ints++] = (y-y1) * (x2-x1) / (y2-y1) + x1;
 # 			}
             if y1 <= y < y2:
-                polyints[ints] = (y - y1) * (x2 - x1) / (y2 - y1) * x1
+                polyints[ints] = (y - y1) * (x2 - x1) / (y2 - y1) + x1
                 ints += 1
             elif y == maxy and y1 < y <= y2:
                 polyints[ints] = (y - y1) * (x2 - x1) / (y2 - y1) + x1
