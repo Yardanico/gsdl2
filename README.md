@@ -12,7 +12,7 @@ There is a demo game already, pymike's Bubbman. See downloads. =)
 
 ### How do I get set up? ###
 
-* Requires pypy 2.5, cffi, and pycparser. See (http://cffi.readthedocs.org/en/latest/#installation-and-status).
+* Recommended pypy 2.5, cffi, and pycparser. See (http://cffi.readthedocs.org/en/latest/#installation-and-status).
 * Summary of set up:
     * (Optional) Install [pypy 2.5](http://pypy.org/download.html)
     * Fix environment to use pypy (e.g. set PATH in Windows, or use virtualenv) so that pip will work
