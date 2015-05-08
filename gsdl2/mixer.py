@@ -14,7 +14,7 @@ from . import music
 from .locals import utf8
 
 
-log = logging.getLogger(__name__)
+# log = logging.getLogger(__name__)
 
 
 def get_init():
@@ -28,16 +28,22 @@ _channels = {}
 def init(frequency=44100, format=MIX_DEFAULT_FORMAT, channels=2, chunksize=1024):
     if not get_init():
         return
-    if mixer_lib.Mix_OpenAudio(frequency, format, channels, chunksize) < 0:
+    c = sdl_ffi.cast
+    if mixer_lib.Mix_OpenAudio(c('int', frequency), c('Uint16', format), c('int', channels), c('int', chunksize)) < 0:
         logging.log(logging.ERROR, 'SDL_mixer failed to open audio format {}'.format(format))
     else:
-        # TODO: this segfaults on Python 27 whether using decorator or ffi.callback(func)
+        # TODO: Windows: you can’t yet specify the calling convention of callbacks.
+        #       https://cffi.readthedocs.org/en/latest/#callbacks
+        # Direct callback is not support yet by cffi. If we want ChannelFinished events we'll have to code something
+        # and instruct the user to pump it in the game loop.
+        #
         # @sdl_ffi.callback('void (*)(int)')
-        def _channel_stopped(channel_id):
-            # remove channel_id from _channels
-            if channel_id in _channels:
-                del _channels[channel_id]
-            # TODO: post an event if configured on the Channel
+        # def _channel_stopped(channel_id):
+        #     # remove channel_id from _channels
+        #     print('channel_id={}'.format(channel_id))
+        #     if channel_id in _channels:
+        #         del _channels[channel_id]
+        #     # TODO: post an event if configured on the Channel
         # mixer_lib.Mix_ChannelFinished(_channel_stopped)
         # # OR #
         # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
