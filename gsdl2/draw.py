@@ -1402,7 +1402,6 @@ def clipline(pts, left, top, right, bottom):
         pts[3] = y2
 
 # 	return draw;
-    print('clipline: return {}'.format(draw))
     return draw
 
 
