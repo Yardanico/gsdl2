@@ -270,7 +270,7 @@ class Surface(object):
         surf = get_window_list()[0].surface.sdl_surface
         if format is None:
             format = surf.format
-        new_surf = self.__sdl_surface.convertSurface(format, 0)
+        new_surf = sdl_lib.SDL_ConvertSurface(self.__sdl_surface, format, 0)
         if new_surf is None:
             # TODO: proper exception
             raise Exception('could not convert surface')
