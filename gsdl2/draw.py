@@ -7,7 +7,7 @@ from .color import Color
 from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN
 
 
-debug = 0
+debug = 1
 
 
 def trunc(d):
@@ -1394,6 +1394,7 @@ def clipline(pts, left, top, right, bottom):
         pts[3] = y2
 
 # 	return draw;
+    print('clipline: return {}'.format(draw))
     return draw
 
 
@@ -1653,7 +1654,7 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 	int swaptmp;
 # 	Uint8 *pixel;
 # 	Uint8 *colorptr;
-    colorptr = sdl_ffi.cast('Uint8 *', color.sdl_color)
+    colorptr = color.sdl_color
 #
 # 	deltax = x2 - x1;
 # 	deltay = y2 - y1;
@@ -1703,14 +1704,16 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     if surf.format.BytesPerPixel == 1:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
+        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint8 []', [int(c)])
         for x in range(deltax):
-            pixel[0] = colorptr
+            pixel8[0] = cp[0]
             y += deltay
             if y >= deltax:
                 y -= deltax
-                pixel += pixy
-            pixel += pixx
+                pixel8 += pixy
+            pixel8 += pixx
 
 # 	case 2:
 # 		for(; x < deltax; x++, pixel += pixx) {
@@ -1718,14 +1721,16 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     elif surf.format.BytesPerPixel == 2:
-        pixel = sdl_ffi.cast('Uint16 *', pixel)
+        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint16 []', [int(c)])
         for x in range(deltax):
-            pixel[0] = colorptr[0]
+            pixel16[0] = cp[0]
             y += deltay
             if y >= deltax:
                 y -= deltax
-                pixel += pixy // 2
-            pixel += pixx // 2
+                pixel16 += pixy // 2
+            pixel16 += pixx // 2
 
 # 	case 3:
 # 		if(SDL_BYTEORDER == SDL_BIG_ENDIAN) color <<= 8;
@@ -1737,33 +1742,38 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     elif surf.format.BytesPerPixel == 3:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
+        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
-            colorptr[0] <<= 8
+            c <<= 8
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        rgba = sdl_ffi.cast('Uint8 *', cp)
         for x in range(deltax):
-            pixel[0] = colorptr[0]
-            pixel[1] = colorptr[1]
-            pixel[2] = colorptr[2]
+            pixel8[0] = rgba[0]
+            pixel8[1] = rgba[1]
+            pixel8[2] = rgba[2]
             y += deltay
             if y >= deltax:
-                y -= deltax // 3
-                pixel += pixy // 3
-            pixel += pixx
+                y -= deltax
+                pixel8 += pixy
+            pixel8 += pixx
 
 # 	default: /*case 4*/
 # 		for(; x < deltax; x++, pixel += pixx) {
 # 	        *(Uint32*)pixel = (Uint32)color;
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
     else:  # case 4
-        pixel = sdl_ffi.cast('Uint32 *', pixel)
-        colorptr = sdl_ffi.cast('Uint32 *', colorptr)
+        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
         for x in range(deltax):
-            pixel[0] = colorptr[0]
+            pixel32[0] = cp[0]
             y += deltay
             if y >= deltax:
                 y -= deltax
-                pixel += pixy // 4
-            pixel += pixx // 4
+                pixel32 += pixy // 4
+            pixel32 += pixx // 4
 
 
 # /*here's my sdl'ized version of bresenham*/
@@ -1838,7 +1848,8 @@ def drawhorzline(surface, color, x1, y1, x2):
         set_at((x1, y1), color)
         return
 
-    pixel = surf.pixels + surf.pitch * y1
+    pixel = sdl_ffi.cast('Uint8 *', surf.pixels) + surf.pitch * y1
+    # pixel += surf.pitch * y1
     if x1 < x2:
         end = pixel + x2 * surf.format.BytesPerPixel
         pixel += x1 * surf.format.BytesPerPixel
@@ -1847,38 +1858,44 @@ def drawhorzline(surface, color, x1, y1, x2):
         pixel += x2 * surf.format.BytesPerPixel
 
     if surf.format.BytesPerPixel == 1:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
-        colorptr = sdl_ffi.cast('Uint8 *', colorptr)
+        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint8 []', [int(c)])
         # for(; pixel <= end; ++pixel) {
-        while pixel <= end:
-            pixel += 1  # TODO: ++pixel is bug in the original code?
-            pixel[0] = colorptr[0]
+        while pixel8 <= end:
+            pixel8[0] = cp[0]
+            # TODO: ++pixel is bug in the original code?
+            pixel8 += 1
     elif surf.format.BytesPerPixel == 2:
-        pixel = sdl_ffi.cast('Uint16 *', pixel)
-        colorptr = sdl_ffi.cast('Uint16 *', colorptr)
+        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint16 []', [int(c)])
         # for(; pixel <= end; pixel+=2) {
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel += 1
+        while pixel16 <= end:
+            pixel16[0] = cp[0]
+            pixel16 += 1
     elif surf.format.BytesPerPixel == 3:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
-        colorptr = sdl_ffi.cast('Uint8 *', colorptr)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
-            colorptr[0] <<= 8
+            c <<= 8
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        rgba = sdl_ffi.cast('Uint8 *', cp)
         # for(; pixel <= end; pixel+=3) {
         while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel[1] = colorptr[1]
-            pixel[2] = colorptr[2]
+            pixel[0] = rgba[0]
+            pixel[1] = rgba[1]
+            pixel[2] = rgba[2]
             pixel += 3
+        # sys.stdout.flush()
     else:  # case 4
-        pixel = sdl_ffi.cast('Uint32 *', pixel)
-        colorptr = sdl_ffi.cast('Uint32 *', colorptr)
+        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
         # for(; pixel <= end; pixel+=4) {
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel += 1
+        while pixel32 <= end:
+            pixel32[0] = cp[0]
+            pixel32 += 1
 
 
 def drawhorzlineclip(surface, color, x1, y1, x2):
@@ -1930,35 +1947,39 @@ def drawvertline(surface, color, x1, y1, y2):
         pixel += surf.pitch * y2
 
     if surf.format.BytesPerPixel == 1:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
-        colorptr = sdl_ffi.cast('Uint8 *', colorptr)
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel += pitch
+        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint8 []', [int(c)])
+        while pixel8 <= end:
+            pixel8[0] = cp[0]
+            pixel8 += pitch
     elif surf.format.BytesPerPixel == 2:
-        pixel = sdl_ffi.cast('Uint16 *', pixel)
-        colorptr = sdl_ffi.cast('Uint16 *', colorptr)
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel += pitch // 2
+        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint16 []', [int(c)])
+        while pixel16 <= end:
+            pixel16[0] = cp[0]
+            pixel16 += pitch // 2
     elif surf.format.BytesPerPixel == 3:
-        pixel = sdl_ffi.cast('Uint8 *', pixel)
-        colorptr = sdl_ffi.cast('Uint8 *', colorptr)
+        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
-            colorptr[0] <<= 8
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel[1] = colorptr[1]
-            pixel[2] = colorptr[2]
-            pixel += pitch
+            c <<= 8
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        rgba = sdl_ffi.cast('Uint8 *', cp)
+        while pixel8 <= end:
+            pixel8[0] = rgba[0]
+            pixel8[1] = rgba[1]
+            pixel8[2] = rgba[2]
+            pixel8 += pitch
     else:  # case 4
-        # FIXME: this draws a dotted line
-        pixel = sdl_ffi.cast('Uint32 *', pixel)
-        colorptr = sdl_ffi.cast('Uint32 *', colorptr)
-        while pixel <= end:
-            pixel[0] = colorptr[0]
-            pixel += pitch // 4
+        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
+        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        while pixel32 <= end:
+            pixel32[0] = cp[0]
+            pixel32 += pitch // 4
 
 
 def drawvertlineclip(surface, color, x1, y1, y2):
@@ -2379,11 +2400,8 @@ def draw_fillpoly(surface, vx, vy, n, color):
 # 		miny = MIN(miny, vy[i]);
 # 		maxy = MAX(maxy, vy[i]);
 # 	}
-    miny = vy[0]
-    maxy = vy[0]
-    for i in range(1, n):
-        miny = min(miny, vy[i])
-        maxy = max(maxy, vy[i])
+    miny = reduce(min, vy)
+    maxy = reduce(max, vy)
 
 # Draw, scanning y
 # 	for(y=miny; (y <= maxy); y++) {
@@ -2441,7 +2459,6 @@ def draw_fillpoly(surface, vx, vy, n, color):
                 ints += 1
 # 		}
 # 		qsort(polyints, ints, sizeof(int), compare_int);
-        polyints.sort()
 #
 # 		for (i=0; (i<ints); i+=2) {
 # 			drawhorzlineclip(dst, color, polyints[i], y, polyints[i+1]);
