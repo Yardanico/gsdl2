@@ -24,6 +24,7 @@ def INVFRAC(z):
 
 
 def aaline():
+    # TODO
     if debug:
         print('gsdl.draw.aaline')
 
@@ -94,6 +95,7 @@ def aaline():
 
 
 def line():
+    # TODO
     if debug:
         print('gsdl.draw.line')
 
@@ -171,6 +173,7 @@ def line():
 
 
 def aalines():
+    # TODO
     if debug:
         print('gsdl.draw.aalines')
 
@@ -485,6 +488,7 @@ def lines(surface, color, closed, pointlist, width=1):
 
 
 def arc():
+    # TODO
     if debug:
         print('gsdl.draw.arc')
 
@@ -546,6 +550,7 @@ def arc():
 
 
 def ellipse():
+    # TODO
     if debug:
         print('gsdl.draw.ellipse')
 
@@ -932,6 +937,7 @@ def rect(surface, color, rect, width=1):
 
 
 def clip_and_draw_aaline():
+    # TODO
     if debug:
         print('gsdl.draw.clip_and_draw_aaline')
 
@@ -1200,6 +1206,7 @@ def encode(x, y, left, top, right, bottom):
 
 
 def encodeFloat():
+    # TODO
     pass
 
 
@@ -1215,6 +1222,7 @@ def encodeFloat():
 
 
 def clipaaline():
+    # TODO
     if debug:
         print('gsdl.draw.clipaaline')
 
@@ -1458,6 +1466,7 @@ def clipline(pts, left, top, right, bottom):
 
 
 def set_at():
+    # TODO?
     pass
 
 
@@ -1503,6 +1512,7 @@ def set_at():
 
 
 def DRAWPIX32():
+    # TODO
     pass
 
 
@@ -1527,6 +1537,7 @@ def DRAWPIX32():
 
 
 def drawaaline():
+    # TODO
     if debug:
         print('gsdl.draw.draw_aaline')
 
@@ -2003,6 +2014,7 @@ def drawvertlineclip(surface, color, x1, y1, y2):
 
 
 def draw_arc():
+    # TODO
     if debug:
         print('gsdl.draw.drawarc')
 
