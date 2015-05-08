@@ -227,6 +227,10 @@ class Rect(object):
     def copy(self):
         return Rect(self)
 
+    def collidepoint(self, point):
+        x, y = point
+        return self.x <= x < self.right and self.y <= y < self.bottom
+
     def colliderect(self, other):
         return self._do_rect_intersect(self, other)
 
