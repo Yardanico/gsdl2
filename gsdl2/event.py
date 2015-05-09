@@ -221,10 +221,11 @@ def pump():
 
 
 def get(filter_type=None):
-    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
-        return
-
     events = []
+
+    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        return events
+
     append = events.append
     e = _event
     get = _factories.get
@@ -242,7 +243,9 @@ def get(filter_type=None):
         factory = get(e.type, None)
         if factory:
             e_obj = factory(e)
-            append(e_obj)
+            # _KeyEvent returns None if it's a repeat event
+            if e_obj:
+                append(e_obj)
     return events
 
 
