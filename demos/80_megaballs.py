@@ -1,6 +1,6 @@
-"""00_hello.py - many, many moving rects
+"""80_megaballs.py - many, many moving rects
 
-Usage: python 00_hello.py [num_balls]
+Usage: python 80_megaballs.py [num_balls]
 
 Experiment or see NUM_BALLS NOTE for a comment on choosing num_balls.
 """
