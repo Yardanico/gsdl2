@@ -1,6 +1,6 @@
-"""01_transform.py - rotation exercise
+"""81_transform.py - rotation exercise
 
-Usage: python 01_transform.py [num_balls]
+Usage: python 81_transform.py [num_balls]
 
 Note: There is no rotate function in SDL2 for software (surfaces).
 """
