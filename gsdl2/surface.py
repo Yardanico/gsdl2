@@ -13,6 +13,7 @@ from . import sdlconstants
 from . import sdlpixels
 from . import color
 from .rect import Rect
+from .locals import palette_8bit
 
 
 ffi = FFI()
@@ -48,10 +49,10 @@ class Surface(object):
             masks = [0] * 4
         do_blit = False
         if isinstance(size_or_surf, Surface):
-            # TODO: copy, format, blit the surface?
-            # SDL_CreateRGBSurfaceFrom
-            # http://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom?highlight=%28\bCategoryAPI\b%29|%28SDLFunctionTemplate%29
-            width, height = size_or_surf.get_size()
+            surf = size_or_surf
+            width, height = surf.get_size()
+            flags = surf.get_flags()
+            depth = surf.get_bitsize()
             self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
             do_blit = True
         else:
@@ -60,27 +61,29 @@ class Surface(object):
                 self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
             else:
                 self.__sdl_surface = surface
-        self.__size = width, height
-        self.__flags = flags
-        self.__depth = depth
-        self.__masks = masks
+        if depth == 8:
+            palette_colors = sdl_ffi.cast('SDL_Color *', self.__sdl_surface.format.palette.colors)
+            for i in range(256):
+                c = palette_colors[i]
+                c.r, c.g, c.b, c.a = palette_8bit[i]
         if do_blit:
             self.blit(size_or_surf, (0, 0))
 
     def get_size(self):
-        return self.__size
+        surf = self.__sdl_surface
+        return surf.w, surf.h
 
     def get_width(self):
-        return self.__size[0]
+        return self.__sdl_surface.w
 
     def get_height(self):
-        return self.__size[1]
+        return self.__sdl_surface.w
 
     def get_flags(self):
-        return self.__flags
+        return self.__sdl_surface.flags
 
     def get_bitsize(self):
-        return self.__depth
+        return self.__sdl_surface.format.BitsPerPixel
 
     def get_colorkey(self):
         surface = self.__sdl_surface
@@ -104,7 +107,7 @@ class Surface(object):
         if 'rect' in kwargs:
             r = kwargs['rect']
         else:
-            w, h = self.__size
+            w, h = self.get_size()
             r = Rect(0, 0, w, h)
         for k, v in kwargs.items():
             setattr(r, k, v)
