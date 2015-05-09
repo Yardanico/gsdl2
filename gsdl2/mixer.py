@@ -32,7 +32,7 @@ def init(frequency=44100, format=MIX_DEFAULT_FORMAT, channels=2, chunksize=1024)
     if mixer_lib.Mix_OpenAudio(c('int', frequency), c('Uint16', format), c('int', channels), c('int', chunksize)) < 0:
         logging.log(logging.ERROR, 'SDL_mixer failed to open audio format {}'.format(format))
     else:
-        # TODO: Windows: you can’t yet specify the calling convention of callbacks.
+        # TODO: Windows: you can't yet specify the calling convention of callbacks.
         #       https://cffi.readthedocs.org/en/latest/#callbacks
         # Direct callback is not support yet by cffi. If we want ChannelFinished events we'll have to code something
         # and instruct the user to pump it in the game loop.
