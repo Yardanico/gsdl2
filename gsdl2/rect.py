@@ -234,6 +234,13 @@ class Rect(object):
     def colliderect(self, other):
         return self._do_rect_intersect(self, other)
 
+    def contains(self, rect):
+        return (self.x <= rect.x and self.y <= rect.y and
+                self.right >= rect.right and
+                self.bottom >= rect.bottom and
+                self.right > rect.x and
+                self.bottom > rect.y)
+    
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
         w *= factor_x
@@ -248,6 +255,49 @@ class Rect(object):
         self.h *= factor_y
         self.center = c
         return self
+
+    def clamp(self, rect):
+        if self.w >= rect.w:
+            x = rect.x + rect.w / 2 - self.w / 2
+        elif self.x < rect.x:
+            x = rect.x
+        elif self.x + self.w > rect.x + rect.w:
+            x = rect.x + rect.w - self.w
+        else:
+            x = self.x
+    
+        if self.h >= rect.h:
+            y = rect.y + rect.h / 2 - self.h / 2
+        elif self.y < rect.y:
+            y = rect.y
+        elif self.y + self.h > rect.y + rect.h:
+            y = rect.y + rect.h - self.h
+        else:
+            y = self.y
+    
+        return Rect(x, y, self.w, self.h)
+
+    def clamp_ip(self, rect):
+        if self.w >= rect.w:
+            x = rect.x + rect.w / 2 - self.w / 2
+        elif self.x < rect.x:
+            x = rect.x
+        elif self.x + self.w > rect.x + rect.w:
+            x = rect.x + rect.w - self.w
+        else:
+            x = self.x
+    
+        if self.h >= rect.h:
+            y = rect.y + rect.h / 2 - self.h / 2
+        elif self.y < rect.y:
+            y = rect.y
+        elif self.y + self.h > rect.y + rect.h:
+            y = rect.y + rect.h - self.h
+        else:
+            y = self.y
+    
+        self.x = x
+        self.y = y
 
     def __getitem__(self, i):
         # return self.__dim[i]
