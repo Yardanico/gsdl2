@@ -251,6 +251,26 @@ class Rect(object):
         bb = other.bottom
         return ax < br and ay < bb and ar > bx and ab > by
 
+    def collidelist(self, rect_list):
+        colliderect = self.colliderect
+        for i, r in enumerate(rect_list):
+            if colliderect(r):
+                return i
+
+    def collidelistall(self, rect_list):
+        colliderect = self.colliderect
+        return [i for i, r in enumerate(rect_list) if colliderect(r)]
+
+    def collidedict(self, rect_dict):
+        colliderect = self.colliderect
+        for k, r in iter(rect_dict.items()):
+            if colliderect(r):
+                return k, r
+
+    def collidedictall(self, rect_dict):
+        colliderect = self.colliderect
+        return [(k, r) for k, r in iter(rect_dict.items()) if colliderect(r)]
+
     def contains(self, rect):
         rect_x = rect.x
         rect_y = rect.y
