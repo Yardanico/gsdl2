@@ -9,7 +9,7 @@ from cffi import FFI
 
 from .sdllibs import sdl_lib
 from .sdlffi import sdl_ffi
-from . import sdlconstants
+from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from . import sdlpixels
 from . import color
 from .rect import Rect
@@ -123,7 +123,7 @@ class Surface(object):
         pixels = surf.pixels
         rgba = sdl_ffi.new('Uint8 [4]')
 
-        if sdlconstants.SDL_MUSTLOCK(surf):
+        if SDL_MUSTLOCK(surf):
             if not self.lock():
                 return
 
@@ -137,7 +137,7 @@ class Surface(object):
         elif bpp == 3:
             pixels = sdl_ffi.cast('Uint8 *', pixels)
             pix = pixels[(y * surf.w + x) * 3]
-            if sdlconstants.SDL_BYTEORDER == sdlconstants.SDL_LIL_ENDIAN:
+            if SDL_BYTEORDER == SDL_LIL_ENDIAN:
                     color_ = pix[0] + pix[1] << 8 + pix[2] << 16
             else:
                     color_ = pix[2] + pix[1] << 8 + pix[0] << 16
@@ -153,12 +153,11 @@ class Surface(object):
         return color.Color(*rgba)
 
     def set_at(self, pos, color_):
-        # TODO: test it
-
         x, y = pos
         surf = self.__sdl_surface
-        format = surf.format
-        bpp = format.BytesPerPixel
+        pixels = surf.pixels
+        surf_format = surf.format
+        bpp = surf_format.BytesPerPixel
         if not isinstance(color_, color.Color):
             color_ = color.Color(*color_)
 
@@ -167,36 +166,31 @@ class Surface(object):
             # out of clip area
             return
 
-        if sdlconstants.SDL_MUSTLOCK(self.__sdl_surface):
+        if SDL_MUSTLOCK(surf):
             if not self.lock():
                 return
 
-        pixels = surf.pixels
-
+        c = sdl_lib.SDL_MapRGBA(surf_format, color_.r, color_.g, color_.b, color_.a)
         if bpp == 1:
             buf = sdl_ffi.cast('Uint8 *', pixels)
-            buf[y * surf.w + x] = sdl_lib.SDL_MapRGBA(format, color_.r, color_.g, color_.b, color_.a)
+            buf[y * surf.w + x] = c
         elif bpp == 2:
             buf = sdl_ffi.cast('Uint16 *', pixels)
-            buf[y * surf.w + x] = sdl_lib.SDL_MapRGBA(format, color_.r, color_.g, color_.b, color_.a)
+            buf[y * surf.w + x] = c
         elif bpp == 3:
-            pixels = sdl_ffi.cast('Uint8 *', pixels)
-            byte_buf = pixels[(y * surf.w + x) * 3]
-            if sdlconstants.SDL_BYTEORDER == sdlconstants.SDL_LIL_ENDIAN:
-                # TODO
-                # *(byte_buf + (format->Rshift >> 3)) = (Uint8) (color >> 16);
-                # *(byte_buf + (format->Gshift >> 3)) = (Uint8) (color >> 8);
-                # *(byte_buf + (format->Bshift >> 3)) = (Uint8) color;
-                pass
-            else:
-                # TODO
-                # *(byte_buf + 2 - (format->Rshift >> 3)) = (Uint8) (color >> 16);
-                # *(byte_buf + 2 - (format->Gshift >> 3)) = (Uint8) (color >> 8);
-                # *(byte_buf + 2 - (format->Bshift >> 3)) = (Uint8) color;
-                pass
+            # TODO: test 24 bit
+            buf = sdl_ffi.cast('Uint8 *', pixels)
+            byte_buf = buf + y * surf.pitch + x * 3
+            cp = sdl_ffi.new('Uint32 []', [int(c)])
+            rgba = sdl_ffi.cast('Uint8 *', cp)
+            if SDL_BYTEORDER == SDL_BIG_ENDIAN:
+                c <<= 8
+            byte_buf[0] = rgba[0]
+            byte_buf[1] = rgba[1]
+            byte_buf[2] = rgba[2]
         else:  # bpp == 4
             buf = sdl_ffi.cast('Uint32 *', pixels)
-            buf[y * surf.w + x] = sdl_lib.SDL_MapRGBA(format, color_.r, color_.g, color_.b, color_.a)
+            buf[y * surf.w + x] = c
 
         self.unlock()
 
@@ -204,7 +198,7 @@ class Surface(object):
         surface = self.__sdl_surface
         map_color = sdl_lib.SDL_MapRGBA if len(color) == 4 else sdl_lib.SDL_MapRGB
 
-        if sdlconstants.SDL_MUSTLOCK(surface):
+        if SDL_MUSTLOCK(surface):
             self.lock()
         if rect is None:
             size = self.get_size()
@@ -221,7 +215,7 @@ class Surface(object):
 
     def blit(self, source, dest_rect, area=None, special_flags=0):
         dest_surface = self.__sdl_surface
-        if sdlconstants.SDL_MUSTLOCK(dest_surface):
+        if SDL_MUSTLOCK(dest_surface):
             self.lock()
         if area is None:
             size = source.get_size()
@@ -251,7 +245,7 @@ class Surface(object):
         #     h = int(round(h + r[1] - y))
         #     return x, y, w, h
         dest_surface = self.__sdl_surface
-        if sdlconstants.SDL_MUSTLOCK(dest_surface):
+        if SDL_MUSTLOCK(dest_surface):
             self.lock()
         if area is None:
             # area = source.get_rect()
