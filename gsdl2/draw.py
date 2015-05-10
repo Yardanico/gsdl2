@@ -4,7 +4,7 @@ from .sdllibs import sdl_lib
 from .sdlffi import sdl_ffi
 from .rect import Rect
 from .color import Color
-from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN
+from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN, SDL_LIL_ENDIAN
 
 
 debug = 0
@@ -1562,9 +1562,46 @@ def clipline(pts, left, top, right, bottom):
 # }
 
 
-def set_at():
-    # TODO?
-    pass
+def set_at(surf, x, y, color):
+    # TODO: untested, currently unused
+    """note: surf is SDL_Surface *, color is SDL_Color *"""
+# 	SDL_PixelFormat* format = surf->format;
+# 	Uint8* pixels = (Uint8*)surf->pixels;
+# 	Uint8* byte_buf, rgb[4];
+
+    clip_rect = surf.clip_rect
+    if x < clip_rect.x or x >= clip_rect.x + clip_rect.w or y < clip_rect.y or y >= clip_rect.y + clip_rect.h:
+        return 0
+
+    bpp = surf.format.BytesPerPixel
+    if bpp == 1:
+        pixels = sdl_ffi.cast('Uint8 *', surf.pixels)
+        pixels += y * surf.pitch + x
+        pixels[0] = color
+    elif bpp == 2:
+        pixels = sdl_ffi.cast('Uint16 *', surf.pixels)
+        pixels += y * surf.pitch + x
+        pixels[0] = color
+    elif bpp == 4:
+        pixels = sdl_ffi.cast('Uint32 *', surf.pixels)
+        pixels += y * surf.pitch + x
+        pixels[0] = color
+    else:
+        pixels = sdl_ffi.cast('Uint8 *', surf.pixels)
+        rgb = sdl_ffi.new('Uint8 [4]')
+        c = sdl_ffi.cast('Uint32 *', color)
+        sdl_lib.SDL_GetRGB(c[0], surf.format, rgb, rgb + 1, rgb + 2)
+        byte_buf = (pixels + y * surf.pitch) + x * 3
+        if SDL_BYTEORDER == SDL_BIG_ENDIAN:
+            byte_buf[0] = rgb[0]
+            byte_buf[1] = rgb[1]
+            byte_buf[2] = rgb[2]
+        else:
+            byte_buf[2] = rgb[0]
+            byte_buf[1] = rgb[1]
+            byte_buf[0] = rgb[2]
+
+    return 1
 
 
 # static int set_at(SDL_Surface* surf, int x, int y, Uint32 color)
@@ -1946,7 +1983,6 @@ def drawline(surface, color, x1, y1, x2, y2):
 def drawhorzline(surface, color, x1, y1, x2):
     if debug:
         print('gsdl.draw.drawhorzline')
-    pixel = end = 0
     colorptr = color.sdl_color
 
     set_at = surface.set_at
@@ -1957,7 +1993,6 @@ def drawhorzline(surface, color, x1, y1, x2):
         return
 
     pixel = sdl_ffi.cast('Uint8 *', surf.pixels) + surf.pitch * y1
-    # pixel += surf.pitch * y1
     if x1 < x2:
         end = pixel + x2 * surf.format.BytesPerPixel
         pixel += x1 * surf.format.BytesPerPixel
@@ -1995,7 +2030,6 @@ def drawhorzline(surface, color, x1, y1, x2):
             pixel[1] = rgba[1]
             pixel[2] = rgba[2]
             pixel += 3
-        # sys.stdout.flush()
     else:  # case 4
         pixel32 = sdl_ffi.cast('Uint32 *', pixel)
         c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
