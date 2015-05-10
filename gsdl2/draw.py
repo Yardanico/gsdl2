@@ -94,10 +94,69 @@ def aaline():
 # }
 
 
-def line():
+def line(surface, color, start_pos, end_pos, width=1):
     # TODO
     if debug:
         print('gsdl.draw.line')
+    # PyObject *surfobj, *colorobj, *start, *end;
+    # SDL_Surface* surf;
+    # int startx, starty, endx, endy;
+    startx, starty = start_pos
+    endx, endy = end_pos
+    # int dx, dy;
+    # int rtop, rleft, rwidth, rheight;
+    # int width = 1;
+    # int pts[4];
+    pts = [0] * 4
+    # Uint8 rgba[4];
+    # Uint32 color;
+    # int anydraw;
+
+    # get all the arguments
+    surf = surface.sdl_surface
+
+    if surf.format.BytesPerPixel <= 0 or surf.format.BytesPerPixel > 4:
+        # TODO: proper exception
+        raise Exception("unsupport bit depth for line draw")
+
+    # if(PyInt_Check(colorobj))
+    #     color = (Uint32)PyInt_AsLong(colorobj);
+    # else if(RGBAFromColorObj(colorobj, rgba))
+    #     color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
+    # else
+    #     return RAISE(PyExc_TypeError, "invalid color argument");
+
+    # if(!TwoIntsFromObj(start, &startx, &starty))
+    #     return RAISE(PyExc_TypeError, "Invalid start position argument");
+    # if(!TwoIntsFromObj(end, &endx, &endy))
+    #     return RAISE(PyExc_TypeError, "Invalid end position argument");
+
+    if width < 1:
+        return Rect(startx, starty, 0, 0)
+
+    surface.lock()
+
+    pts[0:2] = startx, starty
+    pts[2:4] = endx, endy
+    anydraw = clip_and_draw_line_width(surface, surf.clip_rect, color, width, pts)
+
+    surface.unlock()
+
+    # compute return rect
+    if not anydraw:
+        return Rect(startx, starty, 0, 0)
+    rleft = startx if startx < endx else endx
+    rtop = starty if starty < endy else endy
+    dx = abs(startx - endx)
+    dy = abs(starty - endy)
+    if dx > dy:
+        rwidth = dx + 1
+        rheight = dy + width
+    else:
+        rwidth = dx + width
+        rheight = dy + 1
+
+    return Rect(rleft, rtop, rwidth, rheight)
 
 
 # static PyObject* line(PyObject* self, PyObject* arg)
@@ -549,10 +608,49 @@ def arc():
 # }
 
 
-def ellipse():
+def ellipse(surface, color, rect, width=0):
     # TODO
     if debug:
         print('gsdl.draw.ellipse')
+# 	PyObject *surfobj, *colorobj, *rectobj;
+# 	GAME_Rect *rect, temp;
+# 	SDL_Surface* surf;
+# 	Uint8 rgba[4];
+# 	Uint32 color;
+# 	int width=0, loop, t, l, b, r;
+
+    # rect = GameRect_FromObject(rectobj, &temp);
+    # if(!rect)
+    # 	return RAISE(PyExc_TypeError, "Invalid recstyle argument");
+
+    surf = surface.sdl_surface
+    if surf.format.BytesPerPixel <= 0 or surf.format.BytesPerPixel > 4:
+        # TODO: proper exception
+        raise Exception("unsupport bit depth for drawing")
+
+    if width < 0:
+        # TODO: proper exception
+        raise Exception("negative width")
+    if width > rect.w / 2 or width > rect.h / 2:
+        # TODO: proper exception
+        raise Exception("width greater than ellipse radius")
+
+    surface.lock()
+
+    if not width:
+        draw_fillellipse(surface, rect.x + rect.w / 2, rect.y + rect.h / 2, rect.w / 2, rect.h / 2, color)
+    else:
+        width = min(width, min(rect.w, rect.h) / 2)
+        for loop in range(width):
+            draw_ellipse(surface, rect.x + rect.w / 2, rect.y + rect.h / 2, rect.w / 2 - loop, rect.h / 2 - loop, color)
+
+    surface.unlock()
+
+    l = max(rect.x, surf.clip_rect.x)
+    t = max(rect.y, surf.clip_rect.y)
+    r = min(rect.x + rect.w, surf.clip_rect.x + surf.clip_rect.w)
+    b = min(rect.y + rect.h, surf.clip_rect.y + surf.clip_rect.h)
+    return Rect(l, t, max(r - l, 0), max(b - t, 0))
 
 
 # static PyObject* ellipse(PyObject* self, PyObject* arg)
