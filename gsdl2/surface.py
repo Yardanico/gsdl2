@@ -9,11 +9,11 @@ from cffi import FFI
 
 from .sdllibs import sdl_lib
 from .sdlffi import sdl_ffi
-from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN, SDL_MUSTLOCK
+from .sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from . import sdlpixels
 from . import color
 from .rect import Rect
-from .locals import palette_8bit
+from .locals import palette_8bit, Color
 
 
 ffi = FFI()
@@ -87,7 +87,7 @@ class Surface(object):
 
     def get_colorkey(self):
         surface = self.__sdl_surface
-        c = color.Color(0, 0, 0, 0)
+        c = Color(0, 0, 0, 0)
         sdl_lib.SDL_GetColorKey(surface, c.sdl_color)
         return c
 
@@ -138,9 +138,9 @@ class Surface(object):
             pixels = sdl_ffi.cast('Uint8 *', pixels)
             pix = pixels[(y * surf.w + x) * 3]
             if SDL_BYTEORDER == SDL_LIL_ENDIAN:
-                    color_ = pix[0] + pix[1] << 8 + pix[2] << 16
+                color_ = pix[0] + pix[1] << 8 + pix[2] << 16
             else:
-                    color_ = pix[2] + pix[1] << 8 + pix[0] << 16
+                color_ = pix[2] + pix[1] << 8 + pix[0] << 16
         else:  # bpp == 4
             pixels = sdl_ffi.cast('Uint32 *', pixels)
             color_ = pixels[y * surf.w + x]
@@ -150,7 +150,7 @@ class Surface(object):
         sdl_lib.SDL_GetRGBA(color_, format, rgba, rgba + 1, rgba + 2, rgba + 3)
 
         # TODO: return tuple instead?
-        return color.Color(*rgba)
+        return Color(*rgba)
 
     def set_at(self, pos, color_):
         x, y = pos
@@ -158,8 +158,8 @@ class Surface(object):
         pixels = surf.pixels
         surf_format = surf.format
         bpp = surf_format.BytesPerPixel
-        if not isinstance(color_, color.Color):
-            color_ = color.Color(*color_)
+        if not isinstance(color_, Color):
+            color_ = Color(*color_)
 
         if (x < surf.clip_rect.x or x >= surf.clip_rect.x + surf.clip_rect.w or
                 y < surf.clip_rect.y or y >= surf.clip_rect.y + surf.clip_rect.h):
@@ -180,14 +180,18 @@ class Surface(object):
         elif bpp == 3:
             # TODO: test 24 bit
             buf = sdl_ffi.cast('Uint8 *', pixels)
+            rgb = sdl_ffi.new('Uint8 [4]')
+            color = sdl_ffi.cast('Uint32 *', color_.sdl_color)
+            sdl_lib.SDL_GetRGB(color[0], surf.format, rgb, rgb + 1, rgb + 2)
             byte_buf = buf + y * surf.pitch + x * 3
-            cp = sdl_ffi.new('Uint32 []', [int(c)])
-            rgba = sdl_ffi.cast('Uint8 *', cp)
             if SDL_BYTEORDER == SDL_BIG_ENDIAN:
-                c <<= 8
-            byte_buf[0] = rgba[0]
-            byte_buf[1] = rgba[1]
-            byte_buf[2] = rgba[2]
+                byte_buf[0] = rgb[0]
+                byte_buf[1] = rgb[1]
+                byte_buf[2] = rgb[2]
+            else:
+                byte_buf[2] = rgb[0]
+                byte_buf[1] = rgb[1]
+                byte_buf[0] = rgb[2]
         else:  # bpp == 4
             buf = sdl_ffi.cast('Uint32 *', pixels)
             buf[y * surf.w + x] = c
