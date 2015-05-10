@@ -213,16 +213,25 @@ class Rect(object):
         self.x += x
         self.y += y
 
-    @staticmethod
-    def _do_rect_intersect(a, b):
-        # return ((a[0] >= b[0] and a[0] < b[0] + b[2])  or (b[0] >= a[0] and b[0] < a[0] + a[2])) and \
-        #     ((a[1] >= b[1] and a[1] < b[1] + b[3])	or (b[1] >= a[1] and b[1] < a[1] + a[3]))
-        ax, ay, aw, ah = a
-        bx, by, bw, bh = b
-        ar, ab = ax + aw, ay + ah
-        br, bb = bx + bw, by + bh
-        # return (ax >= bx and ax < br or bx >= ax and bx < ar) and (ay >= by and ay < bb or by >= ay and by < ab)
-        return (bx <= ax < br or ax <= bx < ar) and (by <= ay < bb or ay <= by < ab)
+    def inflate(self, x, y):
+        return Rect(self.x - x // 2, self.y - y // 2, self.w + x, self.h + y)
+
+    def inflate_ip(self, x, y):
+        self.x -= x / 2
+        self.y -= y / 2
+        self.w += x
+        self.h += y
+
+    # @staticmethod
+    # def _do_rect_intersect(a, b):
+    #     # return ((a[0] >= b[0] and a[0] < b[0] + b[2])  or (b[0] >= a[0] and b[0] < a[0] + a[2])) and \
+    #     #     ((a[1] >= b[1] and a[1] < b[1] + b[3])	or (b[1] >= a[1] and b[1] < a[1] + a[3]))
+    #     ax, ay, aw, ah = a
+    #     bx, by, bw, bh = b
+    #     ar, ab = ax + aw, ay + ah
+    #     br, bb = bx + bw, by + bh
+    #     # return (ax >= bx and ax < br or bx >= ax and bx < ar) and (ay >= by and ay < bb or by >= ay and by < ab)
+    #     return (bx <= ax < br or ax <= bx < ar) and (by <= ay < bb or ay <= by < ab)
 
     def copy(self):
         return Rect(self)
@@ -232,14 +241,26 @@ class Rect(object):
         return self.x <= x < self.right and self.y <= y < self.bottom
 
     def colliderect(self, other):
-        return self._do_rect_intersect(self, other)
+        ax = self.x
+        ay = self.y
+        ar = self.right
+        ab = self.bottom
+        bx = other.x
+        by = other.y
+        br = other.right
+        bb = other.bottom
+        return ax < br and ay < bb and ar > bx and ab > by
 
     def contains(self, rect):
-        return (self.x <= rect.x and self.y <= rect.y and
-                self.right >= rect.right and
-                self.bottom >= rect.bottom and
-                self.right > rect.x and
-                self.bottom > rect.y)
+        rect_x = rect.x
+        rect_y = rect.y
+        self_right = self.right
+        self_bottom = self.bottom
+        return (self.x <= rect_x and self.y <= rect_y and
+                self_right >= rect.right and
+                self_bottom >= rect.bottom and
+                self_right > rect_x and
+                self_bottom > rect_y)
     
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
