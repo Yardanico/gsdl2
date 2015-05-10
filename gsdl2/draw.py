@@ -2301,7 +2301,7 @@ def draw_ellipse(surface, x, y, rx, ry, color):
 
 
 def draw_fillellipse(surface, x, y, rx, ry, color):
-    # FIXME: this has a bug somewhere; the color is off and there is an unfilled line down the horiz center
+    # FIXME: this has a bug somewhere; there are two unfilled line down the horiz center
     # surf = gsdl2.Surface((128, 128), depth=depth)
     # rect = surf.get_rect()
     # x1 = 0
