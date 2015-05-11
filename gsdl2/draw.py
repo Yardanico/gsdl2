@@ -546,10 +546,66 @@ def lines(surface, color, closed, pointlist, width=1):
 # }
 
 
-def arc():
+def arc(surface, color, rect, start_angle, stop_angle, width=1):
     # TODO
     if debug:
         print('gsdl.draw.arc')
+# 	PyObject *surfobj, *colorobj, *rectobj;
+# 	GAME_Rect *rect, temp;
+# 	SDL_Surface* surf;
+# 	Uint8 rgba[4];
+# 	Uint32 color;
+# 	int width=1, loop, t, l, b, r;
+# 	double angle_start, angle_stop;
+    surf = surface.sdl_surface
+
+    # get all the arguments
+    # if(!PyArg_ParseTuple(arg, "O!OOdd|i", &PySurface_Type, &surfobj, &colorobj, &rectobj,
+    #                               &angle_start, &angle_stop, &width))
+    #     return NULL;
+    # rect = GameRect_FromObject(rectobj, &temp);
+    # if(!rect)
+    #     return RAISE(PyExc_TypeError, "Invalid recstyle argument");
+
+    # surf = PySurface_AsSurface(surfobj);
+    # if(surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4)
+    #     return RAISE(PyExc_ValueError, "unsupport bit depth for drawing");
+
+    # if(PyInt_Check(colorobj))
+    #     color = (Uint32)PyInt_AsLong(colorobj);
+    # else if(RGBAFromColorObj(colorobj, rgba))
+    #     color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
+    # else
+    #     return RAISE(PyExc_TypeError, "invalid color argument");
+
+    if width < 0:
+        # TODO: proper exception
+        raise Exception("negative width")
+    if width > rect.w / 2 or width > rect.h / 2:
+        # TODO: proper exception
+        raise Exception("width greater than ellipse radius")
+    # FIXME: this is supposed to be radians?
+    # if stop_angle < start_angle:
+    #     stop_angle += 360
+
+    surface.lock()
+
+    width = min(width, min(rect.w, rect.h) / 2)
+    # for(loop=0; loop<width; ++loop)
+    # FIXME: ++loop a bug?
+    for loop in range(0, width):
+        loop += 1
+        draw_arc(surface, rect.x + rect.w / 2, rect.y + rect.h / 2,
+                 rect.w / 2 - loop, rect.h / 2 - loop,
+                 start_angle, stop_angle, color)
+
+    surface.unlock()
+
+    l = max(rect.x, surf.clip_rect.x)
+    t = max(rect.y, surf.clip_rect.y)
+    r = min(rect.x + rect.w, surf.clip_rect.x + surf.clip_rect.w)
+    b = min(rect.y + rect.h, surf.clip_rect.y + surf.clip_rect.h)
+    return Rect(l, t, max(r - l, 0), max(b - t, 0))
 
 
 # static PyObject* arc(PyObject* self, PyObject* arg)
