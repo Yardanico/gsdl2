@@ -19,7 +19,7 @@ There is a demo game already, pymike's Bubbman. See downloads. =)
     * Install [pip](https://pip.pypa.io/en/latest/installing.html)
     * pip install cffi  (if necessary)
     * pip install pycparser
-    * Install dynamic libraries for [SDL 2.0](https://www.libsdl.org/download-2.0.php), [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/), [SDL_ttf 2.0](https://www.libsdl.org/projects/SDL_ttf/), and [SDL_mixer 2.0](https://www.libsdl.org/projects/SDL_mixer/). On Windows, for pypy I simply copied *.dll to the C:\pypy25 folder, and for CPython to the DLLs folder.
+    * Install dynamic libraries for [SDL 2.0](https://www.libsdl.org/download-2.0.php), [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/), [SDL_ttf 2.0](https://www.libsdl.org/projects/SDL_ttf/), and [SDL_mixer 2.0](https://www.libsdl.org/projects/SDL_mixer/). On Windows, for pypy I simply copied *.dll to the C:\pypy25 folder, and for CPython to the C:\Python\DLLs folder. You may need to put the folder in the system path.
 
 So far I periodically check that changes work with CPython 2.7, but the focus is pypy. Probably rects and other spammy bytecode objects are going to require pypy's JIT compiler, or some savvy optimizations for CPython. Certainly the 20,000 balls in 80_megaballs.py is a CPU killer: I can barely get 2,000 in CPython.
 
