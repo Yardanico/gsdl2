@@ -23,6 +23,8 @@ There is a demo game already, pymike's Bubbman. See downloads. =)
 
 So far I periodically check that changes work with CPython 2.7, but the focus is pypy. Probably rects and other spammy bytecode objects are going to require pypy's JIT compiler, or some savvy optimizations for CPython. Certainly the 20,000 balls in 80_megaballs.py is a CPU killer: I can barely get 2,000 in CPython.
 
+On one of my Windows 7 + ActivePython 2.7 computers IMG_Load experiences a segfault when run from Cygwin. It may be a configuration issue. The segfault does not occur when I run it from a Windows CMD prompt. I do not have this issue in the same configuration on other computers.
+
 ### Contribution guidelines ###
 
 * Writing tests
