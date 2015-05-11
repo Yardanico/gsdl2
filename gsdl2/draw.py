@@ -2144,10 +2144,43 @@ def drawvertlineclip(surface, color, x1, y1, y2):
         drawvertline(surface, color, x1, y1, y2)
 
 
-def draw_arc():
+def draw_arc(surface, x, y, radius1, radius2, angle_start, angle_stop, color):
     # TODO
     if debug:
         print('gsdl.draw.drawarc')
+
+    # Angle step in rad
+    if radius1 < radius2:
+        if radius1 < 1.0e-4:
+            a_step = 1.0
+        else:
+            a_step = math.asin(2.0 / radius1)
+    else:
+        if radius2 < 1.0e-4:
+            a_step = 1.0
+        else:
+            a_step = math.asin(2.0 / radius2)
+
+    if a_step < 0.05:
+        a_step = 0.05
+
+    x_last = int(x + math.cos(angle_start) * radius1)
+    y_last = int(y - math.sin(angle_start) * radius2)
+    # for(a=angle_start+a_step; a<=angle_stop; a+=a_step) {
+    a = angle_start + a_step
+    while a <= angle_stop:
+        points = [0] * 4
+        x_next = int(x + math.cos(a) * radius1)
+        y_next = int(y - math.sin(a) * radius2)
+        points[0] = x_last
+        points[1] = y_last
+        points[2] = x_next
+        points[3] = y_next
+        clip_and_draw_line(surface, surface.sdl_surface.clip_rect, color, points)
+        x_last = x_next
+        y_last = y_next
+
+        a += a_step
 
 
 # static void draw_arc(SDL_Surface *dst, int x, int y, int radius1, int radius2,
