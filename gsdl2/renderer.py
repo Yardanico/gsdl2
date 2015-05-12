@@ -63,26 +63,21 @@ class Renderer(object):
         if not isinstance(src_rect, Rect):
             if src_rect is None:
                 w, h = texture.size
-                # src_rect = Rect(0, 0, w, h)
                 src_rect = self.__src_rect
                 src_rect[:] = 0, 0, w, h
-            else:
-                # src_rect = Rect(src_rect)
+            elif not isinstance(src_rect, Rect):
                 self.__src_rect[:] = src_rect
                 src_rect = self.__src_rect
         if not isinstance(dst_rect, Rect):
-            # dst_rect = Rect(dst_rect)
             self.__dst_rect[:] = dst_rect
             dst_rect = self.__dst_rect
         sdl_lib.SDL_RenderCopy(self.__sdl_renderer, texture.sdl_texture, src_rect.sdl_rect, dst_rect.sdl_rect)
 
     def copy_ex(self, texture, dst_rect, src_rect, angle, center, flip):
         if not isinstance(src_rect, Rect):
-            # src_rect = Rect(src_rect)
             self.__src_rect[:] = src_rect
             src_rect = self.__src_rect
         if not isinstance(dst_rect, Rect):
-            # dst_rect = Rect(dst_rect)
             self.__dst_rect[:] = dst_rect
             dst_rect = self.__dst_rect
         if center is None:
