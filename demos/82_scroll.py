@@ -94,7 +94,7 @@ class Game(object):
                 tx = gsdl2.texture.Texture(renderer, tile_image)
                 Game.tile_images.append(tx)
 
-        # make the tile sprites
+        # make the tile sprites; we'll use 2D array math to get rows and cols
         self.tiles = []
         ww, wh = self.world_rect.size
         tw, th = self.tile_size
@@ -115,7 +115,7 @@ class Game(object):
 
         # these are used to manage culling and drawing
         self.visible_tiles = []
-        self.scrap_rect = Rect(0, 0, tw, th)
+        self.dst_rect = Rect(0, 0, tw, th)
         self.src_rect = Rect(0, 0, tw, th)
         self.cam_rect = Rect(self.screen_rect)
         self.cam_pos_old = self.cam_rect.topleft
@@ -151,7 +151,7 @@ class Game(object):
 
     def cache_visible_tiles(self):
         del self.visible_tiles[:]
-        # calculate the visible bounds as array indices
+        # calculate the visible bounds as array indices; this is 2D array math
         old_x, old_y = self.cam_pos_old
         cam_rect = self.cam_rect
         cam_rect.clamp_ip(self.world_rect)
@@ -227,12 +227,12 @@ class Game(object):
         xd = -cx + int((cx - ox) * (1.0 - interp))
         yd = -cy + int((cy - oy) * (1.0 - interp))
         # render the sprites, translating their world coordinates to the screen
-        rect = self.scrap_rect
+        dst_rect = self.dst_rect
         src_rect = self.src_rect
         for sprite in self.visible_tiles:
-            rect.x = sprite.rect.x + xd
-            rect.y = sprite.rect.y + yd
-            renderer.copy(sprite.image, rect, src_rect)
+            dst_rect.x = sprite.rect.x + xd
+            dst_rect.y = sprite.rect.y + yd
+            renderer.copy(sprite.image, dst_rect, src_rect)
         renderer.present()
 
 
