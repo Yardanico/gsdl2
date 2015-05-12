@@ -18,6 +18,8 @@ Example:
     python 82_scroll.py tilesize=64x64
 """
 
+import cProfile
+import pstats
 import random
 import sys
 
@@ -35,11 +37,15 @@ CONFIG = dict(
     tilesize=(16, 16),
     mapsize=(100, 100),
     screen=(1024, 768),
+    profile=False,
 )
 
 
 def parse_args():
     """update CONFIG from sys.argv"""
+    if 'profile' in sys.argv:
+        sys.argv.remove('profile')
+        CONFIG['profile'] = True
     try:
         for arg in sys.argv[1:]:
             key, value = arg.split('=')
@@ -110,6 +116,7 @@ class Game(object):
         # these are used to manage culling and drawing
         self.visible_tiles = []
         self.scrap_rect = Rect(0, 0, tw, th)
+        self.src_rect = Rect(0, 0, tw, th)
         self.cam_rect = Rect(self.screen_rect)
         self.cam_pos_old = self.cam_rect.topleft
         # force visible tile selection
@@ -221,15 +228,25 @@ class Game(object):
         yd = -cy + int((cy - oy) * (1.0 - interp))
         # render the sprites, translating their world coordinates to the screen
         rect = self.scrap_rect
+        src_rect = self.src_rect
         for sprite in self.visible_tiles:
             rect.x = sprite.rect.x + xd
             rect.y = sprite.rect.y + yd
-            renderer.copy(sprite.image, rect)
+            renderer.copy(sprite.image, rect, src_rect)
         renderer.present()
+
+
+def main():
+    game = Game(CONFIG['screen'], CONFIG['tilesize'], CONFIG['mapsize'])
+    game.run()
 
 
 if __name__ == '__main__':
     parse_args()
     gsdl2.init()
-    game = Game(CONFIG['screen'], CONFIG['tilesize'], CONFIG['mapsize'])
-    game.run()
+    if CONFIG['profile']:
+        cProfile.run('main()', 'prof.dat')
+        p = pstats.Stats('prof.dat')
+        p.sort_stats('time').print_stats()
+    else:
+        main()
