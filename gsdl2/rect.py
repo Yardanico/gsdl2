@@ -10,6 +10,8 @@ class Rect(object):
     # I think creating the cdata is a huge bottleneck for this spammy object. When many rects are created and
     # destroyed it hits the CPU really hard.
 
+    __slots__= ['__i2a', '__cdata']
+
     # This is used to iterate slices in __getitem__.
     __i2a = {0: 'x', 1: 'y', 2: 'w', 3: 'h'}
 

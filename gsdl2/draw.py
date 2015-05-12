@@ -2448,9 +2448,8 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
 # 			i = (iy + 8) >> 6;
 # 			j = (h * ry) / rx;
 # 			k = (i * ry) / rx;
-        h = (ix + 8) >> 6
-        i = (iy + 8) >> 6
-        while i > h:
+        i_gt_h = True
+        while i_gt_h:
             h = (ix + 8) >> 6
             i = (iy + 8) >> 6
             j = (h * ry) / rx
@@ -2479,6 +2478,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
             iy -= ix / rx
 #
 # 		} while (i > h);
+            i_gt_h = i > h
 
 # 	} else {
     else:
@@ -2492,9 +2492,8 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
 # 			i = (iy + 8) >> 6;
 # 			j = (h * rx) / ry;
 # 			k = (i * rx) / ry;
-        h = (ix + 8) >> 6
-        i = (iy + 8) >> 6
-        while i > h:
+        i_gt_h = True
+        while i_gt_h:
             h = (ix + 8) >> 6
             i = (iy + 8) >> 6
             j = (h * rx) / ry
@@ -2526,6 +2525,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
             iy -= ix / ry
 
 # 		} while(i > h);
+            i_gt_h = i > h
 
 
 # static void draw_fillellipse(SDL_Surface *dst, int x, int y, int rx, int ry, Uint32 color)
