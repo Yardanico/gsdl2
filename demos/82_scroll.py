@@ -217,13 +217,13 @@ class Game(object):
         cam_rect = self.cam_rect
         cx, cy = cam_rect.x, cam_rect.y
         ox, oy = self.cam_pos_old
-        xd = int((cx - ox) * (1.0 - interp))
-        yd = int((cy - oy) * (1.0 - interp))
+        xd = -cx + int((cx - ox) * (1.0 - interp))
+        yd = -cy + int((cy - oy) * (1.0 - interp))
         # render the sprites, translating their world coordinates to the screen
         rect = self.scrap_rect
         for sprite in self.visible_tiles:
-            rect.x = sprite.rect.x - cx + xd
-            rect.y = sprite.rect.y - cy + yd
+            rect.x = sprite.rect.x + xd
+            rect.y = sprite.rect.y + yd
             renderer.copy(sprite.image, rect)
         renderer.present()
 
