@@ -72,7 +72,10 @@ def _KeyEvent(e):
 
 
 def _TextEditingEvent(e):
+    # FIXME: This hangs sometimes
+    print('cast')
     e = sdl_ffi.cast('SDL_TextEditingEvent *', e)
+    print('make')
     return TextEditingEvent(e.type, e.windowID, e.text, e.start, e.length)
 
 
@@ -180,7 +183,8 @@ _factories = {
     SYSWMEVENT: _SysWMEvent,
     KEYDOWN: _KeyEvent,
     KEYUP: _KeyEvent,
-    TEXTEDITING: _TextEditingEvent,
+    # FIXME: _TextEditingEvent hangs sometimes
+    # TEXTEDITING: _TextEditingEvent,
     TEXTINPUT: _TextInputEvent,
     MOUSEMOTION: _MouseMotionEvent,
     MOUSEBUTTONDOWN: _MouseButtonEvent,
@@ -235,6 +239,7 @@ def get(filter_type=None):
     use_filter = not (is_none or is_list)
 
     while sdl_lib.SDL_PollEvent(e):
+        # print(get(e.type, None))
         if use_filter:
             if is_list and e.type not in filter_type:
                 continue
