@@ -158,6 +158,8 @@ class FixedDriver(object):
     in case one expects one of each that use the same period to fire in a particular order. If synchronization of two or
     more callables is needed, it is best to wrap them in a single scheduled callback.
 
+    The interpolation value can also be gotten by reading clock.interp after calling clock.tick().
+
     Usage 1, master callback; the master calls everything in sequence:
 
         def __init__(self):
