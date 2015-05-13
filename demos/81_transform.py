@@ -1,10 +1,12 @@
 """81_transform.py - rotation exercise
 
-Usage: python 81_transform.py [num_balls]
+Usage: python 81_transform.py [profile] [num_balls]
 
 Note: There is no rotate function in SDL2 for software (surfaces).
 """
 
+import cProfile
+import pstats
 import random
 import sys
 
@@ -21,10 +23,14 @@ from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_SPACE, S_RETURN
 
 print('Python: {}'.format(sys.executable))
 
+PROFILE = False
+if 'profile' in sys.argv:
+    PROFILE = True
+    sys.argv.remove('profile')
 try:
     NUM_BALLS = int(sys.argv[1])
 except ValueError:
-    print('usage: python 01_transform.py [num_balls]')
+    print('usage: python 01_transform.py [profile] [num_balls]')
     sys.exit(0)
 except IndexError:
     if 'pypy' in sys.executable:
@@ -129,6 +135,7 @@ class Game(object):
         self.balls = []
         for i in range(NUM_BALLS):
             self.balls.append(Ball())
+        self.src_rect = gsdl2.Rect(0, 0, *Ball.texture.get_size())
 
         self.use_renderer = True
         self.running = False
@@ -192,18 +199,20 @@ class Game(object):
         gsdl2.display.flip()
 
     def render_balls(self):
-        self.renderer.clear()
+        renderer = self.renderer
+        renderer.clear()
+        src_rect = self.src_rect
+        copy_ex = renderer.copy_ex
         for ball in self.balls:
-            w, h = ball.rect.size
+            dst_rect = ball.rect
             angle = ball.angle
             scale = ball.scale
-            self.renderer.copy_ex(ball.texture, ball.rect.scale(scale, scale), (0, 0, w, h), angle, None, False)
-        self.renderer.present()
+            copy_ex(ball.texture, dst_rect.scale(scale, scale), src_rect, angle, None, False)
+        renderer.present()
 
 
 def main():
     try:
-        gsdl2.init()
         game = Game()
         game.run()
     except:
@@ -213,4 +222,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    gsdl2.init()
+    if PROFILE:
+        cProfile.run('main()', 'prof.dat')
+        p = pstats.Stats('prof.dat')
+        p.sort_stats('time').print_stats()
+    else:
+        main()
