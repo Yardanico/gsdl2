@@ -124,11 +124,9 @@ class InterpolatedSchedule(object):
             self._callback(interp)
             last = self._last
             if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
-                print('now adjust', (self._due - last) * 1000.0)
                 self._due = now + self._period
                 self._last = now
             else:
-                # print('keep sched', (self._due - last) * 1000.0)
                 self._due = self._last + self._period
                 self._last += self._period
             fired = True
