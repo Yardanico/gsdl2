@@ -1,6 +1,6 @@
 """82_scroll.py - many, many scrolling tiles using the texture renderer
 
-Usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH]
+Usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH] [profile]
 
 tilesize is the WxH of a tile in pixels
 mapsize is the WxH of a map in tiles
@@ -54,7 +54,7 @@ def parse_args():
             assert w > 0 and h > 0
             CONFIG[key] = (w, h)
     except ValueError:
-        print('usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH]')
+        print('usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH] [profile]')
         sys.exit(1)
 
 
