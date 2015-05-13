@@ -62,36 +62,42 @@ class Clock(object):
 
 
 def _schedule_sort_key(self):
-    return self.period - self._elapsed
+    return self._due
 
 
 class SteppedSchedule(object):
 
-    __slots__ = ['callback', 'period', 'step', 'keep_history', '_times', '_elapsed']
+    __slots__ = ['_callback', '_period', '_step', 'keep_history', '_due', '_last', '_times']
 
-    def __init__(self, callback, period, step, keep_history):
-        self.callback = callback
-        self.period = period
-        self.step = step
+    def __init__(self, callback, period, step, due, keep_history):
+        self._callback = callback
+        self._period = period
+        self._step = step
         self.keep_history = keep_history
         self._times = collections.deque()
-        self._elapsed = 0.0
+        self._due = due
+        self._last = due
 
     def tick(self, dt, now):
         fired = False
-        elapsed = self._elapsed
-        elapsed -= dt
-        if elapsed <= 0.0:
-            self.callback(self.step)
-            if self.keep_history:
-                times = self._times
-                times.append(now)
-                t_minus = now - 1.0
-                while times and times[0] <= t_minus:
-                    times.popleft()
-            elapsed += self.period
+        if self._period <= 0.0:
             fired = True
-        self._elapsed = elapsed
+        elif now >= self._due:
+            fired = True
+            self._callback(self._step)
+            last = self._last
+            if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
+                self._due = now + self._period
+                self._last = now
+            else:
+                self._due = self._last + self._period
+                self._last += self._period
+        if fired and self.keep_history:
+            times = self._times
+            times.append(now)
+            t_minus = now - 1.0
+            while times and times[0] <= t_minus:
+                times.popleft()
         return fired
 
     def per_second(self):
@@ -100,31 +106,38 @@ class SteppedSchedule(object):
 
 class InterpolatedSchedule(object):
 
-    __slots__ = ['callback', 'period', 'keep_history', '_times', '_elapsed']
+    __slots__ = ['_callback', '_period', 'keep_history', '_due', '_last', '_times']
 
-    def __init__(self, callback, period, keep_history):
-        self.callback = callback
-        self.period = period
+    def __init__(self, callback, period, due, keep_history):
+        self._callback = callback
+        self._period = period
         self.keep_history = keep_history
         self._times = collections.deque()
-        self._elapsed = 0.0
+        self._due = due
+        self._last = due
 
     def tick(self, dt, now, interp):
         fired = False
-        elapsed = self._elapsed
-        if self.period:
-            elapsed -= dt
-        if elapsed <= 0.0:
-            self.callback(interp)
-            if self.keep_history:
-                times = self._times
-                times.append(now)
-                t_minus = now - 1.0
-                while times and times[0] <= t_minus:
-                    times.popleft()
-            elapsed += self.period
+        if self._period <= 0.0:
             fired = True
-        self._elapsed = elapsed
+        elif now >= self._due:
+            self._callback(interp)
+            last = self._last
+            if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
+                print('now adjust', (self._due - last) * 1000.0)
+                self._due = now + self._period
+                self._last = now
+            else:
+                # print('keep sched', (self._due - last) * 1000.0)
+                self._due = self._last + self._period
+                self._last += self._period
+            fired = True
+        if fired and self.keep_history:
+            times = self._times
+            times.append(now)
+            t_minus = now - 1.0
+            while times and times[0] <= t_minus:
+                times.popleft()
         return fired
 
     def per_second(self):
@@ -142,6 +155,10 @@ class FixedDriver(object):
     Additional callbacks can be added. Stepped schedules pass the fixed period for the schedule: callback(dt).
     Interpolated schedules pass the interpolation value between the previous and current timestep for the master's
     period: callback(interp).
+
+    Stepped schedules are run before interpolated schedules. This probably isn't a concern, but it is worth mentioning
+    in case one expects one of each that use the same period to fire in a particular order. If synchronization of two or
+    more callables is needed, it is best to wrap them in a single scheduled callback.
 
     Usage 1, master callback; the master calls everything in sequence:
 
@@ -236,20 +253,28 @@ class FixedDriver(object):
             interp = 1.0
         self.interp = interp
 
+        # run the stepped schedules
         sort_me = False
         for sched in self._stepped:
             if sched.tick(dt, t1):
                 sort_me = True
+            else:
+                break
         if sort_me:
-            self._stepped.sort(key=_schedule_sort_key)
+            # TODO: sort would only be required to optimize a great number of timers
+            # self._stepped.sort(key=_schedule_sort_key)
             any_work = True
 
+        # run the interpolated schedules
         sort_me = False
         for sched in self._interpolated:
             if sched.tick(dt, t1, interp):
                 sort_me = True
+            else:
+                break
         if sort_me:
-            self._interpolated.sort(key=_schedule_sort_key)
+            # TODO: sort would only be required to optimize a great number of timers
+            # self._interpolated.sort(key=_schedule_sort_key)
             any_work = True
 
         # TODO: EXPERIMENTAL: detect wasted cycles and sleep a tiny bit instead of returning immediately
@@ -270,38 +295,94 @@ class FixedDriver(object):
         return ms
 
     def schedule_stepped(self, callback, period, step=0.0, keep_history=False):
-        sched = SteppedSchedule(callback, period, step, keep_history)
+        """set a stepped schedule
+
+        Returns a SteppedSchedule object.
+
+        A stepped schedule calls the callback, passing step as dt each period. The schedule is typically periodic (the
+        period argument), but can be 0.0 to create a callback that is always spammed.
+
+        In order to read the history one must save the returned object and call its per_second() method.
+
+        :param callback: callable that will receive dt or varargs
+        :param period: float; the timer's interval in seconds
+        :param step: float; the timestep (dt) the timer will provide to the caller
+        :param keep_history: boolean; if True, a one-second history is kept that can be read via obj.per_second()
+        :return: SteppedSchedule
+        """
+        if period < 0.0:
+            period = 0.0
+        if step < 0.0:
+            step = 0.0
+        due = time.time() + period
+        sched = SteppedSchedule(callback, period, step, due, keep_history)
         self._insert_stepped(sched)
         return sched
 
     def schedule_interpolated(self, callback, period=0.0, keep_history=False):
-        sched = InterpolatedSchedule(callback, period, keep_history)
+        """set an interpolated schedule
+
+        Returns an InterpolatedSchedule object.
+
+        An interpolated schedule calls the callback, passing the interpolation value for that moment. The interpolation
+        value is the position between 0.0 and 1.0 in the current timestep of the master. The schedule can be periodic
+        (the period argument), but can be 0.0 to create a callback that is always spammed.
+
+        In order to read the history one must save the returned object and call its per_second() method.
+
+        :param callback: callable that will receive dt or varargs
+        :param period: float; the timer's interval in seconds
+        :param keep_history: boolean; if True, a one-second history is kept that can be read via obj.per_second()
+        :return: InterpolatedSchedule
+        """
+        if period < 0.0:
+            period = 0.0
+        due = time.time() + period
+        sched = InterpolatedSchedule(callback, period, due, keep_history)
         self._insert_interpolated(sched)
         return sched
 
     def remove_stepped(self, sched):
-        # remove it
-        # if period == _shortest, scan both lists for _shortest
-        pass
+        """remove the schedule object from the stepped schedules list"""
+        try:
+            period = sched._period
+            self._stepped.remove(sched)
+        except (AttributeError, ValueError):
+            return
+        if period == self._shortest:
+            shortest = self.period
+            for scheds in self._stepped, self._interpolated:
+                for sched in scheds:
+                    if sched._period < shortest:
+                        shortest = sched._period
 
     def remove_interpolated(self, sched):
-        # remove it
-        # if period == _shortest, scan both lists for _shortest
-        pass
+        """remove the schedule object from the interpolated schedules list"""
+        try:
+            period = sched._period
+            self._interpolated.remove(sched)
+        except (AttributeError, ValueError):
+            return
+        if period == self._shortest:
+            shortest = self.period
+            for scheds in self._stepped, self._interpolated:
+                for sched in scheds:
+                    if sched._period < shortest:
+                        shortest = sched._period
 
     def _insert_stepped(self, sched):
         self._stepped.append(sched)
-        self._stepped.sort(key=_schedule_sort_key)
+        # self._stepped.sort(key=_schedule_sort_key)
         shortest = self._shortest
-        if sched.period < shortest:
-            self._shortest = sched.period
+        if sched._period < shortest:
+            self._shortest = sched._period
 
     def _insert_interpolated(self, sched):
         self._interpolated.append(sched)
-        self._interpolated.sort(key=_schedule_sort_key)
+        # self._interpolated.sort(key=_schedule_sort_key)
         shortest = self._shortest
-        if sched.period < shortest:
-            self._shortest = sched.period
+        if sched._period < shortest:
+            self._shortest = sched._period
 
 
 def get_ticks():
