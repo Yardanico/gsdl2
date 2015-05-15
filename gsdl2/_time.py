@@ -67,31 +67,31 @@ def _schedule_sort_key(self):
 
 class SteppedSchedule(object):
 
-    __slots__ = ['_callback', '_period', '_step', 'keep_history', '_due', '_last', '_times']
+    __slots__ = ['_callback', 'period', 'step', 'keep_history', '_due', '_last', '_times']
 
     def __init__(self, callback, period, step, due, keep_history):
         self._callback = callback
-        self._period = period
-        self._step = step
+        self.period = period
+        self.step = step
         self.keep_history = keep_history
         self._times = collections.deque()
         self._due = due
         self._last = due
 
-    def tick(self, dt, now):
+    def tick(self, now):
         fired = False
-        if self._period <= 0.0:
+        if self.period <= 0.0:
             fired = True
         elif now >= self._due:
             fired = True
-            self._callback(self._step)
+            self._callback(self.step)
             last = self._last
             if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
-                self._due = now + self._period
+                self._due = now + self.period
                 self._last = now
             else:
-                self._due = self._last + self._period
-                self._last += self._period
+                self._due = self._last + self.period
+                self._last += self.period
         if fired and self.keep_history:
             times = self._times
             times.append(now)
@@ -106,29 +106,29 @@ class SteppedSchedule(object):
 
 class InterpolatedSchedule(object):
 
-    __slots__ = ['_callback', '_period', 'keep_history', '_due', '_last', '_times']
+    __slots__ = ['_callback', 'period', 'keep_history', '_due', '_last', '_times']
 
     def __init__(self, callback, period, due, keep_history):
         self._callback = callback
-        self._period = period
+        self.period = period
         self.keep_history = keep_history
         self._times = collections.deque()
         self._due = due
         self._last = due
 
-    def tick(self, dt, now, interp):
+    def tick(self, now, interp):
         fired = False
-        if self._period <= 0.0:
+        if self.period <= 0.0:
             fired = True
         elif now >= self._due:
             self._callback(interp)
             last = self._last
             if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
-                self._due = now + self._period
+                self._due = now + self.period
                 self._last = now
             else:
-                self._due = self._last + self._period
-                self._last += self._period
+                self._due = self._last + self.period
+                self._last += self.period
             fired = True
         if fired and self.keep_history:
             times = self._times
@@ -256,7 +256,7 @@ class FixedDriver(object):
         # run the stepped schedules
         sort_me = False
         for sched in self._stepped:
-            if sched.tick(dt, t1):
+            if sched.tick(t1):
                 sort_me = True
             else:
                 break
@@ -268,7 +268,7 @@ class FixedDriver(object):
         # run the interpolated schedules
         sort_me = False
         for sched in self._interpolated:
-            if sched.tick(dt, t1, interp):
+            if sched.tick(t1, interp):
                 sort_me = True
             else:
                 break
@@ -345,7 +345,7 @@ class FixedDriver(object):
     def remove_stepped(self, sched):
         """remove the schedule object from the stepped schedules list"""
         try:
-            period = sched._period
+            period = sched.period
             self._stepped.remove(sched)
         except (AttributeError, ValueError):
             return
@@ -353,13 +353,13 @@ class FixedDriver(object):
             shortest = self.period
             for scheds in self._stepped, self._interpolated:
                 for sched in scheds:
-                    if sched._period < shortest:
-                        shortest = sched._period
+                    if sched.period < shortest:
+                        shortest = sched.period
 
     def remove_interpolated(self, sched):
         """remove the schedule object from the interpolated schedules list"""
         try:
-            period = sched._period
+            period = sched.period
             self._interpolated.remove(sched)
         except (AttributeError, ValueError):
             return
@@ -367,22 +367,22 @@ class FixedDriver(object):
             shortest = self.period
             for scheds in self._stepped, self._interpolated:
                 for sched in scheds:
-                    if sched._period < shortest:
-                        shortest = sched._period
+                    if sched.period < shortest:
+                        shortest = sched.period
 
     def _insert_stepped(self, sched):
         self._stepped.append(sched)
         # self._stepped.sort(key=_schedule_sort_key)
         shortest = self._shortest
-        if sched._period < shortest:
-            self._shortest = sched._period
+        if sched.period < shortest:
+            self._shortest = sched.period
 
     def _insert_interpolated(self, sched):
         self._interpolated.append(sched)
         # self._interpolated.sort(key=_schedule_sort_key)
         shortest = self._shortest
-        if sched._period < shortest:
-            self._shortest = sched._period
+        if sched.period < shortest:
+            self._shortest = sched.period
 
 
 def get_ticks():
