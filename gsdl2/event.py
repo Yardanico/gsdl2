@@ -3,7 +3,7 @@ from collections import namedtuple
 from .sdllibs import sdl_lib, SDLError
 from .sdlffi import sdl_ffi
 from .locals import (
-    QUIT, WINDOWEVENT, SYSWMEVENT,
+    utf8, QUIT, WINDOWEVENT, SYSWMEVENT,
     KEYDOWN, KEYUP, TEXTEDITING, TEXTINPUT,
     MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEWHEEL,
     JOYAXISMOTION, JOYBALLMOTION, JOYHATMOTION, JOYBUTTONDOWN, JOYBUTTONUP, JOYDEVICEADDED, JOYDEVICEREMOVED,
@@ -54,8 +54,8 @@ def _QuitEvent(e):
 
 
 def _WindowEvent(e):
-    e = sdl_ffi.cast('SDL_WindowEvent *', e)
-    return WindowEvent(e.type, e.windowID, e.event, e.data1, e.data2)
+    e2 = sdl_ffi.cast('SDL_WindowEvent *', e)
+    return WindowEvent(e2.type, e2.windowID, e2.event, e2.data1, e2.data2)
 
 
 def _SysWMEvent(e):
@@ -72,16 +72,17 @@ def _KeyEvent(e):
 
 
 def _TextEditingEvent(e):
-    # FIXME: This hangs sometimes
-    print('cast')
     e = sdl_ffi.cast('SDL_TextEditingEvent *', e)
-    print('make')
-    return TextEditingEvent(e.type, e.windowID, e.text, e.start, e.length)
+    # NULL-terminated char[32-1]
+    text = str(e.text).replace('\x00', '')
+    return TextEditingEvent(e.type, e.windowID, utf8(text), e.start, e.length)
 
 
 def _TextInputEvent(e):
     e = sdl_ffi.cast('SDL_TextInputEvent *', e)
-    return TextInputEvent(e.type, e.windowID, e.text)
+    # NULL-terminated char[32-1]
+    text = str(e.text).replace('\x00', '')
+    return TextInputEvent(e.type, e.windowID, utf8(text))
 
 
 def _MouseMotionEvent(e):
@@ -183,8 +184,7 @@ _factories = {
     SYSWMEVENT: _SysWMEvent,
     KEYDOWN: _KeyEvent,
     KEYUP: _KeyEvent,
-    # FIXME: _TextEditingEvent hangs sometimes
-    # TEXTEDITING: _TextEditingEvent,
+    TEXTEDITING: _TextEditingEvent,
     TEXTINPUT: _TextInputEvent,
     MOUSEMOTION: _MouseMotionEvent,
     MOUSEBUTTONDOWN: _MouseButtonEvent,
@@ -239,7 +239,9 @@ def get(filter_type=None):
     use_filter = not (is_none or is_list)
 
     while sdl_lib.SDL_PollEvent(e):
-        # print(get(e.type, None))
+        # f = get(e.type, None)
+        # if f not in (_KeyEvent,):
+        #     print(f)
         if use_filter:
             if is_list and e.type not in filter_type:
                 continue
