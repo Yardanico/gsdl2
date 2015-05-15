@@ -200,7 +200,7 @@ class FixedDriver(object):
             self.draw_everything(...)  # as fast as CPU can handle
     """
 
-    def __init__(self, master, period, step, nice=20.0):
+    def __init__(self, master, period, step, nice=10.0):
         self.clock = Clock()
         self.master = master
         self.period = period
@@ -214,10 +214,10 @@ class FixedDriver(object):
         self._stepped = []
         self._shortest = period
 
-        # Tunable: nice is used to calculate opportunistic wait cycles in place of busy cycles. Lower values permit in
-        # longer wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0 to 20.0. If you set
-        # it too low no wait cycles will be imposed. If you set it too high (100?) the wait cycles will be very, very
-        # small and use more CPU, but should gain some accuracy. A value < 1.0 disables the feature.
+        # Tunable: nice is used to calculate opportunistic wait cycles in place of busy cycles. Lower values permit
+        # longer wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0. If you set it too
+        # low no wait cycles will be imposed. If you set it too high (100?) the wait cycles will be very, very small and
+        # use more CPU, but should gain some accuracy. A value < 1.0 disables the feature.
         self.nice = nice
         self._wasted = collections.deque()
 
@@ -277,12 +277,14 @@ class FixedDriver(object):
         # this sacrifices a little accuracy to use less CPU
         if self.nice >= 1.0:
             wasted = self._wasted
-            if not any_work:
-                wasted.append(dt)
+            if not any_work and dt:
+                wasted.append((t1, dt))
             t_minus = t1 - 1.0
-            while wasted and wasted[0]:
+            while wasted and wasted[0][0] < t_minus:
                 wasted.popleft()
-            time_wasted = sum(wasted)
+            time_wasted = sum([w for t, w in wasted])
+            # if time_wasted:
+            #     print('time_wasted={:0.4f}'.format(time_wasted))
             sleep_secs = time_wasted / (1.0 / self._shortest) / self.nice
             if sleep_secs > 0.0001:  # sleep only if greater than 0.1 ms
                 # print('zzz', sleep_secs)
