@@ -242,11 +242,7 @@ class FixedDriver(object):
             any_work = True
 
         # calculate interpolation
-        diff = self.step - self._elapsed
-        if diff <= 0.0:
-            interp = 0.0
-        else:
-            interp = diff / step
+        interp = (self.step - self._elapsed) / step
         if interp < 0.0:
             interp = 0.0
         elif interp > 1.0:
