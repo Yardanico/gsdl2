@@ -218,6 +218,8 @@ class FixedDriver(object):
         # longer wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0. If you set it too
         # low no wait cycles will be imposed. If you set it too high (100?) the wait cycles will be very, very small and
         # use more CPU, but should gain some accuracy. A value < 1.0 disables the feature.
+        #
+        # If you have a schedule with a period of 0.0 it makes no sense to use nice. In this case turn if off.
         self.nice = nice
         self._wasted = collections.deque()
 
