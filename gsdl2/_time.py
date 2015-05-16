@@ -81,9 +81,9 @@ class SteppedSchedule(object):
     def tick(self, now):
         fired = False
         if self.period <= 0.0:
+            self._callback(self.step)
             fired = True
         elif now >= self._due:
-            fired = True
             self._callback(self.step)
             last = self._last
             if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
@@ -92,6 +92,7 @@ class SteppedSchedule(object):
             else:
                 self._due = self._last + self.period
                 self._last += self.period
+            fired = True
         if fired and self.keep_history:
             times = self._times
             times.append(now)
@@ -119,6 +120,7 @@ class InterpolatedSchedule(object):
     def tick(self, now, interp):
         fired = False
         if self.period <= 0.0:
+            self._callback(interp)
             fired = True
         elif now >= self._due:
             self._callback(interp)
@@ -159,6 +161,14 @@ class FixedDriver(object):
     more callables is needed, it is best to wrap them in a single scheduled callback.
 
     The interpolation value can also be gotten by reading clock.interp after calling clock.tick().
+
+    Tunable: nice is used to calculate opportunistic wait cycles in place of busy cycles. Lower values permit longer
+    wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0. If you set it too low no wait
+    cycles will be imposed. If you set it too high (100?) the wait cycles will be very, very small and use more CPU,
+    but should gain some accuracy. A value < 1.0 disables the feature.
+
+    If you have a schedule with a period of 0.0 it makes no sense to use nice because it will fire every time the clock
+    is ticked and the tick will not be treated as a wasted cycle. In this case turn nice off to skip the logic.
 
     Usage 1, master callback; the master calls everything in sequence:
 
@@ -201,7 +211,6 @@ class FixedDriver(object):
     """
 
     def __init__(self, master, period, step, nice=10.0):
-        self.clock = Clock()
         self.master = master
         self.period = period
         self.step = step
@@ -214,12 +223,6 @@ class FixedDriver(object):
         self._stepped = []
         self._shortest = period
 
-        # Tunable: nice is used to calculate opportunistic wait cycles in place of busy cycles. Lower values permit
-        # longer wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0. If you set it too
-        # low no wait cycles will be imposed. If you set it too high (100?) the wait cycles will be very, very small and
-        # use more CPU, but should gain some accuracy. A value < 1.0 disables the feature.
-        #
-        # If you have a schedule with a period of 0.0 it makes no sense to use nice. In this case turn if off.
         self.nice = nice
         self._wasted = collections.deque()
 
@@ -236,6 +239,7 @@ class FixedDriver(object):
         self._elapsed -= dt
 
         any_work = False
+        any_spam = self.period <= 0.0
 
         # call the master function on time
         if self._elapsed <= 0.0:
@@ -252,32 +256,22 @@ class FixedDriver(object):
         self.interp = interp
 
         # run the stepped schedules
-        sort_me = False
         for sched in self._stepped:
             if sched.tick(t1):
-                sort_me = True
-            else:
-                break
-        if sort_me:
-            # TODO: sort would only be required to optimize a great number of timers
-            # self._stepped.sort(key=_schedule_sort_key)
-            any_work = True
+                any_work = True
+                if sched.period <= 0.0:
+                    any_spam = True
 
         # run the interpolated schedules
-        sort_me = False
         for sched in self._interpolated:
             if sched.tick(t1, interp):
-                sort_me = True
-            else:
-                break
-        if sort_me:
-            # TODO: sort would only be required to optimize a great number of timers
-            # self._interpolated.sort(key=_schedule_sort_key)
-            any_work = True
+                any_work = True
+                if sched.period <= 0.0:
+                    any_spam = True
 
         # TODO: EXPERIMENTAL: detect wasted cycles and sleep a tiny bit instead of returning immediately
         # this sacrifices a little accuracy to use less CPU
-        if self.nice >= 1.0:
+        if not any_spam and self.nice >= 1.0:
             wasted = self._wasted
             if not any_work and dt:
                 wasted.append((t1, dt))
