@@ -125,7 +125,7 @@ class Game(object):
         # make the clock and schedule some callbacks
         self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0, 1.0 / 30.0)
         self.draw_sched = self.clock.schedule_interpolated(self.draw, 1.0 / 60.0, keep_history=True)
-        self.clock.schedule_stepped(self.update_caption, 1.0)
+        self.clock.schedule_stepped(self.update_caption, 0.5)
         self.running = False
 
     def run(self):
@@ -185,8 +185,9 @@ class Game(object):
                 self.on_keyup(e)
 
     def update_caption(self, dt):
-        cam = tuple(self.cam_rect)
-        cap = 'FPS {} | Visible {} | Camera {}'.format(self.draw_sched.per_second(), len(self.visible_tiles), cam)
+        cam = self.cam_rect
+        cap = 'FPS {} | Visible {} | Camera {}'.format(
+            self.draw_sched.per_second(), len(self.visible_tiles), (cam.x, cam.y, cam.right, cam.bottom))
         gsdl2.display.set_caption(cap)
 
     def on_quit(self, e):
@@ -204,6 +205,11 @@ class Game(object):
             self.movey -= 1
         elif code == S_LEFT:
             self.movex -= 1
+        elif code == S_SPACE:
+            if self.draw_sched.period == 0.0:
+                self.draw_sched.period = 1.0 / 60.0
+            else:
+                self.draw_sched.period = 0.0
 
     def on_keyup(self, e):
         code = e.scancode
