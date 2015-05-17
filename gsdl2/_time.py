@@ -2,6 +2,7 @@ __all__ = ['Clock', 'FixedDriver', 'GameClock', 'get_ticks', 'wait', 'delay']
 
 
 import collections
+import sys
 import time
 
 
@@ -65,79 +66,54 @@ def _schedule_sort_key(self):
     return self._due
 
 
-class SteppedSchedule(object):
+class Schedule(object):
+    """See FixedDriver.new_schedule() docs."""
 
-    __slots__ = ['_callback', 'period', 'step', 'keep_history', '_due', '_last', '_times']
-
-    def __init__(self, callback, period, step, due, keep_history):
+    def __init__(self, callback, period, due=0, keep_history=False, name=None):
         self._callback = callback
-        self.period = period
-        self.step = step
-        self.keep_history = keep_history
-        self._times = collections.deque()
-        self._due = due
-        self._last = due
-
-    def tick(self, now):
-        fired = False
-        if self.period <= 0.0:
-            self._callback(self.step)
-            fired = True
-        elif now >= self._due:
-            self._callback(self.step)
-            last = self._last
-            if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
-                self._due = now + self.period
-                self._last = now
-            else:
-                self._due = self._last + self.period
-                self._last += self.period
-            fired = True
-        if fired and self.keep_history:
-            times = self._times
-            times.append(now)
-            t_minus = now - 1.0
-            while times and times[0] <= t_minus:
-                times.popleft()
-        return fired
-
-    def per_second(self):
-        return len(self._times) // 1
-
-
-class InterpolatedSchedule(object):
-
-    __slots__ = ['_callback', 'period', 'keep_history', '_due', '_last', '_times']
-
-    def __init__(self, callback, period, due, keep_history):
-        self._callback = callback
+        if period < 0.0:
+            period = 0.0
         self.period = period
         self.keep_history = keep_history
+        self.name = name
         self._times = collections.deque()
+        self._last = time.time()
+        if due == 0:
+            due = self._last
+        elif due == 1:
+            due = self._last + period
         self._due = due
-        self._last = due
+        self.interp = 1.0
+        self.running = True
+
+    def set_running(self, boolean):
+        self.running = boolean
 
     def tick(self, now, interp):
         fired = False
         if self.period <= 0.0:
-            self._callback(interp)
             fired = True
         elif now >= self._due:
-            self._callback(interp)
             last = self._last
             if (self._due - last) * 1000.0 > WORST_CLOCK_ACCURACY:
                 self._due = now + self.period
                 self._last = now
+                # sys.stdout.write('-')
             else:
-                self._due = self._last + self.period
-                self._last += self.period
+                period = self.period
+                self._due = last + period
+                self._last += period
+                # sys.stdout.write('+')
             fired = True
-        if fired and self.keep_history:
-            times = self._times
-            times.append(now)
-            t_minus = now - 1.0
-            while times and times[0] <= t_minus:
-                times.popleft()
+        if fired:
+            if self.keep_history:
+                times = self._times
+                times.append(now)
+                t_minus = now - 1.0
+                while times and times[0] <= t_minus:
+                    times.popleft()
+            self.interp = interp
+            self._callback(self)
         return fired
 
     def per_second(self):
@@ -149,16 +125,16 @@ class FixedDriver(object):
     This is an experimental clock. It is much like GameClock, but it uses significantly less CPU, and still provides
     scheduled callbacks with good accuracy. It supports fixed timestep only.
 
-    One master callback is required. It runs on a fixed schedule. It must accept the master's period as its argument:
-    callback(dt).
+    One master callback is required. It runs on a fixed period. It must accept the master's period as its argument:
+    callback(dt). This is the schedule that determines global interpolation.
 
-    Additional callbacks can be added. Stepped schedules pass the fixed period for the schedule: callback(dt).
-    Interpolated schedules pass the interpolation value between the previous and current timestep for the master's
-    period: callback(interp).
+    Additional callbacks can be added.
 
-    Stepped schedules are run before interpolated schedules. This probably isn't a concern, but it is worth mentioning
-    in case one expects one of each that use the same period to fire in a particular order. If synchronization of two or
-    more callables is needed, it is best to wrap them in a single scheduled callback.
+    Each schedule calls the callback, passing itself as the argument. The schedule is typically periodic (the period
+    argument), but can be 0.0 for a callback that is always fired whenever FixedDriver.tick() is called.
+
+    From the Schedule object passed to the callback one can get the period, which can be used as the fixed time-step,
+    aka dt; and interp, count, running, and per_second().
 
     The interpolation value can also be gotten by reading clock.interp after calling clock.tick().
 
@@ -209,23 +185,26 @@ class FixedDriver(object):
             self.draw_everything(...)
     """
 
-    def __init__(self, master, period, step, nice=10.0):
+    def __init__(self, master, period, step=None, nice=10.0):
         self.master = master
         self.period = period
-        self.step = step
+        if step is None:
+            self.step = period
+        elif step < 0.0:
+            self.step = 0.0
+        else:
+            self.step = step
         self._last_time = time.time()
         self._elapsed = 0
         self.interp = 0.0
-        # TODO: make these a heapq?
-        # callbacks
-        self._interpolated = []
-        self._stepped = []
+        self._schedules = []
         self._shortest = period
 
         self.nice = nice
         self._wasted = collections.deque()
 
     def tick(self):
+        """run schedules and return the milliseconds spent"""
         t1 = time.time()
         t0 = self._last_time
         self._last_time = t1
@@ -242,34 +221,27 @@ class FixedDriver(object):
 
         # call the master function on time
         if self._elapsed <= 0.0:
-            self.master(self.step)
+            self.master(step)
             self._elapsed += step
             any_work = True
+            # print('')
 
         # calculate interpolation
-        interp = (self.step - self._elapsed) / step
+        interp = (step - self._elapsed) / step
         if interp < 0.0:
             interp = 0.0
         elif interp > 1.0:
             interp = 1.0
         self.interp = interp
 
-        # run the stepped schedules
-        for sched in self._stepped:
-            if sched.tick(t1):
+        # run the schedules
+        for sched in self._schedules:
+            if sched.running and sched.tick(t1, interp):
                 any_work = True
                 if sched.period <= 0.0:
                     any_spam = True
 
-        # run the interpolated schedules
-        for sched in self._interpolated:
-            if sched.tick(t1, interp):
-                any_work = True
-                if sched.period <= 0.0:
-                    any_spam = True
-
-        # TODO: EXPERIMENTAL: detect wasted cycles and sleep a tiny bit instead of returning immediately
-        # this sacrifices a little accuracy to use less CPU
+        # detect wasted cycles and sleep a tiny bit instead of returning immediately
         if not any_spam and self.nice >= 1.0:
             wasted = self._wasted
             if not any_work and dt:
@@ -278,104 +250,91 @@ class FixedDriver(object):
             while wasted and wasted[0][0] < t_minus:
                 wasted.popleft()
             time_wasted = sum([w for t, w in wasted])
-            # if time_wasted:
-            #     print('time_wasted={:0.4f}'.format(time_wasted))
             sleep_secs = time_wasted / (1.0 / self._shortest) / self.nice
             if sleep_secs > 0.0001:  # sleep only if greater than 0.1 ms
-                # print('zzz', sleep_secs)
+                # sys.stdout.write('z')
                 time.sleep(sleep_secs)
 
         return ms
 
-    def schedule_stepped(self, callback, period, step=0.0, keep_history=False):
-        """set a stepped schedule
+    def new_schedule(self, callback, period, due=0, keep_history=False, pos=None, name=None):
+        """create a new schedule and add it to the run list in the specified position
 
-        Returns a SteppedSchedule object.
+        A schedule calls the callback, passing itself as the argument. The schedule is typically periodic (the period
+        argument), but can be 0.0 to create a callback that is always fired when FixedDriver.tick() is called.
 
-        A stepped schedule calls the callback, passing step as dt each period. The schedule is typically periodic (the
-        period argument), but can be 0.0 to create a callback that is always spammed.
+        From the Schedule object passed to the callback one can get the period, which can be used as the fixed
+        time-step, aka dt; and interp, count, running, and per_second().
 
-        In order to read the history one must save the returned object and call its per_second() method.
+        The period is how often, in seconds, the schedule should be called.
+
+        due is the real time (time.time()) when the schedule will first fire. If due is 0, it will be set to
+        time.time(). If due is 1, it will be set to time.time() + period.
+
+        If keep_history is True then a one-second history is kept. This enabled a meaningful return value from
+        per_second().
+
+        If pos is None, the schedule is appended to the list. Otherwise pos will be inserted as documented for
+        list.insert(pos, sched).
+
+        The name is an optional identity to name or group schedules. The name can be used with get_schedules() in order
+        to manage or modify them.
 
         :param callback: callable that will receive dt or varargs
         :param period: float; the timer's interval in seconds
-        :param step: float; the timestep (dt) the timer will provide to the caller
         :param keep_history: boolean; if True, a one-second history is kept that can be read via obj.per_second()
+        :param pos: int; insert position in the schedules list
         :return: SteppedSchedule
         """
-        if period < 0.0:
-            period = 0.0
-        if step < 0.0:
-            step = 0.0
-        due = time.time() + period
-        sched = SteppedSchedule(callback, period, step, due, keep_history)
-        self._insert_stepped(sched)
+        sched = Schedule(callback, period, due, keep_history, name)
+        self.insert_schedule(sched, pos)
         return sched
 
-    def schedule_interpolated(self, callback, period=0.0, keep_history=False):
-        """set an interpolated schedule
+    def insert_schedule(self, sched, pos=None):
+        """add a Schedule object to the run list in the specified position
 
-        Returns an InterpolatedSchedule object.
+        If pos is None, the schedule is appended to the list. Otherwise pos will be inserted as documented for
+        list.insert(pos, sched).
 
-        An interpolated schedule calls the callback, passing the interpolation value for that moment. The interpolation
-        value is the position between 0.0 and 1.0 in the current timestep of the master. The schedule can be periodic
-        (the period argument), but can be 0.0 to create a callback that is always spammed.
+        No sanity checking is done on the Schedule object.
 
-        In order to read the history one must save the returned object and call its per_second() method.
+        See new_schedule() for additional docs.
 
-        :param callback: callable that will receive dt or varargs
-        :param period: float; the timer's interval in seconds
-        :param keep_history: boolean; if True, a one-second history is kept that can be read via obj.per_second()
-        :return: InterpolatedSchedule
+        :param sched: a Schedule object
+        :param pos: int; insert position in the schedules list
+        :return:
         """
-        if period < 0.0:
-            period = 0.0
-        due = time.time() + period
-        sched = InterpolatedSchedule(callback, period, due, keep_history)
-        self._insert_interpolated(sched)
+        if pos is None:
+            self._schedules.append(sched)
+        else:
+            self._schedules.insert(pos, sched)
+        shortest = self._shortest
+        if sched.period < shortest:
+            self._shortest = sched.period
+
         return sched
 
-    def remove_stepped(self, sched):
+    def remove_schedule(self, sched):
         """remove the schedule object from the stepped schedules list"""
         try:
             period = sched.period
-            self._stepped.remove(sched)
+            self._schedules.remove(sched)
         except (AttributeError, ValueError):
             return
+
         if period == self._shortest:
             shortest = self.period
-            for scheds in self._stepped, self._interpolated:
+            for scheds in self._schedules:
                 for sched in scheds:
                     if sched.period < shortest:
                         shortest = sched.period
 
-    def remove_interpolated(self, sched):
-        """remove the schedule object from the interpolated schedules list"""
-        try:
-            period = sched.period
-            self._interpolated.remove(sched)
-        except (AttributeError, ValueError):
-            return
-        if period == self._shortest:
-            shortest = self.period
-            for scheds in self._stepped, self._interpolated:
-                for sched in scheds:
-                    if sched.period < shortest:
-                        shortest = sched.period
-
-    def _insert_stepped(self, sched):
-        self._stepped.append(sched)
-        # self._stepped.sort(key=_schedule_sort_key)
-        shortest = self._shortest
-        if sched.period < shortest:
-            self._shortest = sched.period
-
-    def _insert_interpolated(self, sched):
-        self._interpolated.append(sched)
-        # self._interpolated.sort(key=_schedule_sort_key)
-        shortest = self._shortest
-        if sched.period < shortest:
-            self._shortest = sched.period
+    def cleanup_idle(self):
+        """remove all schedules that have been set_running(False)"""
+        remove = self._schedules.remove
+        for sched in self._schedules[:]:
+            if not sched.running:
+                remove(sched)
 
 
 def get_ticks():
