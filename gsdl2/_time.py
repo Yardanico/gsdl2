@@ -182,7 +182,8 @@ class FixedDriver(object):
             self.update_game()
             self.draw()
         def draw(self):
-            self.draw_everything(...)  # every time master is called
+            # governed by master
+            self.draw_everything(...)
 
     Usage 2, master with extra callbacks; update and draw are decoupled (1 to many), and display entities are
     interpolated:
@@ -198,14 +199,14 @@ class FixedDriver(object):
             while self.running:
                 self.clock.tick()
         def update(self, dt):
-            # maser callback
+            # master callback
             self.update_model(...)  # 30 times / sec
         def update_caption(self, dt):
-            # callback
+            # callback from a stepped schedule
             gsdl2.display.set_caption('FPS {}'.format(self.draw_sched.per_second()))
         def draw(self, interp):
-            # callback
-            self.draw_everything(...)  # as fast as CPU can handle
+            # callback from an interpolated schedule
+            self.draw_everything(...)
     """
 
     def __init__(self, master, period, step, nice=10.0):
