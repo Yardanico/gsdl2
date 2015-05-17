@@ -123,9 +123,9 @@ class Game(object):
         self.cache_visible_tiles()
 
         # make the clock and schedule some callbacks
-        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0, 1.0 / 30.0)
-        self.draw_sched = self.clock.schedule_interpolated(self.draw, 1.0 / 60.0, keep_history=True)
-        self.clock.schedule_stepped(self.update_caption, 0.5)
+        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0)
+        self.draw_sched = self.clock.new_schedule(self.draw, 1.0 / 60.0, keep_history=True)
+        self.clock.new_schedule(self.update_caption, 0.5)
         self.running = False
 
     def run(self):
@@ -133,7 +133,7 @@ class Game(object):
         while self.running:
             self.clock.tick()
 
-    def update(self, dt):
+    def update(self, sched):
         """update the model - called each game tick"""
         self.update_events()
         self.update_camera()
@@ -184,7 +184,7 @@ class Game(object):
             elif e.type == KEYUP:
                 self.on_keyup(e)
 
-    def update_caption(self, dt):
+    def update_caption(self, sched):
         cam = self.cam_rect
         cap = 'FPS {} | Visible {} | Camera {}'.format(
             self.draw_sched.per_second(), len(self.visible_tiles), (cam.x, cam.y, cam.right, cam.bottom))
@@ -222,8 +222,9 @@ class Game(object):
         elif code == S_LEFT:
             self.movex += 1
 
-    def draw(self, interp):
+    def draw(self, sched):
         """draw the visible sprites which are cached"""
+        interp = sched.interp
         renderer = gsdl2.display.get_renderer()
         renderer.clear()
         # calculate interpolation to add steps to the scrolling; this smoothes the appearance of scrolling
