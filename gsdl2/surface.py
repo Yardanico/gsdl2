@@ -241,30 +241,30 @@ class Surface(object):
         self.unlock()
 
     def blit_scaled(self, source, dest_rect, area=None):
-        # def round_rect(r):
-        #     x, y, w, h = r[0:4]
-        #     x = int(round(x))
-        #     w = int(round(w + r[0] - x))
-        #     y = int(round(y))
-        #     h = int(round(h + r[1] - y))
-        #     return x, y, w, h
         dest_surface = self.__sdl_surface
         if SDL_MUSTLOCK(dest_surface):
             self.lock()
         if area is None:
-            # area = source.get_rect()
             size = source.get_size()
             area = self.__src_rect
             area[:] = 0, 0, int(size[0]), int(size[1])
         elif not isinstance(area, Rect):
-            # area = Rect(*area)
             self.__src_rect[:] = area
             area = self.__src_rect
-        if not isinstance(dest_rect, Rect):
-            # dest_rect = Rect(dest_rect)
-            self.__dst_rect[:] = dest_rect
-            dest_rect = self.__dst_rect
-        sdl_lib.SDL_UpperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, dest_rect.sdl_rect)
+        sdl_dest_rect = self.__dst_rect.sdl_rect
+        x, y, w, h = [int(n) for n in dest_rect]
+        # The following adjustment is intended to prevent jiggling which occurs when the size is an odd unit.
+        if w % 2:
+            x -= 1
+            w += 1
+        if h % 2:
+            y -= 1
+            h += 1
+        sdl_dest_rect.x = x
+        sdl_dest_rect.y = y
+        sdl_dest_rect.w = w
+        sdl_dest_rect.h = h
+        sdl_lib.SDL_UpperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, sdl_dest_rect)
         self.unlock()
 
     def convert(self, format=None):
