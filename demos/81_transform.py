@@ -3,6 +3,9 @@
 Usage: python 81_transform.py [profile] [num_balls]
 
 Note: There is no rotate function in SDL2 for software (surfaces).
+
+Note: blit_balls() demontrates the use of SDL_BlitScaled(). In practice, and as with pygame, caching the transformed
+surfaces would be a lot more efficient. However for the texture renderer this is unnecessary.
 """
 
 import cProfile
@@ -132,14 +135,17 @@ class Game(object):
         self.clock = gsdl2.Clock()
         self.elapsed = 0.0
 
-        self.balls = []
-        for i in range(NUM_BALLS):
-            self.balls.append(Ball())
-        self.src_rect = gsdl2.Rect(0, 0, *Ball.texture.get_size())
-
         self.use_renderer = True
         self.running = False
         self.rotation_msg = {True: 'Go go go!', False: 'Ach, software... no rotation for j00!'}
+
+        self.all_balls = []
+        for i in range(NUM_BALLS):
+            self.all_balls.append(Ball())
+        self.src_rect = gsdl2.Rect(0, 0, *Ball.texture.get_size())
+        self._render_balls = self.all_balls[:]
+        self._blit_balls = self.all_balls[:NUM_BALLS // 4]
+        self.balls = self._render_balls if self.use_renderer else self._blit_balls
 
     def run(self):
         self.running = True
@@ -158,7 +164,7 @@ class Game(object):
         self.elapsed += dt
         if self.elapsed >= 1.0:
             gsdl2.display.set_caption('{} fps | Balls: {} | Screen: {}x{} | Renderer: {} | Rotation: {}'.format(
-                int(self.clock.get_fps()), NUM_BALLS if self.use_renderer else NUM_BALLS // 3,
+                int(self.clock.get_fps()), len(self.balls),
                 self.screen_rect.w, self.screen_rect.h, self.use_renderer, self.rotation_msg[self.use_renderer]))
             self.elapsed -= 1.0
 
@@ -171,6 +177,7 @@ class Game(object):
             if e.type == KEYDOWN:
                 if e.scancode == S_SPACE:
                     self.use_renderer = not self.use_renderer
+                    self.balls = self._render_balls if self.use_renderer else self._blit_balls
                 elif e.scancode == S_ESCAPE:
                     self.running = False
                 elif e.scancode == S_RETURN:
@@ -191,7 +198,7 @@ class Game(object):
 
     def blit_balls(self):
         self.screen.fill(self.fill_color)
-        for ball in self.balls[:NUM_BALLS // 3]:
+        for ball in self.balls:
             # TODO: software rotate here
             scale = ball.scale
             r = ball.rect.scale(scale, scale)
