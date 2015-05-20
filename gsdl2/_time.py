@@ -194,7 +194,7 @@ class FixedDriver(object):
             self.step = 0.0
         else:
             self.step = step
-        self._last_time = time.time()
+        self.time = time.time()
         self._elapsed = 0
         self.interp = 0.0
         self._schedules = []
@@ -206,8 +206,8 @@ class FixedDriver(object):
     def tick(self):
         """run schedules and return the milliseconds spent"""
         t1 = time.time()
-        t0 = self._last_time
-        self._last_time = t1
+        t0 = self.time
+        self.time = t1
 
         dt = t1 - t0
         ms = dt * 1000.0
@@ -286,6 +286,8 @@ class FixedDriver(object):
         :param pos: int; insert position in the schedules list
         :return: SteppedSchedule
         """
+        if due == 0:
+            due = self.time
         sched = Schedule(callback, period, due, keep_history, name)
         self.insert_schedule(sched, pos)
         return sched
@@ -296,7 +298,9 @@ class FixedDriver(object):
         If pos is None, the schedule is appended to the list. Otherwise pos will be inserted as documented for
         list.insert(pos, sched).
 
-        No sanity checking is done on the Schedule object.
+        If sched._due == 0 it will be set to the clock's current time.
+
+        No other sanity checking is done on the Schedule object.
 
         See new_schedule() for additional docs.
 
@@ -308,6 +312,8 @@ class FixedDriver(object):
             self._schedules.append(sched)
         else:
             self._schedules.insert(pos, sched)
+        if sched._due == 0:
+            sched.__due = self.time
         shortest = self._shortest
         if sched.period < shortest:
             self._shortest = sched.period
