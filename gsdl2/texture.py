@@ -3,7 +3,10 @@ __all__ = ['Texture']
 
 import logging
 
+import cffi
+
 from .sdllibs import sdl_lib
+from .sdlffi import sdl_ffi
 from .rect import Rect
 
 
@@ -32,6 +35,22 @@ class Texture(object):
         for k, v in kwargs.items():
             setattr(r, k, v)
         return r
+
+    def get_blendmode(self):
+        cdata = sdl_ffi.new('Uint32 *')
+        sdl_lib.SDL_GetTextureBlendMode(self.sdl_texture, cdata)
+        return cdata[0]
+
+    def set_blendmode(self, mode):
+        sdl_lib.SDL_SetTextureBlendMode(self.sdl_texture, mode)
+
+    def get_alpha(self):
+        cdata = sdl_ffi.new('Uint8 *')
+        sdl_lib.SDL_GetTextureAlphaMod(self.sdl_texture, cdata)
+        return cdata[0]
+
+    def set_alpha(self, alpha):
+        sdl_lib.SDL_SetTextureAlphaMod(self.sdl_texture, int(alpha))
 
     def __getsdltexture(self):
         return self.__sdl_texture

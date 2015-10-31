@@ -1,12 +1,12 @@
+import logging
+
+
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
     'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib', 'color',
-    'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'image', 'joystick', 'mixer', 'music', 'rect',
-    'renderer', 'surface', 'time', 'texture', 'window', 'utf8'
+    'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'image', 'joystick', 'mixer', 'music', 'particles',
+    'rect','renderer', 'surface', 'time', 'texture', 'window', 'utf8'
 ]
-
-
-import logging
 
 
 #==============================================================================
@@ -73,6 +73,7 @@ from . import texture
 from . import window
 from . import display
 from . import draw
+from . import particles
 from . import locals
 
 

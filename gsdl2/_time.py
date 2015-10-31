@@ -123,31 +123,45 @@ class Schedule(object):
 class FixedDriver(object):
     """
     This is an experimental clock. It is much like GameClock, but it uses significantly less CPU, and still provides
-    scheduled callbacks with good accuracy. It supports fixed timestep only.
+    scheduled callbacks with good accuracy. It supports fixed timestep only. In brief, the FixedDriver provides:
+        - one master callback
+        - optional ad hoc callbacks, each with its own period
+        - optional history on master and ad hoc, to measure rate of fire (FPS)
+        - global interpolation based on the master
+        - opportunistic sleep cycles to reduce CPU load, without getting too sloppy
+        - optional adjustable timestep to simulate time dilation and contraction
 
-    One master callback is required. It runs on a fixed period. It must accept the master's period as its argument:
-    callback(dt). This is the schedule that determines global interpolation.
+    One master callback is required. It runs on a fixed period. It must accept the master's step as its argument:
+    callback(step). The master schedule determines global interpolation. The constructor's period argument is the
+    timestep in realtime that the master attempts to match. The step argument is the fixed timestep value that is
+    returned; this is the same as period by default, but can be used to simulate time dilation and contraction. If the
+    master schedule cannot match the realtime period it will run as fast as the CPU allows (slower than optimal) while
+    still simulating the fixed time step: so the game will seem to run slower, but the physics should remain stable.
 
-    Additional callbacks can be added.
+    Changing the period of the master and ad hoc schedules may be done using the provided convenience methods:
+    change_master() and change_schedule().
 
-    Each schedule calls the callback, passing itself as the argument. The schedule is typically periodic (the period
-    argument), but can be 0.0 for a callback that is always fired whenever FixedDriver.tick() is called.
+    Ad hoc callbacks can be added via new_schedule() and insert_schedule().
 
-    From the Schedule object passed to the callback one can get the period, which can be used as the fixed time-step,
-    aka dt; and interp, count, running, and per_second().
+    Each ad hoc schedule calls the callback, passing itself as the argument. The schedule is typically periodic (the
+    period argument), but can be 0.0 for a callback that is always fired whenever tick() is called.
 
-    The interpolation value can also be gotten by reading clock.interp after calling clock.tick().
+    From the Schedule object passed to the callback one can get the period, which can be used as this schedule object's
+    fixed time-step, aka dt; and interp, running, and per_second(). Note: per_second() is only active if keep_history is
+    True.
+
+    The interpolation value can also be gotten by reading the FixedDriver object's interp after calling tick().
 
     Tunable: nice is used to calculate opportunistic wait cycles in place of busy cycles. Lower values permit longer
-    wait cycles, i.e. somewhat sloppier timing. Gentle values are probably around 10.0. If you set it too low no wait
-    cycles will be inserted. If you set it too high (100?) the wait cycles will be very, very small and use more CPU,
-    but may gain some accuracy. A value < 1.0 disables the feature. As long as you have a schedule with a period of 0.0,
-    then no nice waits will be inserted.
+    wait cycles, with somewhat sloppier timing. Gentle values are probably around 10.0. If set too low no wait cycles
+    will be inserted (because the calculated wait is always too big to fit in the master's time slice). If set too high
+    (100?) the wait cycles will be very, very small and use more CPU, but may gain some accuracy. A value < 1.0 disables
+    the feature so that no nice waits will be inserted.
 
-    Usage 1, master callback; the master calls everything in sequence:
+    Usage 1, master callback; the master callback runs everything in sequence:
 
         def __init__(self):
-            clock = FixedDriver(self.update, 1.0 / 60.0, 1.0 / 60.0)
+            clock = FixedDriver(self.update, 1.0 / 60.0)
         def run(self):
             # clock driver
             self.running = True
@@ -155,20 +169,19 @@ class FixedDriver(object):
                 self.clock.tick()
         def update(self, dt):
             # master callback
-            self.update_game()
-            self.draw()
-        def draw(self):
-            # governed by master
-            self.draw_everything(...)
+            update_everything(...)
+            draw_everything(...)
 
-    Usage 2, master with extra callbacks; update and draw are decoupled (1 to many), and display entities are
+    Usage 2, master with ad hoc callbacks; update and draw are decoupled (1 to many), and display entities are
     interpolated:
 
         def __init__(self):
-            self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0, 1.0 / 30.0)
-            sched = self.clock.schedule_interpolated(self.draw, 0.0, keep_history=True, nice=0.0)
-            self.draw_sched = sched  # save this so we can report the FPS
-            self.clock.schedule_stepped(self.update_caption, 1.0)
+            # the model runs at 30 times per second
+            self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0, keep_history=False)
+            # the display is spammed as fast as possible; save the sched object's per_second() method for convenience
+            self.get_fps = self.clock.new_schedule(self.draw, 0.0, keep_history=True).per_second
+            # the window caption runs once per second
+            self.clock.new_schedule(self.update_caption, 1.0)
         def run(self):
             # clock driver
             self.running = True
@@ -177,17 +190,19 @@ class FixedDriver(object):
         def update(self, dt):
             # master callback
             self.update_model(...)  # 30 times / sec
-        def update_caption(self, dt):
-            # callback from a stepped schedule
-            gsdl2.display.set_caption('FPS {}'.format(self.draw_sched.per_second()))
-        def draw(self, interp):
-            # callback from an interpolated schedule
-            self.draw_everything(...)
+        def update_caption(self, sched):
+            # ad hoc callback
+            gsdl2.display.set_caption('FPS {}'.format(self.get_fps()))
+        def draw(self, sched):
+            # ad hoc callback; display uses global interpolation
+            self.draw_everything(sched.interp)
     """
 
-    def __init__(self, master, period, step=None, nice=10.0):
+    def __init__(self, master, period, keep_history=True, step=None, nice=10.0):
         self.master = master
         self.period = period
+        self.keep_history = keep_history
+        self._times = collections.deque()
         if step is None:
             self.step = period
         elif step < 0.0:
@@ -203,6 +218,23 @@ class FixedDriver(object):
         self.nice = nice
         self._wasted = collections.deque()
 
+    def change_master(self, period, step=None, schedules_too=False):
+        if step is None:
+            step = period
+        self.period = period
+        self.step = step
+        self._elapsed = 0.0
+        if schedules_too:
+            for sched in self._schedules:
+                self.change_schedule(sched, period)
+
+    @staticmethod
+    def change_schedule(sched, period):
+        elapsed = sched._due - sched._last
+        new_due = min(sched._last + (elapsed / sched.period) * period, period)
+        sched.period = period
+        sched._due = new_due
+
     def tick(self):
         """run schedules and return the milliseconds spent"""
         t1 = time.time()
@@ -216,8 +248,9 @@ class FixedDriver(object):
         step = self.step
         self._elapsed -= dt
 
-        any_work = False
+        # any_spam detects if any schedules are set to spam (period <= 0.0); if so, then tick() will not sleep
         any_spam = self.period <= 0.0
+        any_work = False
 
         # call the master function on time
         if self._elapsed <= 0.0:
@@ -225,6 +258,12 @@ class FixedDriver(object):
             self._elapsed += step
             any_work = True
             # print('')
+            if self.keep_history:
+                times = self._times
+                times.append(t1)
+                t_minus = t1 - 1.0
+                while times and times[0] <= t_minus:
+                    times.popleft()
 
         # calculate interpolation
         interp = (step - self._elapsed) / step
@@ -256,6 +295,9 @@ class FixedDriver(object):
                 time.sleep(sleep_secs)
 
         return ms
+
+    def per_second(self):
+        return len(self._times)
 
     def new_schedule(self, callback, period, due=0, keep_history=False, pos=None, name=None):
         """create a new schedule and add it to the run list in the specified position
