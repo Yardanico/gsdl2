@@ -87,9 +87,25 @@ class Schedule(object):
         self.running = True
 
     def set_running(self, boolean):
+        """enable or disable a schedule"""
         self.running = boolean
 
+    def change(self, period):
+        """change a Schedule's period
+
+        :param period: the new period (e.g. 1.0 / 30.0)
+        :return: None
+        """
+        ## TODO: this may need some rework.
+        if period > 0.0 and self.period > 0.0:
+            elapsed = self._due - self._last
+            self._due = min(self._last + (elapsed / self.period) * period, period)
+        else:
+            self._due = self._last
+        self.period = period
+
     def tick(self, now, interp):
+        """FixedDriver calls this; probably not useful for a user to call this"""
         fired = False
         if self.period <= 0.0:
             fired = True
@@ -117,6 +133,7 @@ class Schedule(object):
         return fired
 
     def per_second(self):
+        """return the number of times this schedule has fired in the last second"""
         return len(self._times)
 
 
@@ -138,8 +155,7 @@ class FixedDriver(object):
     master schedule cannot match the realtime period it will run as fast as the CPU allows (slower than optimal) while
     still simulating the fixed time step: so the game will seem to run slower, but the physics should remain stable.
 
-    Changing the period of the master and ad hoc schedules may be done using the provided convenience methods:
-    change_master() and change_schedule().
+    Changing the period of the master and ad hoc schedules may be done using the provided change() method.
 
     Ad hoc callbacks can be added via new_schedule() and insert_schedule().
 
@@ -227,7 +243,7 @@ class FixedDriver(object):
         self.nice = nice
         self._wasted = collections.deque()
 
-    def change_master(self, period, step=None, schedules_too=False):
+    def change(self, period, step=None, schedules_too=False):
         """change the master's period
 
         :param period: the new period (e.g. 1.0 / 30.0)
@@ -237,25 +253,16 @@ class FixedDriver(object):
         """
         if step is None:
             step = period
+        ## TODO: this may need some rework.
+        if period > 0.0 and self.period != 0.0:
+            self._elapsed = max(min(self._elapsed / self.period * period, period), 0.0)
+        else:
+            self._elapsed = 0.0
         self.period = period
         self.step = step
-        self._elapsed = 0.0
         if schedules_too:
             for sched in self._schedules:
-                self.change_schedule(sched, period)
-
-    @staticmethod
-    def change_schedule(sched, period):
-        """change an ad hoc Schedule's period
-
-        :param sched: the Schedule object to change
-        :param period: the new period (e.g. 1.0 / 30.0)
-        :return: None
-        """
-        elapsed = sched._due - sched._last
-        new_due = min(sched._last + (elapsed / sched.period) * period, period)
-        sched.period = period
-        sched._due = new_due
+                sched.change(sched, period)
 
     def tick(self):
         """run schedules and return the milliseconds spent"""
@@ -276,8 +283,8 @@ class FixedDriver(object):
 
         # call the master function on time
         if self._elapsed <= 0.0:
-            self.master(step)
             self._elapsed += step
+            self.master(step)
             any_work = True
             # print('')
             if self.keep_history:
@@ -311,10 +318,13 @@ class FixedDriver(object):
             while wasted and wasted[0][0] < t_minus:
                 wasted.popleft()
             time_wasted = sum([w for t, w in wasted])
-            sleep_secs = time_wasted / (1.0 / self._shortest) / self.nice
-            if sleep_secs > 0.0001:  # sleep only if greater than 0.1 ms
-                # sys.stdout.write('z')
-                time.sleep(sleep_secs)
+            try:
+                sleep_secs = time_wasted / (1.0 / self._shortest) / self.nice
+                if sleep_secs > 0.0001:  # sleep only if greater than 0.1 ms
+                    # sys.stdout.write('z')
+                    time.sleep(sleep_secs)
+            except ZeroDivisionError:
+                pass
 
         return ms
 
@@ -384,6 +394,18 @@ class FixedDriver(object):
             self._shortest = sched.period
 
         return sched
+
+    def get_schedule(self, name=None, pos=None):
+        """return a schedule by name or position; return None if not found"""
+        if name is not None:
+            for sched in self._schedules:
+                if sched.name == name:
+                    return sched
+        elif pos is not None:
+            try:
+                return self._schedules[pos]
+            except IndexError:
+                pass
 
     def remove_schedule(self, sched):
         """remove the schedule object from the stepped schedules list
