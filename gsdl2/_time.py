@@ -199,6 +199,15 @@ class FixedDriver(object):
     """
 
     def __init__(self, master, period, keep_history=True, step=None, nice=10.0):
+        """construct a clock that keeps fixed-timestep schedules via callbacks
+
+        :param master: the master callback
+        :param period: the master period (e.g. 1.0 / 60.0)
+        :param keep_history: if True, history is kept and per_second() is enabled
+        :param step: optional; the fixed timestep; default is period
+        :param nice: optional; <1.0 is no sleep; higher value uses shorter sleeps
+        :return: FixedDriver
+        """
         self.master = master
         self.period = period
         self.keep_history = keep_history
@@ -219,6 +228,13 @@ class FixedDriver(object):
         self._wasted = collections.deque()
 
     def change_master(self, period, step=None, schedules_too=False):
+        """change the master's period
+
+        :param period: the new period (e.g. 1.0 / 30.0)
+        :param step: optional; the new step; default is period
+        :param schedules_too: if True, update all ad hoc schedules with the same period
+        :return: None
+        """
         if step is None:
             step = period
         self.period = period
@@ -230,6 +246,12 @@ class FixedDriver(object):
 
     @staticmethod
     def change_schedule(sched, period):
+        """change an ad hoc Schedule's period
+
+        :param sched: the Schedule object to change
+        :param period: the new period (e.g. 1.0 / 30.0)
+        :return: None
+        """
         elapsed = sched._due - sched._last
         new_due = min(sched._last + (elapsed / sched.period) * period, period)
         sched.period = period
@@ -297,6 +319,7 @@ class FixedDriver(object):
         return ms
 
     def per_second(self):
+        """return the number of times the master has fired in the last second"""
         return len(self._times)
 
     def new_schedule(self, callback, period, due=0, keep_history=False, pos=None, name=None):
@@ -363,7 +386,11 @@ class FixedDriver(object):
         return sched
 
     def remove_schedule(self, sched):
-        """remove the schedule object from the stepped schedules list"""
+        """remove the schedule object from the stepped schedules list
+
+        :param sched: the Schedule object to remove
+        :return: None
+        """
         try:
             period = sched.period
             self._schedules.remove(sched)
