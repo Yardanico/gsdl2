@@ -1,11 +1,20 @@
+"""12_particles.py - particle demo using textures, and the first robust test of FixedDriver
+
+Based on ParticleEngine by marcusva in py-sdl2:
+https://bitbucket.org/marcusva/py-sdl2
+"""
+
 import random
 
 import gsdl2
 from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_TAB, S_I, MOUSEMOTION
 
 
+# pixels per unit
 SCALE = 3.0
+# max sparks released per tick
 SPARKS_PER_SECOND = 640
+# max sparks alive at any time
 MAX_PARTICLES = 2000
 
 
@@ -17,8 +26,6 @@ class Spark(gsdl2.particles.Particle):
         gsdl2.particles.Particle.__init__(self, x, y, life)
         self.vx = vx
         self.vy = vy
-        self.ax = 0
-        self.ay = 0
         self.alpha = 255
         self.lifespan = life
         self.oldx = x
@@ -33,6 +40,7 @@ class Spark(gsdl2.particles.Particle):
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
     def update(self, dt, world):
+        """just yer basic time-and-space-scaled acceleration"""
         self.alpha = abs(int(255 * self.life / self.lifespan))
 
         self.oldx = self.x
@@ -80,6 +88,7 @@ class Sparkler(object):
         self.debug_particle = None
 
     def _create(self, dt, world, components):
+        """pluggable spark generator"""
         self.elapsed -= dt
         while self.elapsed <= 0.0:
             self.elapsed += self.rate
@@ -95,10 +104,12 @@ class Sparkler(object):
 
     @staticmethod
     def _update(dt, world, livingones):
+        """pluggable live spark updater"""
         for p in livingones:
             p.update(dt, world)
 
     def _delete(self, dt, world, deadones):
+        """pluggable dead spark remover"""
         remove = self.particles.remove
         for p in deadones:
             remove(p)
@@ -106,16 +117,19 @@ class Sparkler(object):
                 self.debug_particle = None
 
     def update(self, dt, mousex, mousey):
+        """update model"""
         self.x = mousex
         self.y = mousey
         self.particles_engine.process(dt, None, self.particles)
 
     def render(self, renderer):
+        """basic pygame-like renderer"""
         for p in self.particles:
             p.image.set_alpha(p.alpha)
             renderer.copy(p.image, p.rect)
 
     def render_interpolated(self, renderer, interp):
+        """interpolated renderer"""
         for p in self.particles:
             p.image.set_alpha(p.alpha)
             renderer.copy(p.image, p.get_rect_interpolated(interp))
@@ -124,28 +138,33 @@ class Sparkler(object):
 class Game(object):
     def __init__(self):
         self.screen = gsdl2.display.set_mode((640, 480))
-        gsdl2.display.set_caption("12_particles.py - Ooo sparklies")
+        gsdl2.display.set_caption("12_particles.py - Oooh sparklies")
         self.screen_rect = self.screen.get_rect()
         self.renderer = gsdl2.display.get_window().create_renderer()
 
+        # switchable model pulse rate, clock, and schedules
         self.which_interval = [30, 60, 120, 240, 360, 15]
         self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 15.0)
         self.clock.new_schedule(self.caption, 1.0)
         self.renderer_schedule = self.clock.new_schedule(self.draw, 0.0, keep_history=True)
 
+        # on/off interpolation
         self.do_interpolation = True
 
+        # sparkler follows mouse location
         self.mousex, self.mousey = self.screen_rect.center
         self.sparkler = Sparkler(
             self.mousex, self.mousey, sparks_per_second=SPARKS_PER_SECOND, max_particles=MAX_PARTICLES)
 
     def run(self):
+        """just a busy loop that turns the clock"""
         self.running = True
 
         while self.running:
             self.clock.tick()
 
     def update(self, dt):
+        """master callback"""
         self.handle_events()
         self.sparkler.update(dt, self.mousex, self.mousey)
 
@@ -180,6 +199,7 @@ class Game(object):
                 self.mousex, self.mousey = e.pos
 
     def draw(self, sched):
+        """renderer callback"""
         self.renderer.clear()
         if self.do_interpolation:
             interp = sched.interp
@@ -189,6 +209,7 @@ class Game(object):
         self.renderer.present()
 
     def caption(self, sched):
+        """window caption callback"""
         dt = self.clock.period
         target = 1.0 / dt
         gsdl2.display.set_caption(
