@@ -1,21 +1,63 @@
 """12_particles.py - particle demo using textures, and the first robust test of FixedDriver
 
+Usage:
+    python 12_particles.py [scale=float] [sparks_per_second=int] [max_particles=int] [profile]
+
 Based on ParticleEngine by marcusva in py-sdl2:
 https://bitbucket.org/marcusva/py-sdl2
 """
 
+import cProfile
+import pstats
 import random
+import sys
+
+try:
+    import gsdl2
+except ImportError:
+    # Stupid Windows and Cygwin
+    sys.path.append('.')
+    sys.path.append('..')
+    import gsdl2
 
 import gsdl2
 from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_TAB, S_I, MOUSEMOTION
 
 
-# pixels per unit
-SCALE = 3.0
-# max sparks released per tick
-SPARKS_PER_SECOND = 640
-# max sparks alive at any time
-MAX_PARTICLES = 2000
+print('Python: {}'.format(sys.executable))
+
+if 'pypy' in sys.executable:
+    CONFIG = dict(
+        scale=3.0,              # pixels per unit
+        sparks_per_second=640,  # max sparks released per tick
+        max_particles=2000,     # max sparks alive at any time
+        profile=False,
+    )
+else:
+    CONFIG = dict(
+        scale=3.0,              # pixels per unit
+        sparks_per_second=320,  # max sparks released per tick
+        max_particles=1000,     # max sparks alive at any time
+        profile=False,
+    )
+
+
+
+def parse_args():
+    if 'profile' in sys.argv:
+        CONFIG['profile'] = True
+        sys.argv.remove('profile')
+    try:
+        for arg in sys.argv[1:]:
+            key, value = arg.split('=')
+            assert key in CONFIG
+            if key == 'scale':
+                CONFIG[key] = float(value)
+            elif key in ('sparks_per_second', 'max_particles'):
+                CONFIG[key] = int(value)
+    except ValueError:
+        print('usage: python 12_particles.py [scale=float] [sparks_per_second=int] [max_particles=int] [profile]')
+        sys.exit(1)
 
 
 class Spark(gsdl2.particles.Particle):
@@ -46,7 +88,7 @@ class Spark(gsdl2.particles.Particle):
         self.oldx = self.x
         self.oldy = self.y
 
-        scale = SCALE
+        scale = CONFIG['scale']
         vx = self.vx
         vy = self.vy
         vx -= vx * 1.0/4.0 * dt * scale
@@ -90,14 +132,15 @@ class Sparkler(object):
     def _create(self, dt, world, components):
         """pluggable spark generator"""
         self.elapsed -= dt
+        scale = CONFIG['scale']
         while self.elapsed <= 0.0:
             self.elapsed += self.rate
             if len(self.particles) >= self.max_particles:
                 continue
             p = Spark(self.x, self.y,
-                      random.randrange(1, 2) * SCALE,
-                      (random.random() * 16 - 8) * SCALE,
-                      (random.random() * 16 - 8) * SCALE)
+                      random.randrange(1, 2) * scale,
+                      (random.random() * 16 - 8) * scale,
+                      (random.random() * 16 - 8) * scale)
             self.particles.append(p)
             if self.debug_particle is None:
                 self.debug_particle = p
@@ -153,8 +196,8 @@ class Game(object):
 
         # sparkler follows mouse location
         self.mousex, self.mousey = self.screen_rect.center
-        self.sparkler = Sparkler(
-            self.mousex, self.mousey, sparks_per_second=SPARKS_PER_SECOND, max_particles=MAX_PARTICLES)
+        self.sparkler = Sparkler(self.mousex, self.mousey,
+                                 sparks_per_second=CONFIG['sparks_per_second'], max_particles=CONFIG['max_particles'])
 
     def run(self):
         """just a busy loop that turns the clock"""
@@ -228,4 +271,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parse_args()
+    gsdl2.init()
+    if CONFIG['profile']:
+        cProfile.run('main()', 'prof.dat')
+        p = pstats.Stats('prof.dat')
+        p.sort_stats('time').print_stats()
+    else:
+        main()
