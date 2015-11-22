@@ -52,7 +52,7 @@ class Font(object):
         :return:
         """
         if background:
-            sdl_surf = self._render_shaded(text, color, encoding)
+            sdl_surf = self._render_shaded(text, color, background, encoding)
         elif wrap_length:
             if encoding == 'glyph':
                 sdl_surf = self._render_blended(text, color, encoding)
