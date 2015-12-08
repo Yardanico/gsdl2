@@ -28,7 +28,10 @@ class Font(object):
     def __init__(self, filename, pointsize):
         self.__filename = filename
         self.__pointsize = pointsize
-        assert os.access(filename, os.F_OK)
+        try:
+            assert os.access(filename, os.F_OK)
+        except AssertionError:
+            raise AssertionError('cannot read font file: {}'.format(filename))
 
         self.__sdl_font = ttf_lib.TTF_OpenFont(utf8(filename), pointsize)
         if self.__sdl_font == sdl_ffi.NULL:

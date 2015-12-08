@@ -8,10 +8,12 @@ import sys
 import logging
 
 from .sdllibs import mixer_lib, sdl_lib, SDLError
-from .sdlffi import sdl_ffi, mixer_ffi
+from .sdlffi import sdl_ffi
 from .sdlconstants import MIX_DEFAULT_FORMAT, SDL_INIT_AUDIO
 from . import music
 from .locals import utf8
+
+import music
 
 
 # log = logging.getLogger(__name__)
@@ -31,24 +33,24 @@ def init(frequency=44100, format=MIX_DEFAULT_FORMAT, channels=2, chunksize=1024)
     c = sdl_ffi.cast
     if mixer_lib.Mix_OpenAudio(c('int', frequency), c('Uint16', format), c('int', channels), c('int', chunksize)) < 0:
         logging.log(logging.ERROR, 'SDL_mixer failed to open audio format {}'.format(format))
-    else:
-        # TODO: Windows: you can't yet specify the calling convention of callbacks.
-        #       https://cffi.readthedocs.org/en/latest/#callbacks
-        # Direct callback is not support yet by cffi. If we want ChannelFinished events we'll have to code something
-        # and instruct the user to pump it in the game loop.
-        #
-        # @sdl_ffi.callback('void (*)(int)')
-        # def _channel_stopped(channel_id):
-        #     # remove channel_id from _channels
-        #     print('channel_id={}'.format(channel_id))
-        #     if channel_id in _channels:
-        #         del _channels[channel_id]
-        #     # TODO: post an event if configured on the Channel
-        # mixer_lib.Mix_ChannelFinished(_channel_stopped)
-        # # OR #
-        # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
-        # mixer_lib.Mix_ChannelFinished(callback)
-        pass
+
+
+# EXPERIMENTAL: enabled callback for pypy 4.0.0
+# https://cffi.readthedocs.org/en/latest
+#
+if True:
+    @sdl_ffi.callback('void (*)(int)')
+    def _channel_stopped(channel_id):
+        # remove channel_id from _channels
+        # print('channel_id={}'.format(channel_id))
+        if channel_id in _channels:
+            channel = _channels[channel_id]
+            del _channels[channel_id]
+        # TODO: post an event if configured on the Channel
+    mixer_lib.Mix_ChannelFinished(_channel_stopped)
+    # # OR #
+    # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
+    # mixer_lib.Mix_ChannelFinished(callback)
 
 
 def close():
@@ -96,6 +98,18 @@ def set_reserved(num_channels):
     return mixer_lib.Mix_ReserveChannels(num_channels)
 
 
+def set_num_channels(num_channels):
+    if not get_init():
+        return
+    return mixer_lib.Mix_AllocateChannels(num_channels)
+
+
+def get_num_channels():
+    if not get_init():
+        return
+    return mixer_lib.Mix_GroupCount(-1)
+
+
 def get_busy():
     if not get_init():
         return False
@@ -117,7 +131,7 @@ class Sound(object):
         else:
             channel_id = mixer_lib.Mix_PlayChannelTimed(-1, self.__sdl_chunk, loops, maxtime)
 
-        # TODO:
+        # TODO: enable for callbacks (see init())
         # channeldata[channelnum].queue = NULL;
         # channeldata[channelnum].sound = self;
         _channels[channel_id] = self
@@ -223,15 +237,19 @@ class Channel(object):
         return _channels[self.__channel_id]
 
     def queue(self, sound):
+        # TODO
         raise NotImplemented
 
     def get_queue(self):
+        # TODO
         raise NotImplemented
 
     def send_endevent(self, type=None):
+        # TODO
         raise NotImplemented
 
     def get_endevent(self):
+        # TODO
         raise NotImplemented
 
     def __get_channelid(self):

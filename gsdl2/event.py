@@ -40,7 +40,7 @@ TouchFingerEvent = namedtuple('MouseWheelEvent', 'type touch finger pos rel pres
 MultiGestureEvent = namedtuple('MouseWheelEvent', 'type touch dtheta ddist pos numfingers')
 DollarGestureEvent = namedtuple('MouseWheelEvent', 'type touch gesture numfingers error pos')
 DropEvent = namedtuple('MouseWheelEvent', 'type file')
-UserEvent = namedtuple('MouseWheelEvent', 'type window code data1 data2')
+UserEvent = namedtuple('UserEvent', 'type window code data1 data2')
 
 
 def _NoEvent(e):
@@ -341,5 +341,25 @@ def post(event):
 
 
 def Event(event_type, *args, **kwargs):
-    # TODO
-    pass
+    """SDL event factory
+
+    There are three usage cases:
+        e = Event(USEREVENT, 0, 888, 'dataZ', 'modataZ')
+        e = Event(USEREVENT, window=0, code=888, data1='dataZ', data2='modataZ')
+        e = Event(USEREVENT, dict(window=0, code=888, data1='dataZ', data2='modataZ'))
+
+    :param event_type: one of the event type constants; typically only USEREVENT is desired
+    :param args: positional args or a dict for constructing the relevant namedtuple
+    :param kwargs: keyword args for constructing the relevant namedtuple
+    :return: an event suitable for posting to the SDL event subsystem
+    """
+    event_class = _factories[event_type]
+    if args:
+        if isinstance(args[0], dict):
+            return event_class(event_type, **args[0])
+        else:
+            return event_class(event_type, *args)
+    elif kwargs:
+        return event_class(event_type, **kwargs)
+    else:
+        return None
