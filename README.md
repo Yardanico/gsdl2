@@ -8,7 +8,7 @@ gsdl2 is a proof-of-concept Pythonic likeness of pygame for SDL2 using pypy and 
 
 Version 0.0 - a lot of the pygame staples are done. Bug warning: here be monsters. I have tried to be thorough in documenting known bugs with FIXME comments.
 
-There are two demo games already:
+There are two demo games:
 
 * pymike's Bubbman - action platformer
 * gsdl2_shooter - bullets galore
