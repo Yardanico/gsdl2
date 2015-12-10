@@ -4,7 +4,6 @@ __all__ = [
 ]
 
 
-import sys
 import logging
 
 from .sdllibs import mixer_lib, sdl_lib, SDLError
