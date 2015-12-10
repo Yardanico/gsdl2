@@ -283,7 +283,13 @@ class FixedDriver(object):
 
         # call the master function on time
         if self._elapsed <= 0.0:
-            self._elapsed += step
+            # TODO: keep eye on this. Had to insert some intelligence because when elapsed falls behind when the CPU
+            # is overwhelmed, and then it will spam the master to catch up once CPU is available.
+            #self._elapsed += step
+            if self._elapsed + WORST_CLOCK_ACCURACY / 1000.0 < step:
+                self._elapsed = step
+            else:
+                self._elapsed += step
             self.master(step)
             any_work = True
             # print('')

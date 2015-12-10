@@ -1,7 +1,9 @@
+from weakref import WeakKeyDictionary
 from collections import namedtuple
+import time
 
 from .sdllibs import sdl_lib, SDLError
-from .sdlffi import sdl_ffi
+from .sdlffi import sdl_ffi, to_string
 from .locals import (
     utf8, QUIT, WINDOWEVENT, SYSWMEVENT,
     KEYDOWN, KEYUP, TEXTEDITING, TEXTINPUT,
@@ -10,9 +12,10 @@ from .locals import (
     CONTROLLERAXISMOTION, CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED,
     CONTROLLERDEVICEREMAPPED,
     FINGERDOWN, FINGERUP, FINGERMOTION, DOLLARGESTURE, DOLLARRECORD, MULTIGESTURE,
-    CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT, NOEVENT
+    CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT, NOEVENT,
 )
-from .sdlconstants import SDL_INIT_VIDEO
+from .sdlconstants import SDL_INIT_VIDEO, SDL_QUERY, SDL_IGNORE, SDL_DISABLE, SDL_ENABLE
+
 
 
 # TODO: __all__
@@ -172,7 +175,9 @@ def _DropEvent(e):
 
 def _UserEvent(e):
     e = sdl_ffi.cast('SDL_UserEvent *', e)
-    return UserEvent(e.type, e.windowID, e.code, e.data1, e.data2)
+    data1 = to_string(sdl_ffi.cast('char *', e.data1))
+    data2 = to_string(sdl_ffi.cast('char *', e.data2))
+    return UserEvent(e.type, e.windowID, e.code, data1, data2)
 
 
 # Map event type to a factory.
@@ -221,7 +226,7 @@ _event = _Event()
 
 def pump():
     if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
-        sdl_lib.PumpEvents()
+        sdl_lib.SDL_PumpEvents()
 
 
 def get(filter_type=None):
@@ -336,30 +341,44 @@ def get_grab():
 
 
 def post(event):
-    # TODO
-    pass
+    isblocked = sdl_lib.SDL_EventState(event.type, SDL_QUERY) == SDL_IGNORE
+    rc = 0
+    if not isblocked:
+        rc = sdl_lib.SDL_PushEvent(sdl_ffi.cast('SDL_Event *', event))
+    if rc < 0:
+        # TODO: call SDL_GetError
+        pass
 
 
-def Event(event_type, *args, **kwargs):
-    """SDL event factory
+def _fill_user_event(event_type, code, window_id, data1, data2):
+    e = sdl_ffi.new('SDL_UserEvent *')
+    e.type = event_type
+    e.code = code
+    e.windowID = window_id
+    data1 = sdl_ffi.new('char[]', utf8(data1))
+    data2 = sdl_ffi.new('char[]', utf8(data2))
+    e.data1 = sdl_ffi.cast('void *', data1)
+    e.data2 = sdl_ffi.cast('void *', data2)
+    userevent_dict[e] = data1, data2
+    return e
+# ffi.new() objects cannot go out of scope or their storage is destroyed
+userevent_dict = WeakKeyDictionary()
 
-    There are three usage cases:
-        e = Event(USEREVENT, 0, 888, 'dataZ', 'modataZ')
-        e = Event(USEREVENT, window=0, code=888, data1='dataZ', data2='modataZ')
-        e = Event(USEREVENT, dict(window=0, code=888, data1='dataZ', data2='modataZ'))
 
-    :param event_type: one of the event type constants; typically only USEREVENT is desired
-    :param args: positional args or a dict for constructing the relevant namedtuple
-    :param kwargs: keyword args for constructing the relevant namedtuple
-    :return: an event suitable for posting to the SDL event subsystem
+def Event(event_type=None, code=0, window_id=0, data1='', data2=''):
+    """SDL USEREVENT factory
+
+    :param event_type: ignored; provided for pygame compatability; USEREVENT is assumed
+    :param code: optional integer code for event handler discretion
+    :param window_id: optional window ID
+    :param data1: optional Python str
+    :param data2: optional Python str
+    :return: a USEREVENT suitable for posting to the SDL event subsystem
     """
-    event_class = _factories[event_type]
-    if args:
-        if isinstance(args[0], dict):
-            return event_class(event_type, **args[0])
-        else:
-            return event_class(event_type, *args)
-    elif kwargs:
-        return event_class(event_type, **kwargs)
-    else:
-        return None
+    if isinstance(code, dict):
+        d = code
+        code = d['code']
+        window_id = d['window_id']
+        data1 = d['data1']
+        data2 = d['data2']
+    return _fill_user_event(event_type, code, window_id, data1, data2)
