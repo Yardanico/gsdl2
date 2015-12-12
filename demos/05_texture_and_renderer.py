@@ -6,7 +6,7 @@ gsdl2.init()
 screen = gsdl2.display.set_mode((640, 480))
 gsdl2.display.set_caption("05_texture_and_renderer.py - im in ur hardwarez")
 screen_rect = screen.get_rect()
-renderer = gsdl2.display.get_window().create_renderer()
+renderer = gsdl2.display.get_renderer()
 clock = gsdl2.Clock()
 fps = 33
 
