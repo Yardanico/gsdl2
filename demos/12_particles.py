@@ -183,7 +183,7 @@ class Game(object):
         self.screen = gsdl2.display.set_mode((640, 480))
         gsdl2.display.set_caption("12_particles.py - Oooh sparklies")
         self.screen_rect = self.screen.get_rect()
-        self.renderer = gsdl2.display.get_window().create_renderer()
+        self.renderer = gsdl2.display.get_renderer()
 
         # switchable model pulse rate, clock, and schedules
         self.which_interval = [30, 60, 120, 240, 360, 15]
