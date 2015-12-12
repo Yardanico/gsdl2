@@ -20,7 +20,7 @@ gsdl2.init()
 
 screen = gsdl2.display.set_mode((1024, 480))
 screen_rect = screen.get_rect()
-renderer = gsdl2.display.get_window().create_renderer()
+renderer = gsdl2.display.get_renderer()
 clock = gsdl2.Clock()
 fps = 33
 
