@@ -7,7 +7,7 @@ import sys
 if sys.version_info[0] == 2:
     def utf8(text):
         """Convert text to UTF-8 for Python 2."""
-        if isinstance(text, unicode):
+        if not isinstance(text, unicode):
             return text.encode('utf-8')
         return text
 else:

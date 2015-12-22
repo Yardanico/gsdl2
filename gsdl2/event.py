@@ -1,7 +1,3 @@
-from weakref import WeakKeyDictionary
-from collections import namedtuple
-import time
-
 from .sdllibs import sdl_lib, SDLError
 from .sdlffi import sdl_ffi, to_string
 from .locals import (
@@ -21,29 +17,125 @@ from .sdlconstants import SDL_INIT_VIDEO, SDL_QUERY, SDL_IGNORE, SDL_DISABLE, SD
 # TODO: __all__
 
 
-NoEvent = namedtuple('NoEvent', 'type')
-QuitEvent = namedtuple('QuitEvent', 'type')
-WindowEvent = namedtuple('WindowEvent', 'type window event data1 data2')
-SysWMEvent = namedtuple('SysWMEvent', 'type msg')
-KeyEvent = namedtuple('KeyDownEvent', 'type window state repeat key mod scancode')
-TextEditingEvent = namedtuple('TextEditingEvent', 'type window text start length')
-TextInputEvent = namedtuple('TextInputEvent', 'type window text')
-MouseMotionEvent = namedtuple('MouseMotionEvent', 'type window mouse state pos rel')
-MouseButtonEvent = namedtuple('MouseButtonEvent', 'type window mouse state clicks pos')
-MouseWheelEvent = namedtuple('MouseWheelEvent', 'type window mouse pos')
-JoyAxisEvent = namedtuple('JoyAxisEvent', 'type joy axis value')
-JoyBallEvent = namedtuple('JoyBallEvent', 'type joy ball rel')
-JoyHatEvent = namedtuple('JoyHatEvent', 'type joy hat value')
-JoyButtonEvent = namedtuple('JoyButtonEvent', 'type joy button state')
-JoyDeviceEvent = namedtuple('JoyDeviceEvent', 'type joy')
-ControllerAxisEvent = namedtuple('MouseWheelEvent', 'type joy ')
-ControllerButtonEvent = namedtuple('MouseWheelEvent', 'type joy ')
-ControllerDeviceEvent = namedtuple('MouseWheelEvent', 'type joy ')
-TouchFingerEvent = namedtuple('MouseWheelEvent', 'type touch finger pos rel pressure')
-MultiGestureEvent = namedtuple('MouseWheelEvent', 'type touch dtheta ddist pos numfingers')
-DollarGestureEvent = namedtuple('MouseWheelEvent', 'type touch gesture numfingers error pos')
-DropEvent = namedtuple('MouseWheelEvent', 'type file')
-UserEvent = namedtuple('UserEvent', 'type window code data1 data2')
+class _Struct(dict):
+    def __init__(self, **kwargs):
+        dict.__init__(self, **kwargs)
+        self.__dict__.update(**kwargs)
+
+
+class NoEvent(_Struct):
+    def __init__(self, type=None):
+        _Struct.__init__(self, type=type)
+
+
+class QuitEvent(_Struct):
+    def __init__(self, type=None):
+        _Struct.__init__(self, type=type)
+
+
+class WindowEvent(_Struct):
+    def __init__(self, type=None, window=None, event=None, data1=None, data2=None):
+        _Struct.__init__(self, type=type, window=window, event=event, data1=data1, data2=data2)
+
+
+class SysWMEvent(_Struct):
+    def __init__(self, type=None, msg=None):
+        _Struct.__init__(self, type=type, msg=msg)
+
+
+class KeyEvent(_Struct):
+    def __init__(self, type=None, window=None, state=None, repeat=None, key=None, mod=None, scancode=None):
+        _Struct.__init__(self, type=type, window=window, state=state, repeat=repeat, key=key, mod=mod, scancode=scancode)
+
+
+class TextEditingEvent(_Struct):
+    def __init__(self, type=None, window=None, text=None, start=None, length=None):
+        _Struct.__init__(self, type=type, window=window, text=text, start=start, length=length)
+
+
+class TextInputEvent(_Struct):
+    def __init__(self, type=None, window=None, text=None):
+        _Struct.__init__(self, type=type, window=window, text=text)
+
+
+class MouseMotionEvent(_Struct):
+    def __init__(self, type=None, window=None, mouse=None, state=None, pos=None, rel=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, state=state, pos=pos, rel=rel)
+
+
+class MouseButtonEvent(_Struct):
+    def __init__(self, type=None, window=None, mouse=None, state=None, clicks=None, pos=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, state=state, clicks=clicks, pos=pos)
+
+
+class MouseWheelEvent(_Struct):
+    def __init__(self, type=None, window=None, mouse=None, pos=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, pos=pos)
+
+
+class JoyAxisEvent(_Struct):
+    def __init__(self, type=None, joy=None, axis=None, value=None):
+        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value)
+
+
+class JoyBallEvent(_Struct):
+    def __init__(self, type=None, joy=None, ball=None, rel=None):
+        _Struct.__init__(self, type=type, joy=joy, ball=ball, rel=rel)
+
+
+class JoyHatEvent(_Struct):
+    def __init__(self, type=None, joy=None, hat=None, value=None):
+        _Struct.__init__(self, type=type, joy=joy, hat=hat, value=value)
+
+
+class JoyButtonEvent(_Struct):
+    def __init__(self, type=None, joy=None, button=None, state=None):
+        _Struct.__init__(self, type=type, joy=joy, button=button, state=state)
+
+
+class JoyDeviceEvent(_Struct):
+    def __init__(self, type=None, joy=None):
+        _Struct.__init__(self, type=type, joy=joy)
+
+
+class ControllerAxisEvent(_Struct):
+    def __init__(self, type=None, joy=None, axis=None, value=None):
+        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value)
+
+
+class ControllerButtonEvent(_Struct):
+    def __init__(self, type=None, joy=None, button=None, state=None):
+        _Struct.__init__(self, type=type, joy=joy, button=button, state=state)
+
+
+class ControllerDeviceEvent(_Struct):
+    def __init__(self, type=None, joy=None):
+        _Struct.__init__(self, type=type, joy=joy)
+
+
+class TouchFingerEvent(_Struct):
+    def __init__(self, type=None, touch=None, finger=None, pos=None, rel=None, pressure=None):
+        _Struct.__init__(self, type=type, touch=touch, finger=finger, pos=pos, rel=rel, pressure=pressure)
+
+
+class MultiGestureEvent(_Struct):
+    def __init__(self, type=None, touch=None, dtheta=None, ddist=None, pos=None, numfingers=None):
+        _Struct.__init__(self, type=type, touch=touch, dtheta=dtheta, ddist=ddist, pos=pos, numfingers=numfingers)
+
+
+class DollarGestureEvent(_Struct):
+    def __init__(self, type=None, touch=None, gesture=None, numfingers=None, error=None, pos=None):
+        _Struct.__init__(self, type=type, touch=touch, gesture=gesture, numfingers=numfingers, error=error, pos=pos)
+
+
+class DropEvent(_Struct):
+    def __init__(self, type=None, file=None):
+        _Struct.__init__(self, type=type, file=file)
+
+
+class UserEvent(_Struct):
+    def __init__(self, type=None, window=None, code=None, data1=None, data2=None):
+        _Struct.__init__(self, type=type, window=window, code=code, data1=data1, data2=data2)
 
 
 def _NoEvent(e):
@@ -62,7 +154,7 @@ def _WindowEvent(e):
 
 
 def _SysWMEvent(e):
-    e = sdl_ffi.cast('SDL_SysWMEvent *')
+    e = sdl_ffi.cast('SDL_SysWMEvent *', e)
     return SysWMEvent(e.type, e.msg)
 
 
@@ -182,40 +274,40 @@ def _UserEvent(e):
 
 # Map event type to a factory.
 _factories = {
-    NOEVENT: _NoEvent,
-    QUIT: _QuitEvent,
+    NOEVENT: (_NoEvent, NoEvent),
+    QUIT: (_QuitEvent, QuitEvent),
     # QUIT: _OSEvent,  # ??? see SDL_event.h
-    WINDOWEVENT: _WindowEvent,
-    SYSWMEVENT: _SysWMEvent,
-    KEYDOWN: _KeyEvent,
-    KEYUP: _KeyEvent,
-    TEXTEDITING: _TextEditingEvent,
-    TEXTINPUT: _TextInputEvent,
-    MOUSEMOTION: _MouseMotionEvent,
-    MOUSEBUTTONDOWN: _MouseButtonEvent,
-    MOUSEBUTTONUP: _MouseButtonEvent,
-    MOUSEWHEEL: _MouseWheelEvent,
-    JOYAXISMOTION: _JoyAxisEvent,
-    JOYBALLMOTION: _JoyBallEvent,
-    JOYHATMOTION: _JoyHatEvent,
-    JOYBUTTONDOWN: _JoyButtonEvent,
-    JOYBUTTONUP: _JoyButtonEvent,
-    JOYDEVICEADDED: _JoyDeviceEvent,
-    JOYDEVICEREMOVED: _JoyDeviceEvent,
-    CONTROLLERAXISMOTION: _ControllerAxisEvent,
-    CONTROLLERBUTTONDOWN: _ControllerButtonEvent,
-    CONTROLLERBUTTONUP: _ControllerButtonEvent,
-    CONTROLLERDEVICEADDED: _ControllerDeviceEvent,
-    CONTROLLERDEVICEREMOVED: _ControllerDeviceEvent,
-    CONTROLLERDEVICEREMAPPED: _ControllerDeviceEvent,
-    FINGERDOWN: _TouchFingerEvent,
-    FINGERUP: _TouchFingerEvent,
-    FINGERMOTION: _TouchFingerEvent,
-    MULTIGESTURE: _MultiGestureEvent,
-    DOLLARGESTURE: _DollarGestureEvent,
-    DOLLARRECORD: _DollarGestureEvent,
-    DROPFILE: _DropEvent,
-    USEREVENT: _UserEvent,
+    WINDOWEVENT: (_WindowEvent, WindowEvent),
+    SYSWMEVENT: (_SysWMEvent, SysWMEvent),
+    KEYDOWN: (_KeyEvent, KeyEvent),
+    KEYUP: (_KeyEvent, KeyEvent),
+    TEXTEDITING: (_TextEditingEvent, TextEditingEvent),
+    TEXTINPUT: (_TextInputEvent, TextInputEvent),
+    MOUSEMOTION: (_MouseMotionEvent, MouseMotionEvent),
+    MOUSEBUTTONDOWN: (_MouseButtonEvent, MouseButtonEvent),
+    MOUSEBUTTONUP: (_MouseButtonEvent, MouseButtonEvent),
+    MOUSEWHEEL: (_MouseWheelEvent, MouseWheelEvent),
+    JOYAXISMOTION: (_JoyAxisEvent, JoyAxisEvent),
+    JOYBALLMOTION: (_JoyBallEvent, JoyBallEvent),
+    JOYHATMOTION: (_JoyHatEvent, JoyHatEvent),
+    JOYBUTTONDOWN: (_JoyButtonEvent, JoyButtonEvent),
+    JOYBUTTONUP: (_JoyButtonEvent, JoyButtonEvent),
+    JOYDEVICEADDED: (_JoyDeviceEvent, JoyDeviceEvent),
+    JOYDEVICEREMOVED: (_JoyDeviceEvent, JoyDeviceEvent),
+    CONTROLLERAXISMOTION: (_ControllerAxisEvent, ControllerAxisEvent),
+    CONTROLLERBUTTONDOWN: (_ControllerButtonEvent, ControllerButtonEvent),
+    CONTROLLERBUTTONUP: (_ControllerButtonEvent, ControllerButtonEvent),
+    CONTROLLERDEVICEADDED: (_ControllerDeviceEvent, ControllerDeviceEvent),
+    CONTROLLERDEVICEREMOVED: (_ControllerDeviceEvent, ControllerDeviceEvent),
+    CONTROLLERDEVICEREMAPPED: (_ControllerDeviceEvent, ControllerDeviceEvent),
+    FINGERDOWN: (_TouchFingerEvent, TouchFingerEvent),
+    FINGERUP: (_TouchFingerEvent, TouchFingerEvent),
+    FINGERMOTION: (_TouchFingerEvent, TouchFingerEvent),
+    MULTIGESTURE: (_MultiGestureEvent, MultiGestureEvent),
+    DOLLARGESTURE: (_DollarGestureEvent, DollarGestureEvent),
+    DOLLARRECORD: (_DollarGestureEvent, DollarGestureEvent),
+    DROPFILE: (_DropEvent, DropEvent),
+    USEREVENT: (_UserEvent, UserEvent),
 }
 
 
@@ -230,10 +322,8 @@ def pump():
 
 
 def get(filter_type=None):
-    events = []
-
     if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
-        return events
+        return []
 
     append = events.append
     e = _event
@@ -252,13 +342,17 @@ def get(filter_type=None):
                 continue
             elif e.type != filter_type:
                 continue
-        factory = get(e.type, None)
-        if factory:
+        factories = get(e.type, None)
+        if factories:
+            factory = factories[0]
             e_obj = factory(e)
             # _KeyEvent returns None if it's a repeat event
             if e_obj:
                 append(e_obj)
-    return events
+    copy_events = list(events)
+    del events[:]
+    return copy_events
+events = []
 
 
 # int SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action, Uint32 minType, Uint32 maxType);
@@ -285,22 +379,34 @@ def get(filter_type=None):
 # Uint32 SDL_RegisterEvents(int numevents);
 
 def poll():
-    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        return None
+
+    if events:
+        return events.pop(0)
+    else:
         _event.type = NOEVENT  # dunno if this is necessary
         sdl_lib.SDL_PollEvent(_event)
-        factory = _factories.get(_event.type, _factories[NOEVENT])
-        if factory:
+        factories = _factories.get(_event.type, _factories[NOEVENT])
+        if factories:
+            factory = factories[0]
             e_obj = factory(_event)
             return e_obj
 
 
 def wait():
-    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+        return None
+
+    if events:
+        return events.pop(0)
+    else:
         status = sdl_lib.SDL_WaitEvent(_event)
         if not status:
             raise SDLError()
-        factory = _factories.get(_event.type, None)
-        if factory:
+        factories = _factories.get(_event.type, None)
+        if factories:
+            factory = factories[0]
             e_obj = factory(_event)
             return e_obj
 
@@ -344,41 +450,50 @@ def post(event):
     isblocked = sdl_lib.SDL_EventState(event.type, SDL_QUERY) == SDL_IGNORE
     rc = 0
     if not isblocked:
-        rc = sdl_lib.SDL_PushEvent(sdl_ffi.cast('SDL_Event *', event))
-    if rc < 0:
-        # TODO: call SDL_GetError
-        pass
+        events.append(event)
 
 
-def _fill_user_event(event_type, code, window_id, data1, data2):
-    e = sdl_ffi.new('SDL_UserEvent *')
-    e.type = event_type
-    e.code = code
-    e.windowID = window_id
-    data1 = sdl_ffi.new('char[]', utf8(data1))
-    data2 = sdl_ffi.new('char[]', utf8(data2))
-    e.data1 = sdl_ffi.cast('void *', data1)
-    e.data2 = sdl_ffi.cast('void *', data2)
-    userevent_dict[e] = data1, data2
-    return e
-# ffi.new() objects cannot go out of scope or their storage is destroyed
-userevent_dict = WeakKeyDictionary()
+# def _fill_user_event(event_type, code, window_id, data1, data2):
+#     e = sdl_ffi.new('SDL_UserEvent *')
+#     e.type = event_type
+#     e.code = code
+#     e.windowID = window_id
+#     data1 = sdl_ffi.new('char[]', utf8(data1))
+#     data2 = sdl_ffi.new('char[]', utf8(data2))
+#     e.data1 = sdl_ffi.cast('void *', data1)
+#     e.data2 = sdl_ffi.cast('void *', data2)
+#     userevent_dict[e] = data1, data2, time.time()
+#     return e
+# # ffi.new() objects cannot go out of scope or their storage is destroyed
+# userevent_dict = {}
 
 
-def Event(event_type=None, code=0, window_id=0, data1='', data2=''):
-    """SDL USEREVENT factory
+def Event(event_type, *args, **kwargs):
+    """internal event factory
 
-    :param event_type: ignored; provided for pygame compatability; USEREVENT is assumed
-    :param code: optional integer code for event handler discretion
-    :param window_id: optional window ID
-    :param data1: optional Python str
-    :param data2: optional Python str
-    :return: a USEREVENT suitable for posting to the SDL event subsystem
+    Usages:
+    Event(type, dict)
+    Event(type, **kwargs)
+    Event(type, *args)
+
+    See the classes NoEvent through UserEvent for the constructor signatures.
+
+    :param event_type: one of the SDL event types
+    :param *args: varargs to complete the signature of the event constructor; args[0] may also be a dict
+    :param **kwargs: kwargs to complete the signature of the event constructor
+    :return: an event object that can be post()ed
     """
-    if isinstance(code, dict):
-        d = code
-        code = d['code']
-        window_id = d['window_id']
-        data1 = d['data1']
-        data2 = d['data2']
-    return _fill_user_event(event_type, code, window_id, data1, data2)
+    factories = _factories.get(event_type, None)
+    if factories:
+        factory = factories[1]
+        if args:
+            if isinstance(args[0], dict):
+                # Event(type, dict)
+                event = factory(event_type, **args[0])
+            else:
+                # Event(type, *args)
+                event = factory(event_type, *args)
+        else:
+            # Event(type, **kwargs)
+            event = factory(event_type, **kwargs)
+        return event
