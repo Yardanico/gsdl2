@@ -311,21 +311,27 @@ _factories = {
 }
 
 
+# singleton SDL event for internal use
 def _Event():
     return sdl_ffi.new('SDL_Event *')
 _event = _Event()
 
 
 def pump():
+    """internally process pygame event handlers
+    pump() -> None
+
+    :return: None
+    """
     if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
         sdl_lib.SDL_PumpEvents()
 
 
-def get(filter_type=None):
+def _get_internal(filter_type=None):
     if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
         return []
 
-    append = events.append
+    append = queued_events.append
     e = _event
     get = _factories.get
 
@@ -338,52 +344,55 @@ def get(filter_type=None):
         # if f not in (_KeyEvent,):
         #     print(f)
         if use_filter:
+            # local filter in arg
             if is_list and e.type not in filter_type:
                 continue
             elif e.type != filter_type:
                 continue
+        # global filter
+        if get_blocked(e.type):
+            continue
         factories = get(e.type, None)
         if factories:
             factory = factories[0]
             e_obj = factory(e)
-            # _KeyEvent returns None if it's a repeat event
+            # handle: _KeyEvent returns None if it's a repeat event
             if e_obj:
                 append(e_obj)
-    copy_events = list(events)
-    del events[:]
+
+
+def get(filter_type=None):
+    """get events from the queue
+    get() -> Eventlist
+    get(type) -> Eventlist
+    get(typelist) -> Eventlist
+
+    :param filter_type: event type, type list, or None
+    :return: Event list
+    """
+    _get_internal(filter_type)
+    if filter_type is None:
+        copy_events = list(queued_events)
+    elif isinstance(filter_type, type(NOEVENT)):
+        copy_events = [e for e in queued_events if e.type == filter_type]
+    else:
+        copy_events = [e for e in queued_events if e.type in filter_type]
+    del queued_events[:]
     return copy_events
-events = []
+queued_events = []
 
-
-# int SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action, Uint32 minType, Uint32 maxType);
-# SDL_bool SDL_HasEvent(Uint32 type);
-# SDL_bool SDL_HasEvents(Uint32 minType, Uint32 maxType);
-# void SDL_FlushEvent(Uint32 type);
-# void SDL_FlushEvents(Uint32 minType, Uint32 maxType);
-# int SDL_PollEvent(SDL_Event * event);
-# int SDL_WaitEvent(SDL_Event * event);
-# int SDL_WaitEventTimeout(SDL_Event * event, int timeout);
-# int SDL_PushEvent(SDL_Event * event);
-# typedef int (* SDL_EventFilter) (void *userdata, SDL_Event * event);
-# void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata);
-# SDL_bool SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata);
-# void SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
-# void SDL_DelEventWatch(SDL_EventFilter filter, void *userdata);
-# void SDL_FilterEvents(SDL_EventFilter filter, void *userdata);
-# #define SDL_QUERY   -1
-# #define SDL_IGNORE   0
-# #define SDL_DISABLE  0
-# #define SDL_ENABLE   1
-# Uint8 SDL_EventState(Uint32 type, int state);
-# #define SDL_GetEventState(type) SDL_EventState(type, SDL_QUERY)
-# Uint32 SDL_RegisterEvents(int numevents);
 
 def poll():
+    """get a single event from the queue
+    poll() -> EventType instance
+
+    :return: Event
+    """
     if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
         return None
 
-    if events:
-        return events.pop(0)
+    if queued_events:
+        return queued_events.pop(0)
     else:
         _event.type = NOEVENT  # dunno if this is necessary
         sdl_lib.SDL_PollEvent(_event)
@@ -395,11 +404,16 @@ def poll():
 
 
 def wait():
+    """wait for a single event from the queue
+    wait() -> EventType instance
+
+    :return: Event
+    """
     if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
         return None
 
-    if events:
-        return events.pop(0)
+    if queued_events:
+        return queued_events.pop(0)
     else:
         status = sdl_lib.SDL_WaitEvent(_event)
         if not status:
@@ -412,69 +426,205 @@ def wait():
 
 
 def peek(filter_type):
+    """test if event types are waiting on the queue
+
+    :param filter_type: an event type or list of types
+    :return: bool
+    """
+    _get_internal()
+    if isinstance(filter_type, type(NOEVENT)):
+        return any([True for e in queued_events if e.type == filter_type])
+    else:
+        return any([True for e in queued_events if e.type in filter_type])
+
+
+def clear(event_type):
     # TODO
+    """remove all events from the queue
+    clear() -> None
+    clear(type) -> None
+    clear(typelist) -> None
+
+    :param event_type: event type, type list, or None
+    :return: None
+    """
     pass
 
 
 def event_name(event_type):
-    # TODO
-    pass
+    """get the string name from and event id
+    event_name(type) -> string
+
+    :param event_type: event ID
+    :return: name string
+    """
+    return event_names[event_type]
+event_names = {
+    0: 'FIRSTEVENT',
+    0x100: 'QUIT',
+    0x101: 'APP_TERMINATING',
+    0x102: 'APP_LOWMEMORY',
+    0x103: 'APP_WILLENTERBACKGROUND',
+    0x104: 'APP_DIDENTERBACKGROUND',
+    0x105: 'APP_WILLENTERFOREGROUND',
+    0x106: 'APP_DIDENTERFOREGROUND',
+    0x200: 'WINDOWEVENT',
+    0x201: 'SYSWMEVENT',
+    0x300: 'KEYDOWN',
+    0x301: 'KEYUP',
+    0x302: 'TEXTEDITING',
+    0x303: 'TEXTINPUT',
+    0x400: 'MOUSEMOTION',
+    0x401: 'MOUSEBUTTONDOWN',
+    0x402: 'MOUSEBUTTONUP',
+    0x403: 'MOUSEWHEEL',
+    0x600: 'JOYAXISMOTION',
+    0x601: 'JOYBALLMOTION',
+    0x602: 'JOYHATMOTION',
+    0x603: 'JOYBUTTONDOWN',
+    0x604: 'JOYBUTTONUP',
+    0x605: 'JOYDEVICEADDED',
+    0x606: 'JOYDEVICEREMOVED',
+    0x650: 'CONTROLLERAXISMOTION',
+    0x651: 'CONTROLLERBUTTONDOWN',
+    0x652: 'CONTROLLERBUTTONUP',
+    0x653: 'CONTROLLERDEVICEADDED',
+    0x654: 'CONTROLLERDEVICEREMOVED',
+    0x655: 'CONTROLLERDEVICEREMAPPED',
+    0x700: 'FINGERDOWN',
+    0x701: 'FINGERUP',
+    0x702: 'FINGERMOTION',
+    0x800: 'DOLLARGESTURE',
+    0x801: 'DOLLARRECORD',
+    0x802: 'MULTIGESTURE',
+    0x900: 'CLIPBOARDUPDATE',
+    0x1000: 'DROPFILE',
+    0x2000: 'RENDER_TARGETS_RESET',
+    0x8000: 'USEREVENT',
+    0xFFFF: 'LASTEVENT',
+}
 
 
 def set_blocked(filter_type):
-    # TODO
-    pass
+    """control which events are allowed on the queue
+    set_blocked(type) -> None
+    set_blocked(typelist) -> None
+    set_blocked(None) -> None
+
+    :param filter_type: event type, type list, or None
+    :return: None
+    """
+    if filter_type is None:
+        del blocked_event_types[:]
+    elif filter_type in event_names and filter_type not in blocked_event_types:
+        blocked_event_types.append(filter_type)
+    else:
+        try:
+            for etype in filter_type:
+                if etype in event_names and etype not in blocked_event_types:
+                    blocked_event_types.append(etype)
+        except TypeError:
+            pass
+blocked_event_types = []
 
 
 def set_allowed(filter_type):
-    # TODO
-    pass
+    """control which events are allowed on the queue
+    set_allowed(type) -> None
+    set_allowed(typelist) -> None
+    set_allowed(None) -> None
+
+    :param filter_type: event type, type list, or None
+    :return: None
+    """
+    if filter_type in blocked_event_types:
+        blocked_event_types.remove(filter_type)
+    else:
+        try:
+            for etype in filter_type:
+                if etype in event_names and etype not in blocked_event_types:
+                    blocked_event_types.append(etype)
+        except TypeError:
+            pass
 
 
 def get_blocked(event_type):
-    # TODO
-    pass
+    """test if a type of event is blocked from the queue
+    get_blocked(event_type) -> bool
+
+    :param event_type: event type
+    :return: bool
+    """
+    return event_type in blocked_event_types
 
 
-def set_grab(boolean):
-    # TODO
-    pass
+def set_grab(window, bool):
+    """control the sharing of input devices with other applications
+    set_grab(bool) -> None
+
+    :param window: Window (e.g. gsdl2.display.get_window())
+    :param bool: enable/disable grab for window
+    :return: None
+    """
+    sdl_lib.SDL_SetWindowGrab(window.sdl_window, sdl_ffi.SDL_TRUE if bool else sdl_ffi.SDL_FALSE)
 
 
-def get_grab():
-    # TODO
-    pass
+def get_grab(window):
+    """test if the program is sharing input devices
+    get_grab() -> bool
+
+    :param window: Window (e.g. gsdl2.display.get_window())
+    :return:
+    """
+    return sdl_lib.SDL_GetWindowGrab(window.sdl_window) == sdl_ffi.SDL_TRUE
+
+
+def get_grabbed_window():
+    """return the Window if input is grabbed, else return None
+    get_grabbed_window() -> window
+
+    :return: Window (e.g. gsdl2.display.get_window()) or None
+    """
+    sdl_window = sdl_lib.SDL_GetGrabbedWindow()
+    if sdl_window == sdl_ffi.NULL:
+        return None
+
+    window = None
+    for w in open_windows:
+        if w.sdl_window == sdl_window:
+            window = w
+            break
+    return window
+
+
+def register_events(n):
+    """register a number of USEREVENTS
+    register_events(n) -> starting_event_number
+
+    :param n: int
+    :return: starting event number
+    """
+    return sdl_lib.SDL_RegisterEvents(n)
 
 
 def post(event):
-    isblocked = sdl_lib.SDL_EventState(event.type, SDL_QUERY) == SDL_IGNORE
-    rc = 0
-    if not isblocked:
-        events.append(event)
+    """place a new event on the queue
+    post(Event) -> None
 
-
-# def _fill_user_event(event_type, code, window_id, data1, data2):
-#     e = sdl_ffi.new('SDL_UserEvent *')
-#     e.type = event_type
-#     e.code = code
-#     e.windowID = window_id
-#     data1 = sdl_ffi.new('char[]', utf8(data1))
-#     data2 = sdl_ffi.new('char[]', utf8(data2))
-#     e.data1 = sdl_ffi.cast('void *', data1)
-#     e.data2 = sdl_ffi.cast('void *', data2)
-#     userevent_dict[e] = data1, data2, time.time()
-#     return e
-# # ffi.new() objects cannot go out of scope or their storage is destroyed
-# userevent_dict = {}
+    :param event: Event
+    :return: None
+    """
+    if not get_blocked(event.type):
+        _get_internal()
+        queued_events.append(event)
 
 
 def Event(event_type, *args, **kwargs):
     """internal event factory
 
-    Usages:
-    Event(type, dict)
-    Event(type, **kwargs)
-    Event(type, *args)
+    Event(type, dict) -> event
+    Event(type, **kwargs) -> event
+    Event(type, *args) -> event
 
     See the classes NoEvent through UserEvent for the constructor signatures.
 
@@ -497,3 +647,6 @@ def Event(event_type, *args, **kwargs):
             # Event(type, **kwargs)
             event = factory(event_type, **kwargs)
         return event
+
+
+from .window import open_windows

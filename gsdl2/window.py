@@ -2,7 +2,6 @@ import logging
 
 from .sdllibs import sdl_lib
 from .sdlconstants import SDL_WINDOWPOS_UNDEFINED
-from .surface import Surface
 from .locals import utf8
 
 
@@ -70,3 +69,4 @@ class Window(object):
 
 
 from .renderer import Renderer
+from .surface import Surface
