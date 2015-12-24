@@ -21,16 +21,16 @@ def get_init():
 # EXPERIMENTAL: enabled callback for pypy 4.0.0
 # https://cffi.readthedocs.org/en/latest
 #
-if True:
-    @sdl_ffi.callback('void (*)()')
-    def _music_finished():
-        if _globals.queued is not None:
-            load(_globals.queued)
-            _globals.queued = None
-            play()
-        if _globals.end_event is not None:
-            event.post(event.Event(_globals.end_event, code=_globals.code, data1=_globals.current_name))
-    mixer_lib.Mix_HookMusicFinished(_music_finished)
+@sdl_ffi.callback('void (*)()')
+def _music_finished():
+    if _globals.queued is not None:
+        load(_globals.queued)
+        _globals.queued = None
+        play()
+    if _globals.end_event is not None:
+        event.post(event.Event(
+            _globals.end_event, code=_globals.code, window=0, data1=_globals.current_name, data2=None))
+mixer_lib.Mix_HookMusicFinished(_music_finished)
 
 
 def load(filename):
@@ -148,9 +148,8 @@ def set_endevent(event_type=USEREVENT, code=0):
     :param code: int
     :return: None
     """
-    if event_type in (USEREVENT, None):
-        _globals.end_event = event_type
-        _globals.code = int(code)
+    _globals.end_event = event_type
+    _globals.code = int(code)
 
 
 def get_endevent():
