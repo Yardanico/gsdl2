@@ -64,8 +64,8 @@ class MouseMotionEvent(_Struct):
 
 
 class MouseButtonEvent(_Struct):
-    def __init__(self, type=None, window=None, mouse=None, state=None, clicks=None, pos=None):
-        _Struct.__init__(self, type=type, window=window, mouse=mouse, state=state, clicks=clicks, pos=pos)
+    def __init__(self, type=None, window=None, mouse=None, button=None, state=None, clicks=None, pos=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, button=button, state=state, clicks=clicks, pos=pos)
 
 
 class MouseWheelEvent(_Struct):
@@ -190,7 +190,7 @@ def _MouseMotionEvent(e):
 def _MouseButtonEvent(e):
     e = sdl_ffi.cast('SDL_MouseButtonEvent *', e)
     pos = e.x, e.y
-    return MouseButtonEvent(e.type, e.windowID, e.which, e.state, e.clicks, pos)
+    return MouseButtonEvent(e.type, e.windowID, e.which, e.button, e.state, e.clicks, pos)
 
 
 def _MouseWheelEvent(e):
