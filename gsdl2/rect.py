@@ -255,7 +255,15 @@ class Rect(object):
                 self_bottom >= rect.bottom and
                 self_right > rect_x and
                 self_bottom > rect_y)
-    
+
+    def normalize(self):
+        if self.width < 0:
+            self.x += self.w
+            self.w = -self.w
+        if self.h < 0:
+            self.y += self.h
+            self.h = -self.h
+
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
         w *= factor_x
