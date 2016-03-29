@@ -4,8 +4,8 @@ import logging
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
     'sdlconstants', 'sdlkeys', 'sdl_ffi', 'image_ffi', 'ttf_ffi', 'sdl_lib', 'image_lib', 'ttf_lib', 'color',
-    'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'image', 'joystick', 'mixer', 'music', 'particles',
-    'rect','renderer', 'surface', 'time', 'texture', 'window', 'utf8'
+    'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'image', 'joystick', 'mixer', 'mouse', 'music',
+    'particles', 'rect','renderer', 'surface', 'time', 'texture', 'window', 'utf8'
 ]
 
 
@@ -63,6 +63,7 @@ from . import event
 from . import image
 from . import joystick
 from . import mixer
+from . import mouse
 from . import music
 from . import rect
 from . import renderer
