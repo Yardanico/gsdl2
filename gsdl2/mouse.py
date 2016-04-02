@@ -32,8 +32,9 @@ def set_pos(x, y, window=None):
     return sdl_lib.SDL_WarpMouseInWindow(window.sdl_window, int(x), int(y))
 
 
-def set_visible():
-    pass
+def set_visible(bool):
+    bool = 1 if bool else 0
+    return sdl_lib.SDL_ShowCursor(bool)
 
 
 def get_focused():
