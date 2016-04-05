@@ -56,8 +56,8 @@ class Surface(object):
             self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
             do_blit = True
         else:
-            width, height = size_or_surf
             if surface is None:
+                width, height = size_or_surf
                 self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
             else:
                 self.__sdl_surface = surface
