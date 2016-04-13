@@ -22,7 +22,8 @@ def set_mode(resolution=(0, 0), flags=0, depth=0,
     Runtime.window = Window(w=resolution[0], h=resolution[1], flags=0, x=x, y=y)
 
     Runtime.renderer = Runtime.window.create_renderer(
-        flags=sdlconstants.SDL_WINDOW_HIDDEN | sdlconstants.SDL_RENDERER_ACCELERATED | flags)
+        flags=sdlconstants.SDL_WINDOW_HIDDEN | sdlconstants.SDL_RENDERER_ACCELERATED |
+              sdlconstants.SDL_RENDERER_TARGETTEXTURE | flags)
 
     Runtime.window.show()
 
