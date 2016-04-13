@@ -5,6 +5,7 @@ from .sdllibs import sdl_lib
 from .sdlffi import sdl_ffi
 #from .window import Window     # see bottom for delayed import
 from .rect import Rect
+from .color import Color
 
 
 class Renderer(object):
@@ -31,30 +32,73 @@ class Renderer(object):
 
     def get_logical_size(self):
         return sdl_lib.SDL_RenderGetLogicalSize(self.__sdl_renderer)
-
     def set_logical_size(self, size):
         sdl_lib.SDL_RenderSetLogicalSize(self.__sdl_renderer, *size)
+    logical_size = property(get_logical_size, set_logical_size)
 
     def get_draw_color(self):
-        return sdl_lib.SDL_GetRenderDrawColor(self.__sdl_renderer)
-
+        r, g, b, a = [sdl_ffi.new('Uint8 *') for i in range(4)]
+        sdl_lib.SDL_GetRenderDrawColor(self.__sdl_renderer, r, g, b, a)
+        return Color(r[0], g[0], b[0], a[0])
     def set_draw_color(self, color):
         sdl_lib.SDL_SetRenderDrawColor(self.__sdl_renderer, *color)
+    draw_color = property(get_draw_color, set_draw_color)
 
     def get_viewport(self):
         return sdl_lib.SDL_RrenderGetViewport(self.__sdl_renderer)
-
     def set_viewport(self, rect):
         if not isinstance(rect, Rect):
             self.__dst_rect[:] = rect
             rect = self.__dst_rect
         sdl_lib.SDL_RenderSetViewport(self.__sdl_renderer, rect.sdl_rect)
+    viewport = property(get_viewport, set_viewport)
 
     def get_scale(self):
         return sdl_lib.SDL_RenderGetScale(self.__sdl_renderer)
+    def set_scale(self, size):
+        sdl_lib.SDL_RenderSetScale(self.__sdl_renderer, *size)
+    scale = property(get_scale, set_scale)
 
-    def set_scale(self, x, y):
-        sdl_lib.SDL_RenderSetScale(self.__sdl_renderer, x, y)
+    def get_target(self):
+        """NOTE: this returns a SDL_Texture, not a gsdl2.texture.Texture
+        """
+        return sdl_lib.SDL_GetRenderTarget(self.sdl_renderer)
+
+    def set_target(self, texture=None, sdl_texture=None):
+        if texture:
+            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, texture.sdl_texture)
+        elif sdl_texture:
+            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, sdl_texture)
+        else:
+            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, sdl_ffi.NULL)
+
+    def get_blendmode(self):
+        blendmode = sdl_ffi.new('SDL_BlendMode *')
+        sdl_lib.SDL_GetRenderDrawBlendMode(self.sdl_renderer, blendmode)
+        value = int(blendmode[0])
+        return value
+    def set_blendmode(self, blendmode):
+        sdl_lib.SDL_SetRenderDrawBlendMode(self.sdl_renderer, blendmode)
+    blendmode = property(get_blendmode, set_blendmode)
+
+    def fill(self, color, texture=None):
+        target = None
+        if texture:
+            target = self.get_target()
+            self.set_target(texture)
+        renderer_blendmode = self.get_blendmode()
+        draw_color = self.get_draw_color()
+        # texture_blendmode = texture.get_blendmode()
+
+        self.set_blendmode(sdl_lib.SDL_BLENDMODE_NONE)
+        self.set_draw_color(color)
+        sdl_lib.SDL_RenderFillRect(self.sdl_renderer, sdl_ffi.NULL)
+
+        self.set_blendmode(renderer_blendmode)
+        self.set_draw_color(draw_color)
+        # texture.set_blendmode(texture_blendmode)
+        if target:
+            self.set_target(sdl_texture=target)
 
     def clear(self):
         sdl_lib.SDL_RenderClear(self.__sdl_renderer)
