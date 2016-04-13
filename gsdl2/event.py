@@ -139,137 +139,160 @@ class UserEvent(_Struct):
 
 
 def _NoEvent(e):
-    e = sdl_ffi.cast('SDL_CommonEvent *', e)
-    return NoEvent(e.type)
+    event = NoEvent(e.type)
+    return event
 
 
 def _QuitEvent(e):
-    e = sdl_ffi.cast('SDL_QuitEvent *', e)
-    return QuitEvent(e.type)
+    event = QuitEvent(e.type)
+    return event
 
 
 def _WindowEvent(e):
-    e2 = sdl_ffi.cast('SDL_WindowEvent *', e)
-    return WindowEvent(e2.type, e2.windowID, e2.event, e2.data1, e2.data2)
+    window = e.window
+    event = WindowEvent(e.type, window.windowID, window.event, window.data1, window.data2)
+    return event
 
 
 def _SysWMEvent(e):
-    e = sdl_ffi.cast('SDL_SysWMEvent *', e)
-    return SysWMEvent(e.type, e.msg)
+    syswm = e.syswm
+    msg = to_string(sdl_ffi.cast('char *', syswm.msg))
+    event = SysWMEvent(e.type, msg)
+    return event
 
 
 def _KeyEvent(e):
-    e = sdl_ffi.cast('SDL_KeyboardEvent *', e)
-    if e.repeat:
+    key = e.key
+    if key.repeat:
         return None
-    keysym = e.keysym
-    return KeyEvent(e.type, e.windowID, e.state, e.repeat, keysym.sym, keysym.mod, keysym.scancode)
+    keysym = key.keysym
+    event = KeyEvent(e.type, key.windowID, key.state, key.repeat, keysym.sym, keysym.mod, keysym.scancode)
+    return event
 
 
 def _TextEditingEvent(e):
-    e = sdl_ffi.cast('SDL_TextEditingEvent *', e)
+    edit = e.edit
     # NULL-terminated char[32-1]
-    text = str(e.text).replace('\x00', '')
-    return TextEditingEvent(e.type, e.windowID, utf8(text), e.start, e.length)
+    text = to_string(sdl_ffi.cast('chat *', edit.text))
+    event = TextEditingEvent(e.type, edit.windowID, text, edit.start, edit.length)
+    return event
 
 
 def _TextInputEvent(e):
-    e = sdl_ffi.cast('SDL_TextInputEvent *', e)
+    text = e.text
     # NULL-terminated char[32-1]
-    text = str(e.text).replace('\x00', '')
-    return TextInputEvent(e.type, e.windowID, utf8(text))
+    text_value = to_string(sdl_ffi.cast('char *', text.text))
+    event = TextInputEvent(e.type, text.windowID, text_value)
+    return event
 
 
 def _MouseMotionEvent(e):
-    e = sdl_ffi.cast('SDL_MouseMotionEvent *', e)
-    pos = e.x, e.y
-    rel = e.xrel, e.yrel
-    return MouseMotionEvent(e.type, e.windowID, e.which, e.state, pos, rel)
+    motion = e.motion
+    pos = motion.x, motion.y
+    rel = motion.xrel, motion.yrel
+    event = MouseMotionEvent(e.type, motion.windowID, motion.which, motion.state, pos, rel)
+    return event
 
 
 def _MouseButtonEvent(e):
-    e = sdl_ffi.cast('SDL_MouseButtonEvent *', e)
-    pos = e.x, e.y
-    return MouseButtonEvent(e.type, e.windowID, e.which, e.button, e.state, e.clicks, pos)
+    button = e.button
+    pos = button.x, button.y
+    event = MouseButtonEvent(e.type, button.windowID, button.which, button.button, button.state, button.clicks, pos)
+    return event
 
 
 def _MouseWheelEvent(e):
-    e = sdl_ffi.cast('SDL_MouseWheelEvent *', e)
-    pos = e.x, e.y
-    return MouseWheelEvent(e.type, e.windowID, e.which, pos)
+    wheel = e.wheel
+    pos = wheel.x, wheel.y
+    event = MouseWheelEvent(e.type, wheel.windowID, wheel.which, pos)
+    return event
 
 
 def _JoyAxisEvent(e):
-    e = sdl_ffi.cast('SDL_JoyAxisEvent *', e)
-    value = e.value / 32767.0
-    return JoyAxisEvent(e.type, e.which, e.axis, value)
+    jaxis = e.jaxis
+    value = jaxis.value / 32767.0
+    event = JoyAxisEvent(e.type, jaxis.which, jaxis.axis, value)
+    return event
 
 
 def _JoyBallEvent(e):
-    e = sdl_ffi.cast('SDL_JoyBallEvent *', e)
-    rel = e.xrel, e.yrel
-    return JoyBallEvent(e.type, e.which, e.ball, rel)
+    jball = e.jball
+    rel = b.xrel, b.yrel
+    event = JoyBallEvent(e.type, jball.which, jball.ball, rel)
+    return event
 
 
 def _JoyHatEvent(e):
-    e = sdl_ffi.cast('SDL_JoyHatEvent *', e)
-    return JoyHatEvent(e.type, e.which, e.hat, e.value)
+    jhat = e.jhat
+    event = JoyHatEvent(e.type, jhat.which, jhat.hat, jhat.value)
+    return event
 
 
 def _JoyButtonEvent(e):
-    e = sdl_ffi.cast('SDL_JoyButtonEvent *', e)
-    return JoyButtonEvent(e.type, e.which, e.button, e.state)
+    jbutton = e.jbutton
+    event = JoyButtonEvent(e.type, jbutton.which, jbutton.button, jbutton.state)
+    return event
 
 
 def _JoyDeviceEvent(e):
-    e = sdl_ffi.cast('SDL_JoyDeviceEvent *', e)
-    return JoyDeviceEvent(e.type, e.which)
+    jdevice = e.jdevice
+    event = JoyDeviceEvent(e.type, jdevice.which)
+    return event
 
 
 def _ControllerAxisEvent(e):
-    e = sdl_ffi.cast('SDL_ControllerAxisEvent *', e)
-    return ControllerAxisEvent(e.type, e.which, e.axis, e.value)
+    caxis = e.caxis
+    event = ControllerAxisEvent(e.type, caxis.which, caxis.axis, caxis.value)
+    return event
 
 
 def _ControllerButtonEvent(e):
-    e = sdl_ffi.cast('SDL_ControllerButtonEvent *', e)
-    return ControllerButtonEvent(e.type, e.which, e.button, e.state)
+    cbutton = e.cbutton
+    event = ControllerButtonEvent(cbutton.type, cbutton.which, cbutton.button, cbutton.state)
+    return event
 
 
 def _ControllerDeviceEvent(e):
-    e = sdl_ffi.cast('SDL_ControllerDeviceEvent *', e)
-    return ControllerDeviceEvent(e.type, e.which)
+    cdevice = e.cdevice
+    event = ControllerDeviceEvent(e.type, cdevice.which)
+    return event
 
 
 def _TouchFingerEvent(e):
-    e = sdl_ffi.cast('SDL_TouchFingerEvent *', e)
-    pos = e.x, e.y
-    rel = e.dx, e.dy
-    return TouchFingerEvent(e.type, e.touchID, e.fingerID, pos, rel, e.pressure)
+    tfinger = e.tfinger
+    pos = tfinger.x, tfinger.y
+    rel = tfinger.dx, tfinger.dy
+    event = TouchFingerEvent(e.type, tfinger.touchID, tfinger.fingerID, pos, rel, tfinger.pressure)
+    return event
 
 
 def _MultiGestureEvent(e):
-    e = sdl_ffi.cast('SDL_MultiGestureEvent *', e)
-    pos = e.x, e.y
-    return MultiGestureEvent(e.type, e.touchID, e.dTheta, e.dDist, pos, e.numFingers)
+    mgesture = e.mgesture
+    pos = mgesture.x, mgesture.y
+    event = MultiGestureEvent(e.type, mgesture.touchID, mgesture.dTheta, mgesture.dDist, pos, mgesture.numFingers)
+    return event
 
 
 def _DollarGestureEvent(e):
-    e = sdl_ffi.cast('SDL_DollarGestureEvent *', e)
-    pos = e.x, e.y
-    return DollarGestureEvent(e.type, e.touchID, e.gestureID, e.numFingers, e.error, pos)
+    dgesture = e.dgesture
+    pos = dgesture.x, dgesture.y
+    event = DollarGestureEvent(e.type, dgesture.touchID, dgesture.gestureID, dgesture.numFingers, dgesture.error, pos)
+    return event
 
 
 def _DropEvent(e):
-    e = sdl_ffi.cast('SDL_DropEvent *', e)
-    return DropEvent(e.type, e.file)
+    drop = e.drop
+    file_ = to_string(sdl_ffi.cast('char *', drop.file))
+    event = DropEvent(int(e2.type), file_)
+    return event
 
 
 def _UserEvent(e):
-    e = sdl_ffi.cast('SDL_UserEvent *', e)
-    data1 = to_string(sdl_ffi.cast('char *', e.data1))
-    data2 = to_string(sdl_ffi.cast('char *', e.data2))
-    return UserEvent(e.type, e.windowID, e.code, data1, data2)
+    user = e.user
+    data1 = to_string(sdl_ffi.cast('char *', user.data1))
+    data2 = to_string(sdl_ffi.cast('char *', user.data2))
+    event = UserEvent(e.type, user.windowID, user.code, data1, data2)
+    return event
 
 
 # Map event type to a factory.
@@ -329,7 +352,7 @@ def pump():
 
 def _get_internal(filter_type=None):
     if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
-        return []
+        return
 
     append = queued_events.append
     e = _event
@@ -345,9 +368,9 @@ def _get_internal(filter_type=None):
         #     print(f)
         if use_filter:
             # local filter in arg
-            if is_list and e.type not in filter_type:
+            if is_list and e.type in filter_type:
                 continue
-            elif e.type != filter_type:
+            elif e.type == filter_type:
                 continue
         # global filter
         if get_blocked(e.type):
@@ -516,15 +539,14 @@ def set_blocked(filter_type):
     """
     if filter_type is None:
         del blocked_event_types[:]
-    elif filter_type in event_names and filter_type not in blocked_event_types:
-        blocked_event_types.append(filter_type)
     else:
         try:
             for etype in filter_type:
                 if etype in event_names and etype not in blocked_event_types:
                     blocked_event_types.append(etype)
         except TypeError:
-            pass
+            if filter_type in event_names and filter_type not in blocked_event_types:
+                blocked_event_types.append(filter_type)
 blocked_event_types = []
 
 
