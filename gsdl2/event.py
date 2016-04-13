@@ -173,7 +173,7 @@ def _KeyEvent(e):
 def _TextEditingEvent(e):
     edit = e.edit
     # NULL-terminated char[32-1]
-    text = to_string(sdl_ffi.cast('chat *', edit.text))
+    text = to_string(sdl_ffi.cast('char *', edit.text))
     event = TextEditingEvent(e.type, edit.windowID, text, edit.start, edit.length)
     return event
 
