@@ -72,30 +72,52 @@ class Surface(object):
     def get_size(self):
         surf = self.__sdl_surface
         return surf.w, surf.h
+    size = property(get_size)
 
     def get_width(self):
         return self.__sdl_surface.w
+    width = property(get_width)
+    w = width
 
     def get_height(self):
         return self.__sdl_surface.w
+    height = property(get_height)
+    h = height
 
     def get_flags(self):
         return self.__sdl_surface.flags
+    flags = property(get_flags)
+
+    def get_masks(self):
+        f = self.__sdl_surface.format
+        return f.Rmask, f.Gmask, f.Bmask, f.Amask
+    masks = property(get_masks)
 
     def get_bitsize(self):
         return self.__sdl_surface.format.BitsPerPixel
+    bitsize = property(get_bitsize)
 
     def get_colorkey(self):
         surface = self.__sdl_surface
         c = Color(0, 0, 0, 0)
         sdl_lib.SDL_GetColorKey(surface, c.sdl_color)
         return c
-
     def set_colorkey(self, color, flag=1):
         """set flag=1 to enable, flag=0 to disable"""
         surface = self.__sdl_surface
         map_color = sdl_lib.SDL_MapRGBA if len(color) == 4 else sdl_lib.SDL_MapRGB
         sdl_lib.SDL_SetColorKey(surface, flag, map_color(surface.format, *color))
+    colorkey = property(get_colorkey, set_colorkey)
+
+    def get_blendmode(self):
+        cdata = sdl_ffi.new('SDL_BlendMode *')
+        sdl_lib.SDL_GetTextureBlendMode(self.sdl_surface, cdata)
+        value = int(cdata[0])
+        return value
+    def set_blendmode(self, mode):
+        sdl_lib.SDL_SetTextureBlendMode(self.sdl_surface, mode)
+    blendmode = property(get_blendmode, set_blendmode)
+
 
     def get_rect(self, **kwargs):
         """get_rect(rect=outrect, **{setattrs}) -> Rect
