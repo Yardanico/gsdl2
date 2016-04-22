@@ -1,7 +1,7 @@
 import logging
 
 from .sdllibs import sdl_lib
-from .sdlconstants import SDL_WINDOWPOS_UNDEFINED
+from .sdlconstants import SDL_WINDOWPOS_UNDEFINED, SDL_WINDOW_FULLSCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP
 from .locals import utf8
 
 
@@ -38,8 +38,16 @@ class Window(object):
     def update_surface(self):
         sdl_lib.SDL_UpdateWindowSurface(self.__sdl_window)
 
-    def set_window_title(self, title):
+    def set_title(self, title):
         sdl_lib.SDL_SetWindowTitle(self.__sdl_window, utf8(title))
+
+    def set_fullscreen(self, bool):
+        flag = SDL_WINDOW_FULLSCREEN if bool else 0
+        sdl_lib.SDL_SetWindowFullscreen(self.sdl_window, flag)
+
+    def set_fullscreen_desktop(self, bool):
+        flag = SDL_WINDOW_FULLSCREEN_DESKTOP if bool else 0
+        sdl_lib.SDL_SetWindowFullscreen(self.sdl_window, flag)
 
     def close(self):
         if self in open_windows:
