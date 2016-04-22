@@ -15,15 +15,16 @@ class Runtime:
 
 
 def set_mode(resolution=(0, 0), flags=0, depth=0,
+             renderer_flags=(sdlconstants.SDL_WINDOW_HIDDEN |
+                             sdlconstants.SDL_RENDERER_ACCELERATED |
+                             sdlconstants.SDL_RENDERER_TARGETTEXTURE),
              x=sdlconstants.SDL_WINDOWPOS_UNDEFINED, y=sdlconstants.SDL_WINDOWPOS_UNDEFINED):
     if Runtime.window is not None:
         return
 
-    Runtime.window = Window(w=resolution[0], h=resolution[1], flags=0, x=x, y=y)
+    Runtime.window = Window(w=resolution[0], h=resolution[1], flags=flags, x=x, y=y)
 
-    Runtime.renderer = Runtime.window.create_renderer(
-        flags=sdlconstants.SDL_WINDOW_HIDDEN | sdlconstants.SDL_RENDERER_ACCELERATED |
-              sdlconstants.SDL_RENDERER_TARGETTEXTURE | flags)
+    Runtime.renderer = Runtime.window.create_renderer(flags=renderer_flags)
 
     Runtime.window.show()
 
@@ -46,7 +47,7 @@ def flip():
 
 
 def set_caption(caption):
-    Runtime.window.set_window_title(caption)
+    Runtime.window.set_title(caption)
 
 
 def get_window():
