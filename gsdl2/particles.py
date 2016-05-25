@@ -49,6 +49,7 @@ class ParticleEngine(object):
     def __init__(self):
         """Creates a new ParticleEngine."""
         super(ParticleEngine, self).__init__()
+        self.deadones = deque()
 
     def process(self, dt, world, components):
         """Processes all particle components, decreasing their life by 1.
@@ -79,7 +80,8 @@ class ParticleEngine(object):
             def particle_deletefunc(world, list_of_dead_ones):
                 ...
         """
-        deadones = deque()
+        deadones = self.deadones
+        deadones.clear()
         dappend = deadones.append
         for p in components:
             p.life -= dt

@@ -1,5 +1,8 @@
 """12_particles.py - particle demo using textures, and the first robust test of FixedDriver
 
+Gumm's laptop gets around 22,000 tiny tomatoes at 60 fps.
+Gumm's laptop gets around 25,000 points at 60 fps.
+
 Usage:
     python 12_particles.py [scale=float] [sparks_per_second=int] [max_particles=int] [profile]
 
@@ -38,14 +41,16 @@ if 'pypy' in sys.executable:
     CONFIG = dict(
         image='tomato.png',     # image source
         scale=3.0,              # pixels per unit
-        max_particles=2000,     # max sparks alive at any time
+        max_particles=20000,    # max sparks alive at any time
+        increment=1000,
         profile=False,
     )
 else:
     CONFIG = dict(
         image='tomato.png',     # image source
         scale=3.0,              # pixels per unit
-        max_particles=1000,     # max sparks alive at any time
+        max_particles=2000,     # max sparks alive at any time
+        increment=100,
         profile=False,
     )
 
@@ -89,7 +94,7 @@ class Spark(gsdl2.particles.Particle):
                 Spark.rect = self.image.get_rect(center=(self.x, self.y))
             else:
                 Spark.image = gsdl2.image.load_texture(CONFIG['image'])
-                Spark.rect = gsdl2.Rect(0, 0, 30, 30)
+                Spark.rect = gsdl2.Rect(0, 0, 20, 20)
             self.image.set_blendmode(gsdl2.sdl_lib.SDL_BLENDMODE_BLEND)
             Spark.src_rect = self.image.get_rect()
 
@@ -143,7 +148,6 @@ class Sparkler(object):
         """pluggable spark generator"""
         self.particles = deque(set(self.particles) - set(deadones))
         scale = CONFIG['scale']
-        elapsed = dt
         particles = self.particles
         max_particles = self.max_particles
         rate = 3.0 / max_particles
@@ -151,7 +155,10 @@ class Sparkler(object):
         x = self.x
         y = self.y
         n_dead = len(deadones)
+        elapsed = dt
         while elapsed > 0.0:
+            if len(particles) >= max_particles:
+                return
             elapsed -= rate
             if n_dead > 0:
                 n_dead -= 1
@@ -160,15 +167,12 @@ class Sparkler(object):
                            random.randrange(1, 2) * scale,
                            (random.random() * 16 - 8) * scale,
                            (random.random() * 16 - 8) * scale)
-                append(p)
-            elif len(particles) < max_particles:
+            else:
                 p = Spark(x, y,
                           random.randrange(1, 2) * scale,
                           (random.random() * 16 - 8) * scale,
                           (random.random() * 16 - 8) * scale)
-                append(p)
-            else:
-                break
+            append(p)
 
     @staticmethod
     def _update(dt, world, livingones):
@@ -209,8 +213,8 @@ class Game(object):
         self.renderer = gsdl2.display.get_renderer()
 
         # switchable model pulse rate, clock, and schedules
-        self.which_interval = [30, 60, 120, 240, 360, 15]
-        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 15.0)
+        self.which_interval = [60, 120, 15, 30]
+        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0)
         self.clock.new_schedule(self.caption, 1.0)
         self.renderer_schedule = self.clock.new_schedule(self.draw, 0.0, keep_history=True)
 
@@ -261,10 +265,10 @@ class Game(object):
                     else:
                         self.renderer_schedule.set_running(False)
                 elif e.scancode == S_EQUALS:
-                    self.sparkler.max_particles += 500
+                    self.sparkler.max_particles += CONFIG['increment']
                 elif e.scancode == S_MINUS:
-                    if self.sparkler.max_particles > 500:
-                        self.sparkler.max_particles -= 500
+                    if self.sparkler.max_particles > CONFIG['increment']:
+                        self.sparkler.max_particles -= CONFIG['increment']
                 elif e.scancode == S_SPACE:
                     self.sparkler.particles.clear()
                     if CONFIG['image'] == 'point':
