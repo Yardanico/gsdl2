@@ -3,10 +3,18 @@
 Usage:
     python 12_particles.py [scale=float] [sparks_per_second=int] [max_particles=int] [profile]
 
+Controls:
+    i       Toggle interpolation
+    =, -    Increase or decrease max sparks
+    TAB     Cycle master's period (dt)
+    SPACE   Toggle spark's image
+    ESCAPE  End program
+
 Based on ParticleEngine by marcusva in py-sdl2:
 https://bitbucket.org/marcusva/py-sdl2
 """
 
+from collections import deque
 import cProfile
 import pstats
 import random
@@ -21,26 +29,25 @@ except ImportError:
     import gsdl2
 
 import gsdl2
-from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_TAB, S_I, MOUSEMOTION
+from gsdl2.locals import QUIT, KEYDOWN, MOUSEMOTION, S_ESCAPE, S_TAB, S_SPACE, S_EQUALS, S_MINUS, S_I
 
 
 print('Python: {}'.format(sys.executable))
 
 if 'pypy' in sys.executable:
     CONFIG = dict(
+        image='tomato.png',     # image source
         scale=3.0,              # pixels per unit
-        sparks_per_second=640,  # max sparks released per tick
         max_particles=2000,     # max sparks alive at any time
         profile=False,
     )
 else:
     CONFIG = dict(
+        image='tomato.png',     # image source
         scale=3.0,              # pixels per unit
-        sparks_per_second=320,  # max sparks released per tick
         max_particles=1000,     # max sparks alive at any time
         profile=False,
     )
-
 
 
 def parse_args():
@@ -61,8 +68,9 @@ def parse_args():
 
 
 class Spark(gsdl2.particles.Particle):
-
     image = None
+    src_rect = None
+    rect = None
 
     def __init__(self, x, y, life, vx, vy):
         gsdl2.particles.Particle.__init__(self, x, y, life)
@@ -74,12 +82,16 @@ class Spark(gsdl2.particles.Particle):
         self.oldy = y
 
         if self.image is None:
-            surf = gsdl2.Surface((2, 2))
-            surf.fill(gsdl2.Color(240, 248, 255))
-            self.image = gsdl2.Texture(gsdl2.display.get_renderer(), surf)
+            if CONFIG['image'] == 'point':
+                surf = gsdl2.Surface((2, 2))
+                surf.fill(gsdl2.Color(240, 248, 255))
+                Spark.image = gsdl2.Texture(gsdl2.display.get_renderer(), surf)
+                Spark.rect = self.image.get_rect(center=(self.x, self.y))
+            else:
+                Spark.image = gsdl2.image.load_texture(CONFIG['image'])
+                Spark.rect = gsdl2.Rect(0, 0, 30, 30)
             self.image.set_blendmode(gsdl2.sdl_lib.SDL_BLENDMODE_BLEND)
-
-        self.rect = self.image.get_rect(center=(self.x, self.y))
+            Spark.src_rect = self.image.get_rect()
 
     def update(self, dt, world):
         """just yer basic time-and-space-scaled acceleration"""
@@ -101,49 +113,62 @@ class Spark(gsdl2.particles.Particle):
 
         self.rect.center = self.x, self.y
 
-    def get_rect_interpolated(self, interp):
+    def get_rect(self, interp=None):
         """interpolate between the old and current position"""
-        x0 = self.oldx
-        x1 = self.x
-        y0 = self.oldy
-        y1 = self.y
         rect = self.rect
-        rect.topleft = int(x0 + (x1 - x0) * interp), int(y0 + (y1 - y0) * interp)
+        if interp is None:
+            rect.center = self.x, self.y
+        else:
+            x0 = self.oldx
+            x1 = self.x
+            y0 = self.oldy
+            y1 = self.y
+            rect.topleft = int(x0 + (x1 - x0) * interp), int(y0 + (y1 - y0) * interp)
         return rect
 
 
 class Sparkler(object):
-
-    def __init__(self, x, y, sparks_per_second=100, max_particles=250):
+    def __init__(self, x, y, max_particles=250):
         self.particles_engine = gsdl2.particles.ParticleEngine()
-        self.particles = []
+        self.particles = deque()
         self.x = x
         self.y = y
-        self.rate = 1.0 / sparks_per_second
-        self.elapsed = 0.0
         self.max_particles = max_particles
 
         self.particles_engine.createfunc = self._create
         self.particles_engine.updatefunc = self._update
         self.particles_engine.deletefunc = self._delete
 
-        self.debug_particle = None
-
-    def _create(self, dt, world, components):
+    def _create(self, dt, world, deadones):
         """pluggable spark generator"""
-        self.elapsed -= dt
+        self.particles = deque(set(self.particles) - set(deadones))
         scale = CONFIG['scale']
-        while self.elapsed <= 0.0:
-            self.elapsed += self.rate
-            if len(self.particles) >= self.max_particles:
-                continue
-            p = Spark(self.x, self.y,
-                      random.randrange(1, 2) * scale,
-                      (random.random() * 16 - 8) * scale,
-                      (random.random() * 16 - 8) * scale)
-            self.particles.append(p)
-            if self.debug_particle is None:
-                self.debug_particle = p
+        elapsed = dt
+        particles = self.particles
+        max_particles = self.max_particles
+        rate = 3.0 / max_particles
+        append = self.particles.append
+        x = self.x
+        y = self.y
+        n_dead = len(deadones)
+        while elapsed > 0.0:
+            elapsed -= rate
+            if n_dead > 0:
+                n_dead -= 1
+                p = deadones.popleft()
+                p.__init__(x, y,
+                           random.randrange(1, 2) * scale,
+                           (random.random() * 16 - 8) * scale,
+                           (random.random() * 16 - 8) * scale)
+                append(p)
+            elif len(particles) < max_particles:
+                p = Spark(x, y,
+                          random.randrange(1, 2) * scale,
+                          (random.random() * 16 - 8) * scale,
+                          (random.random() * 16 - 8) * scale)
+                append(p)
+            else:
+                break
 
     @staticmethod
     def _update(dt, world, livingones):
@@ -153,11 +178,7 @@ class Sparkler(object):
 
     def _delete(self, dt, world, deadones):
         """pluggable dead spark remover"""
-        remove = self.particles.remove
-        for p in deadones:
-            remove(p)
-            if p is self.debug_particle:
-                self.debug_particle = None
+        pass
 
     def update(self, dt, mousex, mousey):
         """update model"""
@@ -168,14 +189,16 @@ class Sparkler(object):
     def render(self, renderer):
         """basic pygame-like renderer"""
         for p in self.particles:
-            p.image.set_alpha(p.alpha)
-            renderer.copy(p.image, p.rect)
+            image = p.image
+            image.set_alpha(p.alpha)
+            renderer.copy(image, p.get_rect(), p.src_rect)
 
     def render_interpolated(self, renderer, interp):
         """interpolated renderer"""
         for p in self.particles:
-            p.image.set_alpha(p.alpha)
-            renderer.copy(p.image, p.get_rect_interpolated(interp))
+            image = p.image
+            image.set_alpha(p.alpha)
+            renderer.copy(image, p.get_rect(interp), p.src_rect)
 
 
 class Game(object):
@@ -196,8 +219,7 @@ class Game(object):
 
         # sparkler follows mouse location
         self.mousex, self.mousey = self.screen_rect.center
-        self.sparkler = Sparkler(self.mousex, self.mousey,
-                                 sparks_per_second=CONFIG['sparks_per_second'], max_particles=CONFIG['max_particles'])
+        self.sparkler = Sparkler(self.mousex, self.mousey, max_particles=CONFIG['max_particles'])
 
     def run(self):
         """just a busy loop that turns the clock"""
@@ -238,6 +260,18 @@ class Game(object):
                         self.renderer_schedule.set_running(True)
                     else:
                         self.renderer_schedule.set_running(False)
+                elif e.scancode == S_EQUALS:
+                    self.sparkler.max_particles += 500
+                elif e.scancode == S_MINUS:
+                    if self.sparkler.max_particles > 500:
+                        self.sparkler.max_particles -= 500
+                elif e.scancode == S_SPACE:
+                    self.sparkler.particles.clear()
+                    if CONFIG['image'] == 'point':
+                        CONFIG['image'] = 'tomato.png'
+                    else:
+                        CONFIG['image'] = 'point'
+                    Spark.image = None
             elif e.type == MOUSEMOTION:
                 self.mousex, self.mousey = e.pos
 
@@ -256,12 +290,14 @@ class Game(object):
         dt = self.clock.period
         target = 1.0 / dt
         gsdl2.display.set_caption(
-            'Master: real={real}/s target={target}/s | FPS: {fps}/s | Particles: {particles} | Interp: {interp}'.format(
+            'Master: real={real}/s target={target}/s | FPS: {fps}/s | Particles: {particles}/{maxp} | Interp: {interp} | Image={image}'.format(
                 real=int(self.clock.per_second()),
                 target=int(target),
                 fps=int(self.renderer_schedule.per_second()),
                 particles=len(self.sparkler.particles),
-                interp=self.do_interpolation))
+                maxp=self.sparkler.max_particles,
+                interp=self.do_interpolation,
+                image=CONFIG['image']))
 
 
 def main():

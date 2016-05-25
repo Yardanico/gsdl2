@@ -5,6 +5,9 @@ ParticleEngine by marcusva in py-sdl2:
 https://bitbucket.org/marcusva/py-sdl2/overview
 """
 
+from collections import deque
+
+
 __all__ = ["Particle", "ParticleEngine"]
 
 
@@ -76,7 +79,7 @@ class ParticleEngine(object):
             def particle_deletefunc(world, list_of_dead_ones):
                 ...
         """
-        deadones = []
+        deadones = deque()
         dappend = deadones.append
         for p in components:
             p.life -= dt
