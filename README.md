@@ -26,6 +26,15 @@ See downloads. =)
     * pip install pycparser
     * Install dynamic libraries for [SDL 2.0](https://www.libsdl.org/download-2.0.php), [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/), [SDL_ttf 2.0](https://www.libsdl.org/projects/SDL_ttf/), and [SDL_mixer 2.0](https://www.libsdl.org/projects/SDL_mixer/). On Windows, for pypy I simply copied *.dll to the C:\pypy25 folder, and for CPython to the C:\Python\DLLs folder. You may need to put the folder in the system path.
 
+Here is how I installed SDL2 in Xubuntu 16:
+
+    sudo apt-get install libsdl2-dev
+    sudo apt-get install libsdl2-gfx-dev
+    sudo apt-get install libsdl2-image-dev
+    sudo apt-get install libsdl2-mixer-dev
+    sudo apt-get install libsdl2-net-dev
+    sudo apt-get install libsdl2-ttf-dev
+
 So far I periodically check that changes work with CPython 2.7, but the focus is pypy. Probably rects and other spammy bytecode objects are going to require pypy's JIT compiler, or some savvy optimizations for CPython. Certainly the 20,000 balls in 80_megaballs.py is a CPU killer: I can barely get 2,000 in CPython.
 
 On one of my Windows 7 + ActivePython 2.7 computers IMG_Load experiences a segfault when run from Cygwin. It may be a configuration issue. The segfault does not occur when I run it from a Windows CMD prompt. I do not have this issue in the same configuration on other computers.
