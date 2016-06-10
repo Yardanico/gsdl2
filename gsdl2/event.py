@@ -24,140 +24,140 @@ class _Struct(dict):
 
 
 class NoEvent(_Struct):
-    def __init__(self, type=None):
-        _Struct.__init__(self, type=type)
+    def __init__(self, type=None, __event=None):
+        _Struct.__init__(self, type=type, __event=__event)
 
 
 class QuitEvent(_Struct):
-    def __init__(self, type=None):
-        _Struct.__init__(self, type=type)
+    def __init__(self, type=None, __event=None):
+        _Struct.__init__(self, type=type, __event=__event)
 
 
 class WindowEvent(_Struct):
-    def __init__(self, type=None, window=None, event=None, data1=None, data2=None):
-        _Struct.__init__(self, type=type, window=window, event=event, data1=data1, data2=data2)
+    def __init__(self, type=None, window=None, event=None, data1=None, data2=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, event=event, data1=data1, data2=data2, __event=__event)
 
 
 class SysWMEvent(_Struct):
-    def __init__(self, type=None, msg=None):
-        _Struct.__init__(self, type=type, msg=msg)
+    def __init__(self, type=None, msg=None, __event=None):
+        _Struct.__init__(self, type=type, msg=msg, __event=__event)
 
 
 class KeyEvent(_Struct):
-    def __init__(self, type=None, window=None, state=None, repeat=None, key=None, mod=None, scancode=None):
-        _Struct.__init__(self, type=type, window=window, state=state, repeat=repeat, key=key, mod=mod, scancode=scancode)
+    def __init__(self, type=None, window=None, state=None, repeat=None, key=None, mod=None, scancode=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, state=state, repeat=repeat, key=key, mod=mod, scancode=scancode, __event=__event)
 
 
 class TextEditingEvent(_Struct):
-    def __init__(self, type=None, window=None, text=None, start=None, length=None):
-        _Struct.__init__(self, type=type, window=window, text=text, start=start, length=length)
+    def __init__(self, type=None, window=None, text=None, start=None, length=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, text=text, start=start, length=length, __event=__event)
 
 
 class TextInputEvent(_Struct):
-    def __init__(self, type=None, window=None, text=None):
-        _Struct.__init__(self, type=type, window=window, text=text)
+    def __init__(self, type=None, window=None, text=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, text=text, __event=__event)
 
 
 class MouseMotionEvent(_Struct):
-    def __init__(self, type=None, window=None, mouse=None, state=None, pos=None, rel=None):
-        _Struct.__init__(self, type=type, window=window, mouse=mouse, state=state, pos=pos, rel=rel)
+    def __init__(self, type=None, window=None, mouse=None, state=None, pos=None, rel=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, state=state, pos=pos, rel=rel, __event=__event)
 
 
 class MouseButtonEvent(_Struct):
-    def __init__(self, type=None, window=None, mouse=None, button=None, state=None, clicks=None, pos=None):
-        _Struct.__init__(self, type=type, window=window, mouse=mouse, button=button, state=state, clicks=clicks, pos=pos)
+    def __init__(self, type=None, window=None, mouse=None, button=None, state=None, clicks=None, pos=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, button=button, state=state, clicks=clicks, pos=pos, __event=__event)
 
 
 class MouseWheelEvent(_Struct):
-    def __init__(self, type=None, window=None, mouse=None, pos=None):
-        _Struct.__init__(self, type=type, window=window, mouse=mouse, pos=pos)
+    def __init__(self, type=None, window=None, mouse=None, pos=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, pos=pos, __event=__event)
 
 
 class JoyAxisEvent(_Struct):
-    def __init__(self, type=None, joy=None, axis=None, value=None):
-        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value)
+    def __init__(self, type=None, joy=None, axis=None, value=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value, __event=__event)
 
 
 class JoyBallEvent(_Struct):
-    def __init__(self, type=None, joy=None, ball=None, rel=None):
-        _Struct.__init__(self, type=type, joy=joy, ball=ball, rel=rel)
+    def __init__(self, type=None, joy=None, ball=None, rel=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, ball=ball, rel=rel, __event=__event)
 
 
 class JoyHatEvent(_Struct):
-    def __init__(self, type=None, joy=None, hat=None, value=None):
-        _Struct.__init__(self, type=type, joy=joy, hat=hat, value=value)
+    def __init__(self, type=None, joy=None, hat=None, value=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, hat=hat, value=value, __event=__event)
 
 
 class JoyButtonEvent(_Struct):
-    def __init__(self, type=None, joy=None, button=None, state=None):
-        _Struct.__init__(self, type=type, joy=joy, button=button, state=state)
+    def __init__(self, type=None, joy=None, button=None, state=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, button=button, state=state, __event=__event)
 
 
 class JoyDeviceEvent(_Struct):
-    def __init__(self, type=None, joy=None):
-        _Struct.__init__(self, type=type, joy=joy)
+    def __init__(self, type=None, joy=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, __event=__event)
 
 
 class ControllerAxisEvent(_Struct):
-    def __init__(self, type=None, joy=None, axis=None, value=None):
-        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value)
+    def __init__(self, type=None, joy=None, axis=None, value=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, axis=axis, value=value, __event=__event)
 
 
 class ControllerButtonEvent(_Struct):
-    def __init__(self, type=None, joy=None, button=None, state=None):
-        _Struct.__init__(self, type=type, joy=joy, button=button, state=state)
+    def __init__(self, type=None, joy=None, button=None, state=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, button=button, state=state, __event=__event)
 
 
 class ControllerDeviceEvent(_Struct):
-    def __init__(self, type=None, joy=None):
-        _Struct.__init__(self, type=type, joy=joy)
+    def __init__(self, type=None, joy=None, __event=None):
+        _Struct.__init__(self, type=type, joy=joy, __event=__event)
 
 
 class TouchFingerEvent(_Struct):
-    def __init__(self, type=None, touch=None, finger=None, pos=None, rel=None, pressure=None):
-        _Struct.__init__(self, type=type, touch=touch, finger=finger, pos=pos, rel=rel, pressure=pressure)
+    def __init__(self, type=None, touch=None, finger=None, pos=None, rel=None, pressure=None, __event=None):
+        _Struct.__init__(self, type=type, touch=touch, finger=finger, pos=pos, rel=rel, pressure=pressure, __event=__event)
 
 
 class MultiGestureEvent(_Struct):
-    def __init__(self, type=None, touch=None, dtheta=None, ddist=None, pos=None, numfingers=None):
-        _Struct.__init__(self, type=type, touch=touch, dtheta=dtheta, ddist=ddist, pos=pos, numfingers=numfingers)
+    def __init__(self, type=None, touch=None, dtheta=None, ddist=None, pos=None, numfingers=None, __event=None):
+        _Struct.__init__(self, type=type, touch=touch, dtheta=dtheta, ddist=ddist, pos=pos, numfingers=numfingers, __event=__event)
 
 
 class DollarGestureEvent(_Struct):
-    def __init__(self, type=None, touch=None, gesture=None, numfingers=None, error=None, pos=None):
-        _Struct.__init__(self, type=type, touch=touch, gesture=gesture, numfingers=numfingers, error=error, pos=pos)
+    def __init__(self, type=None, touch=None, gesture=None, numfingers=None, error=None, pos=None, __event=None):
+        _Struct.__init__(self, type=type, touch=touch, gesture=gesture, numfingers=numfingers, error=error, pos=pos, __event=__event)
 
 
 class DropEvent(_Struct):
-    def __init__(self, type=None, file=None):
-        _Struct.__init__(self, type=type, file=file)
+    def __init__(self, type=None, file=None, __event=None):
+        _Struct.__init__(self, type=type, file=file, __event=__event)
 
 
 class UserEvent(_Struct):
-    def __init__(self, type=None, window=None, code=None, data1=None, data2=None):
-        _Struct.__init__(self, type=type, window=window, code=code, data1=data1, data2=data2)
+    def __init__(self, type=None, window=None, code=None, data1=None, data2=None, __event=None):
+        _Struct.__init__(self, type=type, window=window, code=code, data1=data1, data2=data2, __event=__event)
 
 
 def _NoEvent(e):
-    event = NoEvent(e.type)
+    event = NoEvent(e.type, e)
     return event
 
 
 def _QuitEvent(e):
-    event = QuitEvent(e.type)
+    event = QuitEvent(e.type, e)
     return event
 
 
 def _WindowEvent(e):
     window = e.window
-    event = WindowEvent(e.type, window.windowID, window.event, window.data1, window.data2)
+    event = WindowEvent(e.type, window.windowID, window.event, window.data1, window.data2, e)
     return event
 
 
 def _SysWMEvent(e):
     syswm = e.syswm
     msg = to_string(sdl_ffi.cast('char *', syswm.msg))
-    event = SysWMEvent(e.type, msg)
+    event = SysWMEvent(e.type, msg, e)
     return event
 
 
@@ -166,7 +166,7 @@ def _KeyEvent(e):
     if key.repeat:
         return None
     keysym = key.keysym
-    event = KeyEvent(e.type, key.windowID, key.state, key.repeat, keysym.sym, keysym.mod, keysym.scancode)
+    event = KeyEvent(e.type, key.windowID, key.state, key.repeat, keysym.sym, keysym.mod, keysym.scancode, e)
     return event
 
 
@@ -174,7 +174,7 @@ def _TextEditingEvent(e):
     edit = e.edit
     # NULL-terminated char[32-1]
     text = to_string(sdl_ffi.cast('char *', edit.text))
-    event = TextEditingEvent(e.type, edit.windowID, text, edit.start, edit.length)
+    event = TextEditingEvent(e.type, edit.windowID, text, edit.start, edit.length, e)
     return event
 
 
@@ -182,7 +182,7 @@ def _TextInputEvent(e):
     text = e.text
     # NULL-terminated char[32-1]
     text_value = to_string(sdl_ffi.cast('char *', text.text))
-    event = TextInputEvent(e.type, text.windowID, text_value)
+    event = TextInputEvent(e.type, text.windowID, text_value, e)
     return event
 
 
@@ -190,71 +190,71 @@ def _MouseMotionEvent(e):
     motion = e.motion
     pos = motion.x, motion.y
     rel = motion.xrel, motion.yrel
-    event = MouseMotionEvent(e.type, motion.windowID, motion.which, motion.state, pos, rel)
+    event = MouseMotionEvent(e.type, motion.windowID, motion.which, motion.state, pos, rel, e)
     return event
 
 
 def _MouseButtonEvent(e):
     button = e.button
     pos = button.x, button.y
-    event = MouseButtonEvent(e.type, button.windowID, button.which, button.button, button.state, button.clicks, pos)
+    event = MouseButtonEvent(e.type, button.windowID, button.which, button.button, button.state, button.clicks, pos, e)
     return event
 
 
 def _MouseWheelEvent(e):
     wheel = e.wheel
     pos = wheel.x, wheel.y
-    event = MouseWheelEvent(e.type, wheel.windowID, wheel.which, pos)
+    event = MouseWheelEvent(e.type, wheel.windowID, wheel.which, pos, e)
     return event
 
 
 def _JoyAxisEvent(e):
     jaxis = e.jaxis
     value = jaxis.value / 32767.0
-    event = JoyAxisEvent(e.type, jaxis.which, jaxis.axis, value)
+    event = JoyAxisEvent(e.type, jaxis.which, jaxis.axis, value, e)
     return event
 
 
 def _JoyBallEvent(e):
     jball = e.jball
     rel = b.xrel, b.yrel
-    event = JoyBallEvent(e.type, jball.which, jball.ball, rel)
+    event = JoyBallEvent(e.type, jball.which, jball.ball, rel, e)
     return event
 
 
 def _JoyHatEvent(e):
     jhat = e.jhat
-    event = JoyHatEvent(e.type, jhat.which, jhat.hat, jhat.value)
+    event = JoyHatEvent(e.type, jhat.which, jhat.hat, jhat.value, e)
     return event
 
 
 def _JoyButtonEvent(e):
     jbutton = e.jbutton
-    event = JoyButtonEvent(e.type, jbutton.which, jbutton.button, jbutton.state)
+    event = JoyButtonEvent(e.type, jbutton.which, jbutton.button, jbutton.state, e)
     return event
 
 
 def _JoyDeviceEvent(e):
     jdevice = e.jdevice
-    event = JoyDeviceEvent(e.type, jdevice.which)
+    event = JoyDeviceEvent(e.type, jdevice.which, e)
     return event
 
 
 def _ControllerAxisEvent(e):
     caxis = e.caxis
-    event = ControllerAxisEvent(e.type, caxis.which, caxis.axis, caxis.value)
+    event = ControllerAxisEvent(e.type, caxis.which, caxis.axis, caxis.value, e)
     return event
 
 
 def _ControllerButtonEvent(e):
     cbutton = e.cbutton
-    event = ControllerButtonEvent(cbutton.type, cbutton.which, cbutton.button, cbutton.state)
+    event = ControllerButtonEvent(cbutton.type, cbutton.which, cbutton.button, cbutton.state, e)
     return event
 
 
 def _ControllerDeviceEvent(e):
     cdevice = e.cdevice
-    event = ControllerDeviceEvent(e.type, cdevice.which)
+    event = ControllerDeviceEvent(e.type, cdevice.which, e)
     return event
 
 
@@ -262,28 +262,28 @@ def _TouchFingerEvent(e):
     tfinger = e.tfinger
     pos = tfinger.x, tfinger.y
     rel = tfinger.dx, tfinger.dy
-    event = TouchFingerEvent(e.type, tfinger.touchID, tfinger.fingerID, pos, rel, tfinger.pressure)
+    event = TouchFingerEvent(e.type, tfinger.touchID, tfinger.fingerID, pos, rel, tfinger.pressure, e)
     return event
 
 
 def _MultiGestureEvent(e):
     mgesture = e.mgesture
     pos = mgesture.x, mgesture.y
-    event = MultiGestureEvent(e.type, mgesture.touchID, mgesture.dTheta, mgesture.dDist, pos, mgesture.numFingers)
+    event = MultiGestureEvent(e.type, mgesture.touchID, mgesture.dTheta, mgesture.dDist, pos, mgesture.numFingers, e)
     return event
 
 
 def _DollarGestureEvent(e):
     dgesture = e.dgesture
     pos = dgesture.x, dgesture.y
-    event = DollarGestureEvent(e.type, dgesture.touchID, dgesture.gestureID, dgesture.numFingers, dgesture.error, pos)
+    event = DollarGestureEvent(e.type, dgesture.touchID, dgesture.gestureID, dgesture.numFingers, dgesture.error, pos, e)
     return event
 
 
 def _DropEvent(e):
     drop = e.drop
     file_ = to_string(sdl_ffi.cast('char *', drop.file))
-    event = DropEvent(int(e2.type), file_)
+    event = DropEvent(int(e2.type), file_, e)
     return event
 
 
@@ -291,7 +291,7 @@ def _UserEvent(e):
     user = e.user
     data1 = to_string(sdl_ffi.cast('char *', user.data1))
     data2 = to_string(sdl_ffi.cast('char *', user.data2))
-    event = UserEvent(e.type, user.windowID, user.code, data1, data2)
+    event = UserEvent(e.type, user.windowID, user.code, data1, data2, e)
     return event
 
 
@@ -580,7 +580,7 @@ def get_blocked(event_type):
     return event_type in blocked_event_types
 
 
-def set_grab(window, bool):
+def set_grab(boolean, window=None):
     """control the sharing of input devices with other applications
     set_grab(bool) -> None
 
@@ -588,17 +588,17 @@ def set_grab(window, bool):
     :param bool: enable/disable grab for window
     :return: None
     """
-    sdl_lib.SDL_SetWindowGrab(window.sdl_window, sdl_ffi.SDL_TRUE if bool else sdl_ffi.SDL_FALSE)
+    sdl_lib.SDL_SetWindowGrab(window.sdl_window, sdl_lib.SDL_TRUE if boolean else sdl_lib.SDL_FALSE)
 
 
-def get_grab(window):
+def get_grab(window=None):
     """test if the program is sharing input devices
     get_grab() -> bool
 
     :param window: Window (e.g. gsdl2.display.get_window())
     :return:
     """
-    return sdl_lib.SDL_GetWindowGrab(window.sdl_window) == sdl_ffi.SDL_TRUE
+    return sdl_lib.SDL_GetWindowGrab(window.sdl_window) == sdl_lib.SDL_TRUE
 
 
 def get_grabbed_window():
