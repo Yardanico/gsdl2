@@ -9,7 +9,7 @@ ___all___ = ['load', 'load_texture']
 
 
 def load(name):
-    sdl_surface = sdllibs.image_lib.IMG_Load(utf8(name))
+    sdl_surface = sdllibs.image_lib.IMG_Load(str(name))
     if sdl_surface == sdllibs.sdl_ffi.NULL:
         raise sdllibs.SDLError()
     surf = Surface((sdl_surface.w, sdl_surface.h), surface=sdl_surface)
@@ -19,7 +19,7 @@ def load(name):
 def load_texture(name):
     renderer = get_renderer()
     sdl_renderer = renderer.sdl_renderer
-    sdl_texture = sdllibs.image_lib.IMG_LoadTexture(sdl_renderer, utf8(name))
+    sdl_texture = sdllibs.image_lib.IMG_LoadTexture(sdl_renderer, str(name))
     if sdl_texture == sdllibs.sdl_ffi.NULL:
         raise sdllibs.SDLError()
     texture = Texture(renderer, sdl_texture=sdl_texture)
