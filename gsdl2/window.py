@@ -10,7 +10,7 @@ __all__ = ['Window']
 
 open_windows = []
 
-log = logging.getLogger(__name__)
+# log = logging.getLogger(__name__)
 
 
 def get_list():
@@ -72,8 +72,9 @@ class Window(object):
                 self.__sdl_window = None
                 sdl_lib.SDL_DestroyWindow(garbage)
             except Exception as e:
-                log.info('sdl_lib.SDL_DestroyWindow() failed')
-                log.info(e)
+                # log.info('sdl_lib.SDL_DestroyWindow() failed')
+                # log.info(e)
+                pass
 
 
 from .renderer import Renderer
