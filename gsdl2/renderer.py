@@ -82,23 +82,23 @@ class Renderer(object):
     blendmode = property(get_blendmode, set_blendmode)
 
     def fill(self, color, texture=None):
-        target = None
+        restore_target = None
         if texture:
-            target = self.get_target()
+            restore_target = self.get_target()
             self.set_target(texture)
-        renderer_blendmode = self.get_blendmode()
-        draw_color = self.get_draw_color()
-        # texture_blendmode = texture.get_blendmode()
+        restore_blendmode = self.get_blendmode()
+        restore_draw_color = self.get_draw_color()
+        # restore_blendmode = texture.get_blendmode()
 
         self.set_blendmode(sdl_lib.SDL_BLENDMODE_NONE)
         self.set_draw_color(color)
         sdl_lib.SDL_RenderFillRect(self.sdl_renderer, sdl_ffi.NULL)
 
-        self.set_blendmode(renderer_blendmode)
-        self.set_draw_color(draw_color)
-        # texture.set_blendmode(texture_blendmode)
-        if target:
-            self.set_target(sdl_texture=target)
+        self.set_blendmode(restore_blendmode)
+        self.set_draw_color(restore_draw_color)
+        # texture.set_blendmode(restore_blendmode)
+        if restore_target:
+            self.set_target(sdl_texture=restore_target)
 
     def clear(self):
         sdl_lib.SDL_RenderClear(self.__sdl_renderer)
