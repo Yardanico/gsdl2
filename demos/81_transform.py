@@ -9,6 +9,7 @@ surfaces would be a lot more efficient. However for the texture renderer this is
 """
 
 import cProfile
+import gc
 import pstats
 import random
 import sys
@@ -31,15 +32,16 @@ if 'profile' in sys.argv:
     PROFILE = True
     sys.argv.remove('profile')
 try:
-    NUM_BALLS = int(sys.argv[1])
+    NUM_HW_BALLS = int(sys.argv[1])
 except ValueError:
     print('usage: python 01_transform.py [profile] [num_balls]')
     sys.exit(0)
 except IndexError:
     if 'pypy' in sys.executable:
-        NUM_BALLS = 1000
+        NUM_HW_BALLS = 1000
     else:
-        NUM_BALLS = 750
+        NUM_HW_BALLS = 750
+NUM_SW_BALLS = NUM_HW_BALLS // 20
 
 
 # Step through these with K_RETURN if you want to try different surface formats.
@@ -132,41 +134,36 @@ class Game(object):
         self.renderer.set_draw_color((96, 0, 96, 0))
         self.fill_color = (0, 0, 96, 0)
 
-        self.clock = gsdl2.Clock()
-        self.elapsed = 0.0
+        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 60.0)
+        self.clock.new_schedule(self.update_caption, 1.0)
 
-        self.use_renderer = True
+        self.use_renderer = (True, False)[1]
         self.running = False
         self.rotation_msg = {True: 'Go go go!', False: 'Ach, software... no rotation for j00!'}
 
         self.all_balls = []
-        for i in range(NUM_BALLS):
+        for i in range(NUM_HW_BALLS):
             self.all_balls.append(Ball())
         self.src_rect = gsdl2.Rect(0, 0, *Ball.texture.get_size())
         self._render_balls = self.all_balls[:]
-        self._blit_balls = self.all_balls[:NUM_BALLS // 4]
+        self._blit_balls = self.all_balls[:NUM_SW_BALLS]
         self.balls = self._render_balls if self.use_renderer else self._blit_balls
 
     def run(self):
         self.running = True
         while self.running:
-            ms = self.clock.tick()
-            dt = ms / 1000.0
-            self.update(dt)
+            self.clock.tick()
 
     def update(self, dt):
-        self.update_caption(dt)
         self.update_balls()
         self.update_events()
         self.draw()
 
-    def update_caption(self, dt):
-        self.elapsed += dt
-        if self.elapsed >= 1.0:
-            gsdl2.display.set_caption('{} fps | Balls: {} | Screen: {}x{} | Renderer: {} | Rotation: {}'.format(
-                int(self.clock.get_fps()), len(self.balls),
-                self.screen_rect.w, self.screen_rect.h, self.use_renderer, self.rotation_msg[self.use_renderer]))
-            self.elapsed -= 1.0
+    def update_caption(self, sched):
+        gsdl2.display.set_caption('{} fps | Balls: {} | Screen: {}x{} | Renderer: {} | Rotation: {}'.format(
+            int(self.clock.per_second()), len(self.balls),
+            self.screen_rect.w, self.screen_rect.h, self.use_renderer, self.rotation_msg[self.use_renderer]))
+        gc.collect()
 
     def update_balls(self):
         for ball in self.balls:
@@ -197,12 +194,22 @@ class Game(object):
             self.blit_balls()
 
     def blit_balls(self):
-        self.screen.fill(self.fill_color)
+        screen = self.screen
+        screen.fill(self.fill_color)
+        rotozoom = gsdl2.gfx.rotozoom
+        blit = screen.blit
         for ball in self.balls:
             # TODO: software rotate here
-            scale = ball.scale
-            r = ball.rect.scale(scale, scale)
-            self.screen.blit_scaled(ball.surface, r)
+            # scale = ball.scale
+            # r = ball.rect.scale(scale, scale)
+            # self.screen.blit_scaled(ball.surface, r)
+            # print('1')
+            surf = rotozoom(ball.surface, ball.angle, ball.scale, True)
+            # print('2')
+            rect = surf.get_rect(center=ball.rect.center)
+            # print('3')
+            blit(surf, rect)
+            # print('4')
         gsdl2.display.flip()
 
     def render_balls(self):
@@ -219,13 +226,8 @@ class Game(object):
 
 
 def main():
-    try:
-        game = Game()
-        game.run()
-    except:
-        pass
-    finally:
-        gsdl2.quit()
+    game = Game()
+    game.run()
 
 
 if __name__ == '__main__':

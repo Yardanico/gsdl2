@@ -3,13 +3,11 @@
 
 
 __all__ = [
-    'sdl_lib', 'image_lib', 'ttf_lib', 'mixer_lib',
-    'SDL_LIBS', 'SDLIMAGE_LIBS', 'SDLTTF_LIBS', 'SDLMIXER_LIBS',
+    'sdl_lib', 'image_lib', 'ttf_lib', 'mixer_lib', 'gfx_lib',
+    'SDL_LIBS', 'SDLIMAGE_LIBS', 'SDLTTF_LIBS', 'SDLMIXER_LIBS', 'SDLGFX_LIBS',
     'SDLError',
 ]
 
-
-import logging
 
 from .sdlffi import *
 
@@ -43,3 +41,6 @@ image_lib = dlopen(image_ffi, SDLIMAGE_LIBS)
 
 SDLMIXER_LIBS = ['SDL2_mixer.dll', 'libSDL2_mixer.so', 'libSDL2_mixer-2.0.so.0']
 mixer_lib = dlopen(mixer_ffi, SDLMIXER_LIBS)
+
+SDLGFX_LIBS = ['SDL2_gfx.dll', 'libSDL2_gfx.so', 'libSDL2_gfx-1.0.so.0']
+gfx_lib = dlopen(gfx_ffi, SDLGFX_LIBS)
