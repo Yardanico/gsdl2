@@ -3,7 +3,7 @@ from .sdlffi import sdl_ffi
 from .locals import utf8, USEREVENT
 from .sdlconstants import SDL_INIT_AUDIO
 
-import event
+from . import event
 
 
 class _globals:

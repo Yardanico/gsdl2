@@ -12,7 +12,7 @@ from .sdlconstants import MIX_DEFAULT_FORMAT, SDL_INIT_AUDIO
 from . import music
 from .locals import utf8
 
-import music
+from . import music
 
 
 # log = logging.getLogger(__name__)
