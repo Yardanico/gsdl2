@@ -1,8 +1,9 @@
+import _sdl
+import sdl
+
 __all__ = ['Renderer']
 
 
-from .sdllibs import sdl_lib
-from .sdlffi import sdl_ffi
 #from .window import Window     # see bottom for delayed import
 from .rect import Rect
 from .color import Color
@@ -17,7 +18,7 @@ class Renderer(object):
         assert isinstance(window, Window)
         self.__window = window
         if sdl_renderer:
-            assert isinstance(sdl_renderer, sdl_ffi.CData)
+            assert isinstance(sdl_renderer, _sdl.autohelpers.SDL_Renderer)
             self.__sdl_renderer = sdl_renderer
         else:
             self.__sdl_renderer = window.sdl_renderer
@@ -31,54 +32,54 @@ class Renderer(object):
     sdl_renderer = property(__getsdlrenderer)
 
     def get_logical_size(self):
-        return sdl_lib.SDL_RenderGetLogicalSize(self.__sdl_renderer)
+        return sdl.renderGetLogicalSize(self.__sdl_renderer)
     def set_logical_size(self, size):
-        sdl_lib.SDL_RenderSetLogicalSize(self.__sdl_renderer, *size)
+        sdl.renderSetLogicalSize(self.__sdl_renderer, *size)
     logical_size = property(get_logical_size, set_logical_size)
 
     def get_draw_color(self):
-        r, g, b, a = [sdl_ffi.new('Uint8 *') for i in range(4)]
-        sdl_lib.SDL_GetRenderDrawColor(self.__sdl_renderer, r, g, b, a)
+        r, g, b, a = [sdl.ffi.new('Uint8 *') for i in range(4)]
+        sdl.getRenderDrawColor(self.__sdl_renderer, r, g, b, a)
         return Color(r[0], g[0], b[0], a[0])
     def set_draw_color(self, color):
-        sdl_lib.SDL_SetRenderDrawColor(self.__sdl_renderer, *color)
+        sdl.setRenderDrawColor(self.__sdl_renderer, *color)
     draw_color = property(get_draw_color, set_draw_color)
 
     def get_viewport(self):
-        return sdl_lib.SDL_RrenderGetViewport(self.__sdl_renderer)
+        return sdl.renderGetViewport(self.__sdl_renderer)
     def set_viewport(self, rect):
         if not isinstance(rect, Rect):
             self.__dst_rect[:] = rect
             rect = self.__dst_rect
-        sdl_lib.SDL_RenderSetViewport(self.__sdl_renderer, rect.sdl_rect)
+        sdl.renderSetViewport(self.__sdl_renderer, rect.sdl_rect)
     viewport = property(get_viewport, set_viewport)
 
     def get_scale(self):
-        return sdl_lib.SDL_RenderGetScale(self.__sdl_renderer)
+        return sdl.renderGetScale(self.__sdl_renderer)
     def set_scale(self, size):
-        sdl_lib.SDL_RenderSetScale(self.__sdl_renderer, *size)
+        sdl.renderSetScale(self.__sdl_renderer, *size)
     scale = property(get_scale, set_scale)
 
     def get_target(self):
         """NOTE: this returns a SDL_Texture, not a gsdl2.texture.Texture
         """
-        return sdl_lib.SDL_GetRenderTarget(self.sdl_renderer)
+        return sdl.getRenderTarget(self.sdl_renderer)
 
     def set_target(self, texture=None, sdl_texture=None):
         if texture:
-            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, texture.sdl_texture)
+            return sdl.setRenderTarget(self.sdl_renderer, texture.sdl_texture)
         elif sdl_texture:
-            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, sdl_texture)
+            return sdl.setRenderTarget(self.sdl_renderer, sdl_texture)
         else:
-            return sdl_lib.SDL_SetRenderTarget(self.sdl_renderer, sdl_ffi.NULL)
+            return sdl.setRenderTarget(self.sdl_renderer, sdl.ffi.NULL)
 
     def get_blendmode(self):
-        blendmode = sdl_ffi.new('SDL_BlendMode *')
-        sdl_lib.SDL_GetRenderDrawBlendMode(self.sdl_renderer, blendmode)
+        blendmode = sdl.ffi.new('SDL_BlendMode *')
+        sdl.getRenderDrawBlendMode(self.sdl_renderer, blendmode)
         value = int(blendmode[0])
         return value
     def set_blendmode(self, blendmode):
-        sdl_lib.SDL_SetRenderDrawBlendMode(self.sdl_renderer, blendmode)
+        sdl.setRenderDrawBlendMode(self.sdl_renderer, blendmode)
     blendmode = property(get_blendmode, set_blendmode)
 
     def fill(self, color, texture=None):
@@ -90,9 +91,9 @@ class Renderer(object):
         restore_draw_color = self.get_draw_color()
         # restore_blendmode = texture.get_blendmode()
 
-        self.set_blendmode(sdl_lib.SDL_BLENDMODE_NONE)
+        self.set_blendmode(sdl.BLENDMODE_NONE)
         self.set_draw_color(color)
-        sdl_lib.SDL_RenderFillRect(self.sdl_renderer, sdl_ffi.NULL)
+        sdl.renderFillRect(self.sdl_renderer, sdl.ffi.NULL)
 
         self.set_blendmode(restore_blendmode)
         self.set_draw_color(restore_draw_color)
@@ -101,7 +102,7 @@ class Renderer(object):
             self.set_target(sdl_texture=restore_target)
 
     def clear(self):
-        sdl_lib.SDL_RenderClear(self.__sdl_renderer)
+        sdl.renderClear(self.__sdl_renderer)
 
     def copy(self, texture, dst_rect, src_rect=None):
         if not isinstance(src_rect, Rect):
@@ -115,7 +116,7 @@ class Renderer(object):
         if not isinstance(dst_rect, Rect):
             self.__dst_rect[:] = dst_rect
             dst_rect = self.__dst_rect
-        sdl_lib.SDL_RenderCopy(self.__sdl_renderer, texture.sdl_texture, src_rect.sdl_rect, dst_rect.sdl_rect)
+        sdl.renderCopy(self.__sdl_renderer, texture.sdl_texture, src_rect.sdl_rect, dst_rect.sdl_rect)
 
     def copy_ex(self, texture, dst_rect, src_rect, angle, center, flip):
         if not isinstance(src_rect, Rect):
@@ -125,14 +126,14 @@ class Renderer(object):
             self.__dst_rect[:] = dst_rect
             dst_rect = self.__dst_rect
         if center is None:
-            center = sdl_ffi.NULL
-        elif not isinstance(center, sdl_ffi.CData):
-            center = sdl_ffi.new('SDL_Point const *', center)
-        sdl_lib.SDL_RenderCopyEx(
+            center = sdl.ffi.NULL
+        elif not isinstance(center, sdl.ffi.CData):
+            center = sdl.ffi.new('SDL_Point const *', center)
+        sdl.renderCopyEx(
             self.__sdl_renderer, texture.sdl_texture, src_rect.sdl_rect, dst_rect.sdl_rect, angle, center, flip)
 
     def present(self):
-        sdl_lib.SDL_RenderPresent(self.__sdl_renderer)
+        sdl.renderPresent(self.__sdl_renderer)
 
     def __del__(self):
         # TODO: unreliable
@@ -140,7 +141,7 @@ class Renderer(object):
             try:
                 garbage = self.__sdl_renderer
                 self.__sdl_renderer = None
-                sdl_lib.SDL_DestroyRenderer(garbage)
+                sdl.destroyRenderer(garbage)
             except Exception as e:
                 print('error: sdl_lib.SDL_DestroyRenderer() failed')
                 print(e)

@@ -5,7 +5,8 @@ from collections import namedtuple
 import logging
 import struct
 
-from cffi import FFI
+import sdl
+from sdl import ffi
 
 from .sdllibs import sdl_lib
 from .sdlffi import sdl_ffi
@@ -15,8 +16,6 @@ from . import color
 from .rect import Rect
 from .locals import palette_8bit, Color
 
-
-ffi = FFI()
 
 
 PixelFormat = namedtuple('PixelFormat', 'format palette bitsperpixel bytesperpixel' +
@@ -235,7 +234,7 @@ class Surface(object):
             # rect = Rect(*rect)
             self.__src_rect[:] = rect
             rect = self.__src_rect
-        sdl_lib.SDL_FillRect(surface, rect.sdl_rect, map_color(surface.format, *color))
+        sdl.fillRect(surface, rect.sdl_rect, map_color(surface.format, *color))
         self.unlock()
         # return Rect()  # rather a tuple?
 

@@ -1,12 +1,12 @@
+import sdl
+
 __all__ = ['Clock', 'FixedDriver', 'GameClock', 'get_ticks', 'wait', 'delay']
 
 
 import collections
-import sys
 import time
 
 
-from .sdllibs import sdl_lib
 from .gameclock import GameClock
 
 
@@ -445,7 +445,7 @@ def get_ticks():
 
 
 def wait(ms):
-    sdl_lib.SDL_Delay(int(ms))
+    sdl.delay(int(ms))
     return time.time()
 
 
@@ -464,15 +464,15 @@ def _accurate_delay(ticks):
     if ticks <= 0:
         return 0
 
-    funcstart = sdl_lib.SDL_GetTicks ()
+    funcstart = sdl.getTicks ()
     if ticks >= WORST_CLOCK_ACCURACY:
         delay = (ticks - 2) - (ticks % WORST_CLOCK_ACCURACY)
         if delay >= WORST_CLOCK_ACCURACY:
-            sdl_lib.SDL_Delay(delay)
+            sdl.delay(delay)
     else:
         delay = ticks
 
     while delay > 0:
-        delay = ticks - (sdl_lib.SDL_GetTicks () - funcstart)
+        delay = ticks - (sdl.getTicks () - funcstart)
 
-    return sdl_lib.SDL_GetTicks () - funcstart
+    return sdl.getTicks () - funcstart

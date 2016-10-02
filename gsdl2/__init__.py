@@ -28,11 +28,9 @@ __all__ = [
 
 import sdl
 from sdl import ffi
-from gsdl2 import sdlffi
-from gsdl2 import sdllibs
+from sdl import ffi as sdlffi
+from gsdl2.sdllibs import gfx_lib
 from gsdl2 import sdlconstants
-
-gfx_lib = sdllibs.gfx_lib
 
 SDLError = sdllibs.SDLError
 
