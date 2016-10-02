@@ -1,5 +1,6 @@
 import logging
 
+import _sdl
 
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
@@ -27,12 +28,13 @@ __all__ = [
 #-----------------------------------
 
 import sdl
-from sdl import ffi
-from sdl import ffi as sdlffi
-from gsdl2.sdllibs import gfx_lib
+from gsdl2 import sdlffi
+from gsdl2 import sdllibs
 from gsdl2 import sdlconstants
 
-SDLError = sdllibs.SDLError
+gfx_lib = sdllibs.gfx_lib
+
+SDLError = _sdl.structs.SDLError
 
 
 
@@ -96,14 +98,14 @@ import atexit
 
 
 def init():
-    rc = sdl.init(sdl.INIT_EVERYTHING)
+    rc = sdl.init(sdlconstants.SDL_INIT_EVERYTHING)
     if rc != 0:
         logging.log(logging.ERROR, 'SDL2 failed to initialize')
         raise Exception('SDL2: failed to initialize')
 
-    rc = sdl.setHint(utf8(sdl.HINT_RENDER_SCALE_QUALITY), utf8("1"))
+    rc = sdl.setHint(utf8(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY), utf8("1"))
     if rc == 0:
-        logging.log(logging.ERROR, 'SDL2: failed to set hint {}'.format(sdl.HINT_RENDER_SCALE_QUALITY))
+        logging.log(logging.ERROR, 'SDL2: failed to set hint {}'.format(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY))
         logging.log(logging.ERROR, sdl.getError())
 
     rc = sdl.image.init(sdlconstants.IMG_INIT_EVERYTHING)
@@ -150,9 +152,8 @@ def quit():
     sdl.quit()
     # exit sdl2 image
     sdl.image.quit()
-    # exit sdl2 ttf
+
     sdl.ttf.quit()
-    # exit sdl2 mixer
     sdl.mixer.closeAudio()
     sdl.mixer.quit()
 

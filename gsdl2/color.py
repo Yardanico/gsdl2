@@ -1,10 +1,11 @@
+import sdl
+
 __all__ = ['Color']
 
 
 import logging
 
-from .sdlffi import sdl_ffi
-from .colordict import THECOLORS
+from gsdl2.colordict import THECOLORS
 
 
 log = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ class Color(object):
         assert len(args)
 
         self.__color = [0] * 4
-        self.__sdl_color = sdl_ffi.new('SDL_Color *')
+        self.__sdl_color = sdl.ffi.new('SDL_Color *')
 
         if isinstance(args[0], str):
             color_name = args[0]

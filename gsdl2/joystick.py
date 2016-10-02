@@ -1,5 +1,7 @@
-from .sdllibs import sdl_lib, SDLError
-from .sdlffi import sdl_ffi, to_string
+import sdl
+from _sdl.structs import SDLError
+
+from gsdl2.sdlffi import to_string
 from .sdlconstants import SDL_INIT_JOYSTICK, SDL_HAT_UP, SDL_HAT_DOWN, SDL_HAT_RIGHT, SDL_HAT_LEFT
 
 
@@ -14,11 +16,11 @@ def quit():
 
 
 def get_init():
-    return sdl_lib.SDL_WasInit(SDL_INIT_JOYSTICK) != 0
+    return sdl.wasInit(SDL_INIT_JOYSTICK) != 0
 
 
 def get_count():
-    return sdl_lib.SDL_NumJoysticks()
+    return sdl.numJoysticks()
 
 
 class Joystick(object):
@@ -29,18 +31,18 @@ class Joystick(object):
         self.__sdl_joystick = None
 
     def init(self):
-        self.__sdl_joystick = sdl_lib.SDL_JoystickOpen(self.__num)
-        if self.__sdl_joystick == sdl_ffi.NULL:
+        self.__sdl_joystick = sdl.joystickOpen(self.__num)
+        if self.__sdl_joystick == sdl.ffi.NULL:
             raise SDLError()
 
     def quit(self):
-        sdl_lib.SDL_JoystickClose(self.__num)
+        sdl.joystickClose(self.__num)
 
     def get_id(self):
         return self.__num
 
     def get_name(self):
-        return to_string(sdl_lib.SDL_JoystickNameForIndex(self.__num))
+        return to_string(sdl.joystickNameForIndex(self.__num))
 
     def get_numaxes(self):
         return sdl_lib.SDL_JoystickNumAxes(self.__num)

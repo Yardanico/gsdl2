@@ -6,8 +6,7 @@ These are #define macros from the C headers.
 
 import sys
 
-from .sdllibs import mixer_lib
-
+import sdl
 
 # SDL.h
 
@@ -281,14 +280,14 @@ MIX_EFFECTSMAXSPEED = "MIX_EFFECTSMAXSPEED"
 
 #define Mix_LoadWAV(file)   Mix_LoadWAV_RW(SDL_RWFromFile(file, "rb"), 1)
 def Mix_LoadWAV(file):
-    return mixer_lib.Mix_LoadWAV_RW(mixer_lib.SDL_RWFromFile(file, "rb"), 1)
+    return sdl.mixer.loadWAV_RW(sdl.RWFromFile(file, "rb"), 1)
 
 
 #define Mix_PlayChannel(channel,chunk,loops) Mix_PlayChannelTimed(channel,chunk,loops,-1)
 def Mix_PlayChannel(channel, chunk, loops):
-    return mixer_lib.Mix_PlayChannelTimed(channel, chunk, loops, -1)
+    return sdl.mixer.playChannelTimed(channel, chunk, loops, -1)
 
 
 #define Mix_FadeInChannel(channel,chunk,loops,ms) Mix_FadeInChannelTimed(channel,chunk,loops,ms,-1)
 def Mix_FadeInChannel(channel, chunk, loops, ms):
-    return mixer_lib.Mix_FadeInChannelTimed(channel, chunk, loops, ms, -1)
+    return sdl.mixer.fadeInChannelTimed(channel, chunk, loops, ms, -1)

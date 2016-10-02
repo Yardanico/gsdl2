@@ -1,6 +1,5 @@
-from .basesdl import ffi as sdl_ffi
 # from .constants import pypygameerror
-
+import sdl
 
 __all__ = ['Rect']
 
@@ -17,7 +16,7 @@ class Rect(object):
 
     def __init__(self, *args):
         # self.__dim = []
-        self.__sdl_rect = sdl_ffi.new('SDL_Rect *')
+        self.__sdl_rect = sdl.ffi.new('SDL_Rect *')
         r = self
         if len(args) == 4:
             r.x, r.y, r.w, r.h = args

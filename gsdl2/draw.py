@@ -1,10 +1,8 @@
 import math
-
-from .sdllibs import sdl_lib
-from .sdlffi import sdl_ffi
-from .rect import Rect
-from .color import Color
-from .sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN, SDL_LIL_ENDIAN
+import sdl
+from gsdl2.rect import Rect
+from gsdl2.color import Color
+from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_BIG_ENDIAN, SDL_LIL_ENDIAN
 
 
 debug = 0
@@ -1631,22 +1629,22 @@ def set_at(surf, x, y, color):
 
     bpp = surf.format.BytesPerPixel
     if bpp == 1:
-        pixels = sdl_ffi.cast('Uint8 *', surf.pixels)
+        pixels = sdl.ffi.cast('Uint8 *', surf.pixels)
         pixels += y * surf.pitch + x
         pixels[0] = color
     elif bpp == 2:
-        pixels = sdl_ffi.cast('Uint16 *', surf.pixels)
+        pixels = sdl.ffi.cast('Uint16 *', surf.pixels)
         pixels += y * surf.pitch + x
         pixels[0] = color
     elif bpp == 4:
-        pixels = sdl_ffi.cast('Uint32 *', surf.pixels)
+        pixels = sdl.ffi.cast('Uint32 *', surf.pixels)
         pixels += y * surf.pitch + x
         pixels[0] = color
     else:
-        pixels = sdl_ffi.cast('Uint8 *', surf.pixels)
-        rgb = sdl_ffi.new('Uint8 [4]')
-        c = sdl_ffi.cast('Uint32 *', color)
-        sdl_lib.SDL_GetRGB(c[0], surf.format, rgb, rgb + 1, rgb + 2)
+        pixels = sdl.ffi.cast('Uint8 *', surf.pixels)
+        rgb = sdl.ffi.new('Uint8 [4]')
+        c = sdl.ffi.cast('Uint32 *', color)
+        sdl.getRGB(c[0], surf.format, rgb, rgb + 1, rgb + 2)
         byte_buf = (pixels + y * surf.pitch) + x * 3
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
             byte_buf[0] = rgb[0]
@@ -1905,9 +1903,9 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     if surf.format.BytesPerPixel == 1:
-        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint8 []', [int(c)])
+        pixel8 = sdl.ffi.cast('Uint8 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint8 []', [int(c)])
         for x in range(deltax):
             pixel8[0] = cp[0]
             y += deltay
@@ -1922,9 +1920,9 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     elif surf.format.BytesPerPixel == 2:
-        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint16 []', [int(c)])
+        pixel16 = sdl.ffi.cast('Uint16 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint16 []', [int(c)])
         for x in range(deltax):
             pixel16[0] = cp[0]
             y += deltay
@@ -1943,13 +1941,13 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
 # 		}break;
     elif surf.format.BytesPerPixel == 3:
-        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        pixel8 = sdl.ffi.cast('Uint8 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
             c <<= 8
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
-        rgba = sdl_ffi.cast('Uint8 *', cp)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
+        rgba = sdl.ffi.cast('Uint8 *', cp)
         for x in range(deltax):
             pixel8[0] = rgba[0]
             pixel8[1] = rgba[1]
@@ -1965,9 +1963,9 @@ def drawline(surface, color, x1, y1, x2, y2):
 # 	        *(Uint32*)pixel = (Uint32)color;
 # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
     else:  # case 4
-        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        pixel32 = sdl.ffi.cast('Uint32 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
         for x in range(deltax):
             pixel32[0] = cp[0]
             y += deltay
@@ -2048,7 +2046,7 @@ def drawhorzline(surface, color, x1, y1, x2):
         set_at((x1, y1), color)
         return
 
-    pixel = sdl_ffi.cast('Uint8 *', surf.pixels) + surf.pitch * y1
+    pixel = sdl.ffi.cast('Uint8 *', surf.pixels) + surf.pitch * y1
     if x1 < x2:
         end = pixel + x2 * surf.format.BytesPerPixel
         pixel += x1 * surf.format.BytesPerPixel
@@ -2057,29 +2055,29 @@ def drawhorzline(surface, color, x1, y1, x2):
         pixel += x2 * surf.format.BytesPerPixel
 
     if surf.format.BytesPerPixel == 1:
-        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint8 []', [int(c)])
+        pixel8 = sdl.ffi.cast('Uint8 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint8 []', [int(c)])
         # for(; pixel <= end; ++pixel) {
         while pixel8 <= end:
             pixel8[0] = cp[0]
             # TODO: ++pixel is bug in the original code?
             pixel8 += 1
     elif surf.format.BytesPerPixel == 2:
-        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint16 []', [int(c)])
+        pixel16 = sdl.ffi.cast('Uint16 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint16 []', [int(c)])
         # for(; pixel <= end; pixel+=2) {
         while pixel16 <= end:
             pixel16[0] = cp[0]
             pixel16 += 1
     elif surf.format.BytesPerPixel == 3:
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
             c <<= 8
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
-        rgba = sdl_ffi.cast('Uint8 *', cp)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
+        rgba = sdl.ffi.cast('Uint8 *', cp)
         # for(; pixel <= end; pixel+=3) {
         while pixel <= end:
             pixel[0] = rgba[0]
@@ -2087,9 +2085,9 @@ def drawhorzline(surface, color, x1, y1, x2):
             pixel[2] = rgba[2]
             pixel += 3
     else:  # case 4
-        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        pixel32 = sdl.ffi.cast('Uint32 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
         # for(; pixel <= end; pixel+=4) {
         while pixel32 <= end:
             pixel32[0] = cp[0]
@@ -2145,36 +2143,36 @@ def drawvertline(surface, color, x1, y1, y2):
         pixel += surf.pitch * y2
 
     if surf.format.BytesPerPixel == 1:
-        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
+        pixel8 = sdl.ffi.cast('Uint8 *', pixel)
         c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint8 []', [int(c)])
+        cp = sdl.ffi.new('Uint8 []', [int(c)])
         while pixel8 <= end:
             pixel8[0] = cp[0]
             pixel8 += pitch
     elif surf.format.BytesPerPixel == 2:
-        pixel16 = sdl_ffi.cast('Uint16 *', pixel)
+        pixel16 = sdl.ffi.cast('Uint16 *', pixel)
         c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint16 []', [int(c)])
+        cp = sdl.ffi.new('Uint16 []', [int(c)])
         while pixel16 <= end:
             pixel16[0] = cp[0]
             pixel16 += pitch // 2
     elif surf.format.BytesPerPixel == 3:
-        pixel8 = sdl_ffi.cast('Uint8 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        pixel8 = sdl.ffi.cast('Uint8 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
         # TODO: test me
         if SDL_BYTEORDER == SDL_BIG_ENDIAN:
             c <<= 8
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
-        rgba = sdl_ffi.cast('Uint8 *', cp)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
+        rgba = sdl.ffi.cast('Uint8 *', cp)
         while pixel8 <= end:
             pixel8[0] = rgba[0]
             pixel8[1] = rgba[1]
             pixel8[2] = rgba[2]
             pixel8 += pitch
     else:  # case 4
-        pixel32 = sdl_ffi.cast('Uint32 *', pixel)
-        c = sdl_lib.SDL_MapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
-        cp = sdl_ffi.new('Uint32 []', [int(c)])
+        pixel32 = sdl.ffi.cast('Uint32 *', pixel)
+        c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
+        cp = sdl.ffi.new('Uint32 []', [int(c)])
         while pixel32 <= end:
             pixel32[0] = cp[0]
             pixel32 += pitch // 4

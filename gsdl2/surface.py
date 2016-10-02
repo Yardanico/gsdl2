@@ -8,8 +8,7 @@ import struct
 import sdl
 from sdl import ffi
 
-from .sdllibs import sdl_lib
-from .sdlffi import sdl_ffi
+
 from .sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from . import sdlpixels
 from . import color
@@ -52,16 +51,16 @@ class Surface(object):
             width, height = surf.get_size()
             flags = surf.get_flags()
             depth = surf.get_bitsize()
-            self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
+            self.__sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
             do_blit = True
         else:
             if surface is None:
                 width, height = size_or_surf
-                self.__sdl_surface = sdl_lib.SDL_CreateRGBSurface(flags, width, height, depth, *masks)
+                self.__sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
             else:
                 self.__sdl_surface = surface
         if depth == 8:
-            palette_colors = sdl_ffi.cast('SDL_Color *', self.__sdl_surface.format.palette.colors)
+            palette_colors = sdl.ffi.cast('SDL_Color *', self.__sdl_surface.format.palette.colors)
             for i in range(256):
                 c = palette_colors[i]
                 c.r, c.g, c.b, c.a = palette_8bit[i]
@@ -99,22 +98,22 @@ class Surface(object):
     def get_colorkey(self):
         surface = self.__sdl_surface
         c = Color(0, 0, 0, 0)
-        sdl_lib.SDL_GetColorKey(surface, c.sdl_color)
+        sdl.getColorKey(surface, c.sdl_color)
         return c
     def set_colorkey(self, color, flag=1):
         """set flag=1 to enable, flag=0 to disable"""
         surface = self.__sdl_surface
-        map_color = sdl_lib.SDL_MapRGBA if len(color) == 4 else sdl_lib.SDL_MapRGB
-        sdl_lib.SDL_SetColorKey(surface, flag, map_color(surface.format, *color))
+        map_color = sdl.mapRGBA if len(color) == 4 else sdl.mapRGB
+        sdl.setColorKey(surface, flag, map_color(surface.format, *color))
     colorkey = property(get_colorkey, set_colorkey)
 
     def get_blendmode(self):
-        cdata = sdl_ffi.new('SDL_BlendMode *')
-        sdl_lib.SDL_GetTextureBlendMode(self.sdl_surface, cdata)
+        cdata = sdl.ffi.new('SDL_BlendMode *')
+        sdl.getTextureBlendMode(self.sdl_surface, cdata)
         value = int(cdata[0])
         return value
     def set_blendmode(self, mode):
-        sdl_lib.SDL_SetTextureBlendMode(self.sdl_surface, mode)
+        sdl.setTextureBlendMode(self.sdl_surface, mode)
     blendmode = property(get_blendmode, set_blendmode)
 
 
@@ -142,7 +141,7 @@ class Surface(object):
         format = surf.format
         bpp = format.BytesPerPixel
         pixels = surf.pixels
-        rgba = sdl_ffi.new('Uint8 [4]')
+        rgba = sdl.ffi.new('Uint8 [4]')
 
         if SDL_MUSTLOCK(surf):
             if not self.lock():
@@ -150,25 +149,25 @@ class Surface(object):
 
         # TODO: not well tested
         if bpp == 1:
-            pixels = sdl_ffi.cast('Uint8 *', pixels)
+            pixels = sdl.ffi.cast('Uint8 *', pixels)
             color_ = pixels[y * surf.w + x]
         elif bpp == 2:
-            pixels = sdl_ffi.cast('Uint16 *', pixels)
+            pixels = sdl.ffi.cast('Uint16 *', pixels)
             color_ = pixels[y * surf.w + x]
         elif bpp == 3:
-            pixels = sdl_ffi.cast('Uint8 *', pixels)
+            pixels = sdl.ffi.cast('Uint8 *', pixels)
             pix = pixels[(y * surf.w + x) * 3]
             if SDL_BYTEORDER == SDL_LIL_ENDIAN:
                 color_ = pix[0] + pix[1] << 8 + pix[2] << 16
             else:
                 color_ = pix[2] + pix[1] << 8 + pix[0] << 16
         else:  # bpp == 4
-            pixels = sdl_ffi.cast('Uint32 *', pixels)
+            pixels = sdl.ffi.cast('Uint32 *', pixels)
             color_ = pixels[y * surf.w + x]
 
         self.unlock()
 
-        sdl_lib.SDL_GetRGBA(color_, format, rgba, rgba + 1, rgba + 2, rgba + 3)
+        sdl.getRGBA(color_, format, rgba, rgba + 1, rgba + 2, rgba + 3)
 
         # TODO: return tuple instead?
         return Color(*rgba)
@@ -191,19 +190,19 @@ class Surface(object):
             if not self.lock():
                 return
 
-        c = sdl_lib.SDL_MapRGBA(surf_format, color_.r, color_.g, color_.b, color_.a)
+        c = sdl.mapRGBA(surf_format, color_.r, color_.g, color_.b, color_.a)
         if bpp == 1:
-            buf = sdl_ffi.cast('Uint8 *', pixels)
+            buf = sdl.ffi.cast('Uint8 *', pixels)
             buf[y * surf.w + x] = c
         elif bpp == 2:
-            buf = sdl_ffi.cast('Uint16 *', pixels)
+            buf = sdl.ffi.cast('Uint16 *', pixels)
             buf[y * surf.w + x] = c
         elif bpp == 3:
             # TODO: test 24 bit
-            buf = sdl_ffi.cast('Uint8 *', pixels)
-            rgb = sdl_ffi.new('Uint8 [4]')
-            color = sdl_ffi.cast('Uint32 *', color_.sdl_color)
-            sdl_lib.SDL_GetRGB(color[0], surf.format, rgb, rgb + 1, rgb + 2)
+            buf = sdl.ffi.cast('Uint8 *', pixels)
+            rgb = sdl.ffi.new('Uint8 [4]')
+            color = sdl.ffi.cast('Uint32 *', color_.sdl_color)
+            sdl.getRGB(color[0], surf.format, rgb, rgb + 1, rgb + 2)
             byte_buf = buf + y * surf.pitch + x * 3
             if SDL_BYTEORDER == SDL_BIG_ENDIAN:
                 byte_buf[0] = rgb[0]
@@ -214,14 +213,14 @@ class Surface(object):
                 byte_buf[1] = rgb[1]
                 byte_buf[0] = rgb[2]
         else:  # bpp == 4
-            buf = sdl_ffi.cast('Uint32 *', pixels)
+            buf = sdl.ffi.cast('Uint32 *', pixels)
             buf[y * surf.w + x] = c
 
         self.unlock()
 
     def fill(self, color, rect=None, special_flags=0):
         surface = self.__sdl_surface
-        map_color = sdl_lib.SDL_MapRGBA if len(color) == 4 else sdl_lib.SDL_MapRGB
+        map_color = sdl.mapRGBA if len(color) == 4 else sdl.mapRGB
 
         if SDL_MUSTLOCK(surface):
             self.lock()
@@ -258,7 +257,7 @@ class Surface(object):
             d.topleft = dest_rect[0:2]
             d.size = size
             dest_rect = d
-        sdl_lib.SDL_UpperBlit(source.sdl_surface, area.sdl_rect, dest_surface, dest_rect.sdl_rect)
+        sdl.upperBlit(source.sdl_surface, area.sdl_rect, dest_surface, dest_rect.sdl_rect)
         self.unlock()
 
     def blit_scaled(self, source, dest_rect, area=None):
@@ -285,14 +284,14 @@ class Surface(object):
         sdl_dest_rect.y = y
         sdl_dest_rect.w = w
         sdl_dest_rect.h = h
-        sdl_lib.SDL_UpperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, sdl_dest_rect)
+        sdl.upperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, sdl_dest_rect)
         self.unlock()
 
     def convert(self, format=None):
         surf = get_window_list()[0].surface.sdl_surface
         if format is None:
             format = surf.format
-        new_surf = sdl_lib.SDL_ConvertSurface(self.__sdl_surface, format, 0)
+        new_surf = sdl.convertSurface(self.__sdl_surface, format, 0)
         if new_surf is None:
             # TODO: proper exception
             raise Exception('could not convert surface')
@@ -306,7 +305,7 @@ class Surface(object):
         # surface2 format=SDL_PIXELFORMAT_ARGB8888  <<<
         converted_surface = self
         if format:
-            surf = sdl_lib.SDL_ConvertSurfaceFormat(self.sdl_surface, format, 0)
+            surf = sdl.convertSurfaceFormat(self.sdl_surface, format, 0)
             converted_surface = Surface((surf.w, surf.h), surface=surf)
         else:
             # TODO: there's probably a more elegant way to do this
@@ -320,7 +319,7 @@ class Surface(object):
                 format_name = 'SDL_PIXELFORMAT_' + target_order + surface_layout
                 logging.log(logging.DEBUG, 'convert_alpha: new format={}'.format(format_name))
                 format = getattr(sdlpixels, format_name)
-                surf = sdl_lib.SDL_ConvertSurfaceFormat(self.sdl_surface, format, 0)
+                surf = sdl.convertSurfaceFormat(self.sdl_surface, format, 0)
                 converted_surface = Surface((surf.w, surf.h), surface=surf)
             elif sdlpixels.is_pixel_format_indexed(surface_format):
                 # TODO
@@ -334,10 +333,10 @@ class Surface(object):
         return Surface(self)
 
     def lock(self):
-        sdl_lib.SDL_LockSurface(self.__sdl_surface)
+        sdl.lockSurface(self.__sdl_surface)
 
     def unlock(self):
-        sdl_lib.SDL_UnlockSurface(self.__sdl_surface)
+        sdl.unlockSurface(self.__sdl_surface)
 
     def __getsdlsurface(self):
         return self.__sdl_surface
@@ -353,7 +352,7 @@ class Surface(object):
             try:
                 garbage = self.__sdl_surface
                 self.__sdl_surface = None
-                sdl_lib.SDL_FreeSurface(garbage)
+                sdl.freeSurface(garbage)
             except Exception as e:
                 pass
 

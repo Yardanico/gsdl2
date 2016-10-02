@@ -1,3 +1,5 @@
+import sdl
+
 __all__ = [
     'init', 'get_init', 'close', 'fade_out', 'stop', 'pause', 'unpause', 'find_channel', 'set_reserved', 'get_busy',
     'Sound', 'Channel', 'music',
@@ -6,8 +8,7 @@ __all__ = [
 
 import logging
 
-from .sdllibs import mixer_lib, sdl_lib, SDLError
-from .sdlffi import sdl_ffi
+from _sdl.structs import SDLError
 from .sdlconstants import MIX_DEFAULT_FORMAT, SDL_INIT_AUDIO
 from . import music
 from .locals import utf8
@@ -19,7 +20,7 @@ from . import music
 
 
 def get_init():
-    return sdl_lib.SDL_WasInit(SDL_INIT_AUDIO)
+    return sdl.wasInit(SDL_INIT_AUDIO)
 
 
 # {chanid: sound, ...}
@@ -29,8 +30,8 @@ _channels = {}
 def init(frequency=44100, format=MIX_DEFAULT_FORMAT, channels=2, chunksize=1024):
     if not get_init():
         return
-    c = sdl_ffi.cast
-    if mixer_lib.Mix_OpenAudio(c('int', frequency), c('Uint16', format), c('int', channels), c('int', chunksize)) < 0:
+    c = sdl.ffi.cast
+    if sdl.mixer.openAudio(c('int', frequency), c('Uint16', format), c('int', channels), c('int', chunksize)) < 0:
         logging.log(logging.ERROR, 'SDL_mixer failed to open audio format {}'.format(format))
 
 
@@ -38,7 +39,7 @@ def init(frequency=44100, format=MIX_DEFAULT_FORMAT, channels=2, chunksize=1024)
 # https://cffi.readthedocs.org/en/latest
 #
 if True:
-    @sdl_ffi.callback('void (*)(int)')
+    @sdl.ffi.callback('void (*)(int)')
     def _channel_stopped(channel_id):
         # remove channel_id from _channels
         # print('channel_id={}'.format(channel_id))
@@ -46,7 +47,7 @@ if True:
             channel = _channels[channel_id]
             del _channels[channel_id]
         # TODO: post an event if configured on the Channel
-    mixer_lib.Mix_ChannelFinished(_channel_stopped)
+        sdl.mixer.channelFinished(_channel_stopped)
     # # OR #
     # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
     # mixer_lib.Mix_ChannelFinished(callback)
@@ -54,39 +55,39 @@ if True:
 
 def close():
     if get_init():
-        mixer_lib.Mix_CloseAudio()
+        sdl.mixer.closeAudio()
 
 
 def fade_out(ms):
     if not get_init():
         return
-    mixer_lib.Mix_FadeOutChannel(-1, ms)
+        sdl.mixer.fadeOutChannel(-1, ms)
 
 
 def stop():
     if get_init():
-        mixer_lib.Mix_HaltChannel(-1)
+        sdl.mixer.haltChannel(-1)
 
 
 def pause():
     if get_init():
-        mixer_lib.Mix_Pause(-1)
+        sdl.mixer.pause(-1)
 
 
 def unpause():
     if get_init():
-        mixer_lib.Mix_Resume(-1)
+        sdl.mixer.resume(-1)
 
 
 def find_channel(force=False):
     if not get_init():
         return None
 
-    chan = mixer_lib.Mix_GroupAvailable(-1)
+    chan = sdl.mixer.groupAvailable(-1)
     if chan == -1:
         if not force:
             return None
-        chan = mixer_lib.Mix_GroupOldest(-1)
+        chan = sdl.mixer.groupOldest(-1)
 
     return Channel(chan)
 
@@ -94,25 +95,25 @@ def find_channel(force=False):
 def set_reserved(num_channels):
     if not get_init():
         return
-    return mixer_lib.Mix_ReserveChannels(num_channels)
+    return sdl.mixer.reserveChannels(num_channels)
 
 
 def set_num_channels(num_channels):
     if not get_init():
         return
-    return mixer_lib.Mix_AllocateChannels(num_channels)
+    return sdl.mixer.allocateChannels(num_channels)
 
 
 def get_num_channels():
     if not get_init():
         return
-    return mixer_lib.Mix_GroupCount(-1)
+    return sdl.mixer.groupCount(-1)
 
 
 def get_busy():
     if not get_init():
         return False
-    return mixer_lib.Mix_Playing(-1)
+    return sdl.mixer.playing(-1)
 
 
 class Sound(object):
@@ -120,15 +121,15 @@ class Sound(object):
     def __init__(self, filename):
         self.__filename = filename
 
-        self.__sdl_chunk = mixer_lib.Mix_LoadWAV_RW(sdl_lib.SDL_RWFromFile(utf8(filename), utf8('rb')), 1)
-        if self.__sdl_chunk == sdl_ffi.NULL:
+        self.__sdl_chunk = sdl.mixer.loadWAV_RW(sdl.RWFromFile(utf8(filename), utf8('rb')), 1)
+        if self.__sdl_chunk == sdl.ffi.NULL:
             raise SDLError()
 
     def play(self, loops=0, maxtime=0, fade_ms=0):
         if fade_ms > 0:
-            channel_id = mixer_lib.Mix_FadeInChannelTimed(-1, self.__sdl_chunk, loops, fade_ms, maxtime)
+            channel_id = sdl.mixer.fadeInChannelTimed(-1, self.__sdl_chunk, loops, fade_ms, maxtime)
         else:
-            channel_id = mixer_lib.Mix_PlayChannelTimed(-1, self.__sdl_chunk, loops, maxtime)
+            channel_id = sdl.mixer.playChannelTimed(-1, self.__sdl_chunk, loops, maxtime)
 
         # TODO: enable for callbacks (see init())
         # channeldata[channelnum].queue = NULL;
@@ -136,7 +137,7 @@ class Sound(object):
         _channels[channel_id] = self
 
         # make sure volume on this arbitrary channel is set to full
-        mixer_lib.Mix_Volume(channel_id, 128)
+        sdl.mixer.volume(channel_id, 128)
 
         channel = Channel(channel_id)
         return channel
@@ -144,18 +145,18 @@ class Sound(object):
     def stop(self):
         for c in tuple(_channels):
             if _channels[c] is self and c.get_busy():
-                mixer_lib.Mix_HaltChannel(c)
+                sdl.mixer.haltChannel(c)
 
     def fadeout(self, ms):
         for c in tuple(_channels):
             if _channels[c] is self and c.get_busy():
-                mixer_lib.Mix_FadeOutChannel(c, ms)
+                sdl.mixer.fadeOutChannel(c, ms)
 
     def set_volume(self, volume):
         """0.0 to 1.0"""
         if not (0.0 < volume < 1.0):
             volume = 1.0
-        mixer_lib.Mix_VolumeChunk(self.__sdl_chunk, int(volume * 128))
+            sdl.mixer.volumeChunk(self.__sdl_chunk, int(volume * 128))
 
     def get_volume(self):
         return self.__sdl_chunk.volume / 128.0
@@ -183,7 +184,7 @@ class Sound(object):
             try:
                 garbage = self.__sdl_chunk
                 self.__sdl_chunk = None
-                mixer_lib.Mix_FreeChunk(garbage)
+                sdl.mixer.freeChunk(garbage)
             except Exception as e:
                 pass
 
@@ -195,26 +196,26 @@ class Channel(object):
 
     def play(self, sound, loops=0, maxtime=0, fade_ms=0):
         if fade_ms > 0:
-            mixer_lib.Mix_FadeInChannelTimed(self.__channel_id, sound.sdl_chunk, loops, fade_ms, maxtime)
+            sdl.mixer.fadeInChannelTimed(self.__channel_id, sound.sdl_chunk, loops, fade_ms, maxtime)
         else:
-            mixer_lib.Mix_PlayChannelTimed(self.channel_id, sound.sdl_chunk, loops, maxtime)
+            sdl.mixer.playChannelTimed(self.channel_id, sound.sdl_chunk, loops, maxtime)
         return self
 
     def stop(self):
         if self.get_busy():
-            mixer_lib.Mix_HaltChannel(self.__channel_id)
+            sdl.mixer.haltChannel(self.__channel_id)
 
     def pause(self):
         if self.get_busy():
-            mixer_lib.Mix_Pause(self.__channel_id)
+            sdl.mixer.pause(self.__channel_id)
 
     def unpause(self):
         if self.get_busy():
-            mixer_lib.Mix_Resume(self.__channel_id)
+            sdl.mixer.resume(self.__channel_id)
 
     def fadeout(self, ms):
         if self.get_busy():
-            mixer_lib.Mix_FadeOutChannel(self.__channel_id, ms)
+            sdl.mixer.fadeOutChannel(self.__channel_id, ms)
 
     def set_volume(self, volume):
         """0.0 to 1.0"""
@@ -222,13 +223,13 @@ class Channel(object):
             if not (0.0 < volume < 1.0):
                 volume = 1.0
             v = int(volume * 128)
-            mixer_lib.Mix_Volume(self.__channel_id, v)
+            sdl.mixer.volume(self.__channel_id, v)
 
     def get_volume(self):
-        return mixer_lib.Mix_Volume(self.__channel_id, -1) / 128.0
+        return sdl.mixer.volume(self.__channel_id, -1) / 128.0
 
     def get_busy(self):
-        return mixer_lib.Mix_Playing(self.__channel_id)
+        return sdl.mixer.playing(self.__channel_id)
 
     def get_sound(self):
         if not self.get_busy():

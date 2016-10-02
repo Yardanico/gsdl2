@@ -1,6 +1,5 @@
-from .sdllibs import sdl_lib
-from .sdlffi import sdl_ffi
-
+import sdl
+from _sdl.pixels import *
 
 (
     SDL_PIXELTYPE_UNKNOWN,
@@ -197,7 +196,7 @@ is_pixel_format_fourcc = SDL_ISPIXELFORMAT_FOURCC
 
 
 def pixel_format_name(format):
-    ret = sdl_ffi.string(sdl_lib.SDL_GetPixelFormatName(format)).decode('utf-8')
+    ret = sdl.ffi.string(sdl.getPixelFormatName(format)).decode('utf-8')
     return ret
 
 

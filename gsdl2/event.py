@@ -1,6 +1,6 @@
-from .sdllibs import sdl_lib, SDLError
-from .sdlffi import sdl_ffi, to_string
-from .locals import (
+import sdl
+from _sdl.structs import  SDLError
+from gsdl2.locals import (
     utf8, QUIT, WINDOWEVENT, SYSWMEVENT,
     KEYDOWN, KEYUP, TEXTEDITING, TEXTINPUT,
     MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEWHEEL,
@@ -10,11 +10,12 @@ from .locals import (
     FINGERDOWN, FINGERUP, FINGERMOTION, DOLLARGESTURE, DOLLARRECORD, MULTIGESTURE,
     CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT, NOEVENT,
 )
-from .sdlconstants import SDL_INIT_VIDEO, SDL_QUERY, SDL_IGNORE, SDL_DISABLE, SDL_ENABLE
+from gsdl2.sdlconstants import SDL_INIT_VIDEO, SDL_QUERY, SDL_IGNORE, SDL_DISABLE, SDL_ENABLE
 
 
 
 # TODO: __all__
+from gsdl2.sdlffi import to_string
 
 
 class _Struct(dict):
@@ -156,7 +157,7 @@ def _WindowEvent(e):
 
 def _SysWMEvent(e):
     syswm = e.syswm
-    msg = to_string(sdl_ffi.cast('char *', syswm.msg))
+    msg = to_string(sdl.ffi.cast('char *', syswm.msg))
     event = SysWMEvent(e.type, msg, e)
     return event
 
@@ -173,7 +174,7 @@ def _KeyEvent(e):
 def _TextEditingEvent(e):
     edit = e.edit
     # NULL-terminated char[32-1]
-    text = to_string(sdl_ffi.cast('char *', edit.text))
+    text = to_string(sdl.ffi.cast('char *', edit.text))
     event = TextEditingEvent(e.type, edit.windowID, text, edit.start, edit.length, e)
     return event
 
@@ -181,7 +182,7 @@ def _TextEditingEvent(e):
 def _TextInputEvent(e):
     text = e.text
     # NULL-terminated char[32-1]
-    text_value = to_string(sdl_ffi.cast('char *', text.text))
+    text_value = to_string(sdl.ffi.cast('char *', text.text))
     event = TextInputEvent(e.type, text.windowID, text_value, e)
     return event
 
@@ -217,7 +218,7 @@ def _JoyAxisEvent(e):
 
 def _JoyBallEvent(e):
     jball = e.jball
-    rel = b.xrel, b.yrel
+    rel = jball.xrel, jball.yrel
     event = JoyBallEvent(e.type, jball.which, jball.ball, rel, e)
     return event
 
@@ -282,15 +283,15 @@ def _DollarGestureEvent(e):
 
 def _DropEvent(e):
     drop = e.drop
-    file_ = to_string(sdl_ffi.cast('char *', drop.file))
-    event = DropEvent(int(e2.type), file_, e)
+    file_ = to_string(sdl.ffi.cast('char *', drop.file))
+    event = DropEvent(int(e.type), file_, e)
     return event
 
 
 def _UserEvent(e):
     user = e.user
-    data1 = to_string(sdl_ffi.cast('char *', user.data1))
-    data2 = to_string(sdl_ffi.cast('char *', user.data2))
+    data1 = to_string(sdl.ffi.cast('char *', user.data1))
+    data2 = to_string(sdl.ffi.cast('char *', user.data2))
     event = UserEvent(e.type, user.windowID, user.code, data1, data2, e)
     return event
 
@@ -336,7 +337,7 @@ _factories = {
 
 # singleton SDL event for internal use
 def _Event():
-    return sdl_ffi.new('SDL_Event *')
+    return sdl.ffi.new('SDL_Event *')
 _event = _Event()
 
 
@@ -346,12 +347,12 @@ def pump():
 
     :return: None
     """
-    if sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
-        sdl_lib.SDL_PumpEvents()
+    if sdl.wasInit(SDL_INIT_VIDEO):
+        sdl.pumpEvents()
 
 
 def _get_internal(filter_type=None):
-    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(SDL_INIT_VIDEO):
         return
 
     append = queued_events.append
@@ -362,7 +363,7 @@ def _get_internal(filter_type=None):
     is_list = isinstance(filter_type, list)
     use_filter = not (is_none or is_list)
 
-    while sdl_lib.SDL_PollEvent(e):
+    while sdl.pollEvent(e):
         # f = get(e.type, None)
         # if f not in (_KeyEvent,):
         #     print(f)
@@ -411,14 +412,14 @@ def poll():
 
     :return: Event
     """
-    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(SDL_INIT_VIDEO):
         return None
 
     if queued_events:
         return queued_events.pop(0)
     else:
         _event.type = NOEVENT  # dunno if this is necessary
-        sdl_lib.SDL_PollEvent(_event)
+        sdl.pollEvent(_event)
         factories = _factories.get(_event.type, _factories[NOEVENT])
         if factories:
             factory = factories[0]
@@ -432,13 +433,13 @@ def wait():
 
     :return: Event
     """
-    if not sdl_lib.SDL_WasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(SDL_INIT_VIDEO):
         return None
 
     if queued_events:
         return queued_events.pop(0)
     else:
-        status = sdl_lib.SDL_WaitEvent(_event)
+        status = sdl.waitEvent(_event)
         if not status:
             raise SDLError()
         factories = _factories.get(_event.type, None)
@@ -588,7 +589,7 @@ def set_grab(boolean, window=None):
     :param bool: enable/disable grab for window
     :return: None
     """
-    sdl_lib.SDL_SetWindowGrab(window.sdl_window, sdl_lib.SDL_TRUE if boolean else sdl_lib.SDL_FALSE)
+    sdl.setWindowGrab(window.sdl_window, sdl.TRUE if boolean else sdl.FALSE)
 
 
 def get_grab(window=None):
@@ -598,7 +599,7 @@ def get_grab(window=None):
     :param window: Window (e.g. gsdl2.display.get_window())
     :return:
     """
-    return sdl_lib.SDL_GetWindowGrab(window.sdl_window) == sdl_lib.SDL_TRUE
+    return sdl.getWindowGrab(window.sdl_window) == sdl.TRUE
 
 
 def get_grabbed_window():
@@ -607,8 +608,8 @@ def get_grabbed_window():
 
     :return: Window (e.g. gsdl2.display.get_window()) or None
     """
-    sdl_window = sdl_lib.SDL_GetGrabbedWindow()
-    if sdl_window == sdl_ffi.NULL:
+    sdl_window = sdl.getGrabbedWindow()
+    if sdl_window == sdl.ffi.NULL:
         return None
 
     window = None
@@ -626,7 +627,7 @@ def register_events(n):
     :param n: int
     :return: starting event number
     """
-    return sdl_lib.SDL_RegisterEvents(n)
+    return sdl.registerEvents(n)
 
 
 def post(event):

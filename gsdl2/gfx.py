@@ -1,4 +1,4 @@
-from gsdl2 import gfx_lib, ffi, sdllibs
+from gsdl2 import gfx_lib, SDLError
 from gsdl2.surface import Surface
 
 
@@ -329,7 +329,7 @@ SMOOTHING_ON = 1
 def rotozoom(surface, angle, zoom, smooth):
     sdl_surface = gfx_lib.rotozoomSurface(surface.sdl_surface, angle, zoom, smooth)
     if not sdl_surface:
-        raise sdllibs.SDLError()
+        raise SDLError()
     return Surface(None, surface=sdl_surface)
 
 
