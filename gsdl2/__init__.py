@@ -96,6 +96,19 @@ from gsdl2.locals import *
 
 import atexit
 
+# TODO: not sure whether it should be True or False
+HAVE_NEWBUF = False
+
+_quit_functions = []
+def register_quit(quit_func):
+    _quit_functions.append(quit_func)
+
+def get_sdl_byteorder():
+    return sdlconstants.SDL_BYTEORDER
+
+def get_sdl_version():
+    ver = sdl.getVersion(())
+    return ver.major, ver.minor, ver.patch
 
 def init():
     rc = sdl.init(sdlconstants.SDL_INIT_EVERYTHING)
@@ -148,6 +161,8 @@ def init():
 
 
 def quit():
+    for quit_func in reversed(_quit_functions):
+        quit_func()
     # exit sdl2
     sdl.quit()
     # exit sdl2 image
