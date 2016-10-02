@@ -1,4 +1,4 @@
-from .sdl import ffi as sdl_ffi
+from .basesdl import ffi as sdl_ffi
 # from .constants import pypygameerror
 
 

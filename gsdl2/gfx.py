@@ -1,5 +1,5 @@
-from . import gfx_lib, sdl_ffi, sdllibs
-from .surface import Surface
+from gsdl2 import gfx_lib, ffi, sdllibs
+from gsdl2.surface import Surface
 
 
 def pixel(renderer, x, y, color):

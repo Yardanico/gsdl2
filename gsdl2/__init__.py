@@ -26,23 +26,12 @@ __all__ = [
 # FFI, Dynamic libs, Constants, Keys
 #-----------------------------------
 
-from . import sdlffi
-from . import sdllibs
-from . import sdlconstants
+import sdl
+from sdl import ffi
+from gsdl2 import sdlffi
+from gsdl2 import sdllibs
+from gsdl2 import sdlconstants
 
-sdl_ffi = sdlffi.sdl_ffi
-sdl_lib = sdllibs.sdl_lib
-
-image_ffi = sdlffi.image_ffi
-image_lib = sdllibs.image_lib
-
-ttf_ffi = sdlffi.ttf_ffi
-ttf_lib = sdllibs.ttf_lib
-
-mixer_ffi = sdlffi.mixer_ffi
-mixer_lib = sdllibs.mixer_lib
-
-gfx_ffi = sdlffi.gfx_ffi
 gfx_lib = sdllibs.gfx_lib
 
 SDLError = sdllibs.SDLError
@@ -64,41 +53,41 @@ SDLError = sdllibs.SDLError
 # Modules
 #-----------------------------------
 
-from . import color
-from . import colordict
-from . import event
-from . import image
-from . import joystick
-from . import mixer
-from . import mouse
-from . import music
-from . import rect
-from . import renderer
-from . import surface
-from . import font
-from . import _time as time
-from . import texture
-from . import window
-from . import display
-from . import draw
-from . import gfx
-from . import particles
-from . import locals
+from gsdl2 import color
+from gsdl2 import colordict
+from gsdl2 import event
+from gsdl2 import image
+from gsdl2 import joystick
+from gsdl2 import mixer
+from gsdl2 import mouse
+from gsdl2 import music
+from gsdl2 import rect
+from gsdl2 import renderer
+from gsdl2 import surface
+from gsdl2 import font
+from gsdl2 import _time as time
+from gsdl2 import texture
+from gsdl2 import window
+from gsdl2 import display
+from gsdl2 import draw
+from gsdl2 import gfx
+from gsdl2 import particles
+from gsdl2 import locals
 
 
 #-----------------------------------
 # Classes and constants
 #-----------------------------------
 
-from .color import Color
-from ._time import Clock, GameClock
-from .font import Font, SysFont
-from .rect import Rect
-from .renderer import Renderer
-from .surface import Surface
-from .texture import Texture
-from .window import Window
-from .locals import *
+from gsdl2.color import Color
+from gsdl2._time import Clock, GameClock
+from gsdl2.font import Font, SysFont
+from gsdl2.rect import Rect
+from gsdl2.renderer import Renderer
+from gsdl2.surface import Surface
+from gsdl2.texture import Texture
+from gsdl2.window import Window
+from gsdl2.locals import *
 
 
 #-----------------------------------
@@ -109,32 +98,32 @@ import atexit
 
 
 def init():
-    rc = sdl_lib.SDL_Init(sdlconstants.SDL_INIT_EVERYTHING)
+    rc = sdl.init(sdl.INIT_EVERYTHING)
     if rc != 0:
         logging.log(logging.ERROR, 'SDL2 failed to initialize')
         raise Exception('SDL2: failed to initialize')
 
-    rc = sdl_lib.SDL_SetHint(utf8(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY), utf8("1"))
+    rc = sdl.setHint(utf8(sdl.HINT_RENDER_SCALE_QUALITY), utf8("1"))
     if rc == 0:
-        logging.log(logging.ERROR, 'SDL2: failed to set hint {}'.format(sdlconstants.SDL_HINT_RENDER_SCALE_QUALITY))
-        logging.log(logging.ERROR, sdl_lib.SDL_GetError())
+        logging.log(logging.ERROR, 'SDL2: failed to set hint {}'.format(sdl.HINT_RENDER_SCALE_QUALITY))
+        logging.log(logging.ERROR, sdl.getError())
 
-    rc = image_lib.IMG_Init(sdlconstants.IMG_INIT_EVERYTHING)
+    rc = sdl.image.init(sdlconstants.IMG_INIT_EVERYTHING)
     if rc == 0:
         logging.log(logging.ERROR, 'SDL2_image: failed to initialize')
-        logging.log(logging.ERROR, sdl_lib.SDL_GetError())
+        logging.log(logging.ERROR, sdl.getError())
     elif not rc & sdlconstants.MIX_INIT_EVERYTHING:
         logging.log(logging.WARN, 'SDL2_image: some libraries failed to load: rc={}'.format(rc))
 
-    rc = ttf_lib.TTF_Init()
+    rc = sdl.ttf.init()
     if rc != 0:
         logging.log(logging.ERROR, 'SDL2_ttf: failed to initialize')
-        logging.log(logging.ERROR, sdl_lib.SDL_GetError())
+        logging.log(logging.ERROR, sdl.getError())
 
-    rc = mixer_lib.Mix_Init(sdlconstants.MIX_INIT_EVERYTHING)
+    rc = sdl.mixer.init(sdlconstants.MIX_INIT_EVERYTHING)
     if rc == 0:
         logging.log(logging.ERROR, 'SDL2_mixer: failed to initialize')
-        logging.log(logging.ERROR, sdl_lib.SDL_GetError())
+        logging.log(logging.ERROR, sdl.getError())
     elif not rc & sdlconstants.MIX_INIT_EVERYTHING:
         logging.log(logging.WARN, 'SDL2_mixer: some libraries failed to load: rc={}'.format(rc))
         lib2name = dict(
@@ -159,11 +148,15 @@ def init():
 
 
 def quit():
-    sdl_lib.SDL_Quit()
-    image_lib.IMG_Quit()
-    ttf_lib.TTF_Quit()
-    mixer_lib.Mix_CloseAudio()
-    mixer_lib.Mix_Quit()
+    # exit sdl2
+    sdl.quit()
+    # exit sdl2 image
+    sdl.image.quit()
+    # exit sdl2 ttf
+    sdl.ttf.quit()
+    # exit sdl2 mixer
+    sdl.mixer.closeAudio()
+    sdl.mixer.quit()
 
 
 def _atexit():

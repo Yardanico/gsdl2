@@ -7,11 +7,11 @@ import re
 
 import cffi
 
-from . import sdl
+from . import basesdl
 
 
 ffi = cffi.FFI()
-ffi.include(sdl.ffi)
+ffi.include(basesdl.ffi)
 
 
 def parse_headers():

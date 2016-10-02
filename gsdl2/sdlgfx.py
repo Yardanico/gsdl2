@@ -3,7 +3,7 @@
 import re
 
 # unlike other ffi modules, this one depends on previously loaded sdl.ffi
-from .sdl import ffi
+from .basesdl import ffi
 
 
 __all__ = ['ffi', 'parse_headers']
