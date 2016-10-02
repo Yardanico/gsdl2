@@ -25,4 +25,4 @@ while running:
             if e.scancode == S_ESCAPE:
                 running = False
             else:
-                channel = sound.play()
+                sound.play()
