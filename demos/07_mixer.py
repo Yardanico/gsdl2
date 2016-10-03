@@ -1,6 +1,7 @@
 import gsdl2
 from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE
 
+
 gsdl2.init()
 gsdl2.mixer.init()
 

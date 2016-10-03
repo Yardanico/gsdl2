@@ -245,9 +245,13 @@ class Rect(object):
 
     def collidelist(self, rect_list):
         colliderect = self.colliderect
-        for i, r in enumerate(rect_list):
-            if colliderect(r):
-                return i
+        try:
+            for i, r in enumerate(rect_list):
+                if colliderect(r):
+                    return i
+        except TypeError:
+            raise TypeError("Argument must be a sequence of rectstyle objects")
+        return -1
 
     def collidelistall(self, rect_list):
         colliderect = self.colliderect

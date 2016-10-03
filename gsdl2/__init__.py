@@ -70,7 +70,7 @@ from gsdl2 import draw
 from gsdl2 import gfx
 from gsdl2 import particles
 from gsdl2 import locals
-
+from gsdl2 import key
 # -----------------------------------
 # Classes and constants
 # -----------------------------------
@@ -84,7 +84,7 @@ from gsdl2.surface import Surface
 from gsdl2.texture import Texture
 from gsdl2.window import Window
 from gsdl2.locals import *
-
+from gsdl2.sprite import *
 # -----------------------------------
 # Startup and Shutdown
 # -----------------------------------
@@ -109,6 +109,8 @@ def get_sdl_version():
     ver = sdl.getVersion(())
     return ver.major, ver.minor, ver.patch
 
+def get_error():
+    sdl.getError()
 
 def init():
     rc = sdl.init(sdlconstants.SDL_INIT_EVERYTHING)

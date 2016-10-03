@@ -79,7 +79,7 @@ class Ball(object):
 
 
 class Game(object):
-    def __init__(self, resolution=(1024, 768)):
+    def __init__(self, resolution=(800, 600)):
         self.screen = gsdl2.display.set_mode(resolution)
         self.screen_rect = self.screen.get_rect()
         self.renderer = gsdl2.display.get_renderer()
