@@ -7,12 +7,11 @@ import struct
 
 import sdl
 from sdl import ffi
-
-from .sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
-from . import sdlpixels
-from . import color
-from .rect import Rect
-from .locals import palette_8bit, Color
+from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
+from gsdl2 import sdlpixels
+from gsdl2 import color
+from gsdl2.rect import Rect
+from gsdl2.locals import palette_8bit, Color
 
 PixelFormat = namedtuple('PixelFormat', 'format palette bitsperpixel bytesperpixel' +
                          ' rmask gmask bmask amask rloss gloss bloss aloss rshift gshift bshift ashift refcount next')
