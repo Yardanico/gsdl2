@@ -1,5 +1,5 @@
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='gsdl2',
       version='0.1',
@@ -8,5 +8,5 @@ setup(name='gsdl2',
       author_email='tiberiumk12@gmail.com',
       url='https://github.com/TiberiumPY/gsdl2',
       packages=['gsdl2'],
-      requires=['pysdl2-cffi']
+      install_requires=['pysdl2-cffi']
      )
