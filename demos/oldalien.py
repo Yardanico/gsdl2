@@ -27,7 +27,7 @@ import gsdl2
 from gsdl2 import RLEACCEL
 from gsdl2 import Rect
 
-FRAMES_PER_SEC = 40
+FRAMES_PER_SEC = 60
 PLAYER_SPEED = 12
 MAX_SHOTS = 2
 SHOT_SPEED = 10
