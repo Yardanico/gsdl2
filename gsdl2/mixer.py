@@ -5,7 +5,6 @@ __all__ = [
     'Sound', 'Channel', 'music',
 ]
 
-
 import logging
 
 from _sdl.structs import SDLError
@@ -48,9 +47,9 @@ if True:
             del _channels[channel_id]
         # TODO: post an event if configured on the Channel
         sdl.mixer.channelFinished(_channel_stopped)
-    # # OR #
-    # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
-    # mixer_lib.Mix_ChannelFinished(callback)
+        # # OR #
+        # callback = sdl_ffi.callback('void (*)(int)', _channel_stopped)
+        # mixer_lib.Mix_ChannelFinished(callback)
 
 
 def close():
@@ -117,7 +116,6 @@ def get_busy():
 
 
 class Sound(object):
-
     def __init__(self, filename):
         self.__filename = filename
 
@@ -172,10 +170,12 @@ class Sound(object):
 
     def __get_filename(self):
         return self.__filename
+
     filename = property(__get_filename)
 
     def __get_sdlchunk(self):
         return self.__sdl_chunk
+
     sdl_chunk = property(__get_sdlchunk)
 
     def __del__(self):
@@ -190,7 +190,6 @@ class Sound(object):
 
 
 class Channel(object):
-
     def __init__(self, channel_id):
         self.__channel_id = channel_id
 
@@ -254,4 +253,5 @@ class Channel(object):
 
     def __get_channelid(self):
         return self.__channel_id
+
     channel_id = property(__get_channelid)

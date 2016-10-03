@@ -1,7 +1,6 @@
 import sdl
 from gsdl2 import display
 
-
 __all__ = []
 
 

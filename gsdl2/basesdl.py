@@ -2,11 +2,9 @@
 
 __all__ = ['ffi', 'parse_headers']
 
-
 import re
 
 import cffi
-
 
 ffi = cffi.FFI()
 
@@ -2297,6 +2295,5 @@ Uint32 SDL_WasInit(Uint32 flags);
 void SDL_Quit(void);
 
 """
-
 
 get_cdefs(ffi)

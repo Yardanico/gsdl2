@@ -83,4 +83,5 @@ class Joystick(object):
 
     def __get_sdl_joystick(self):
         return self.__sdl_joystick
+
     sdl_joystick = property(__get_sdl_joystick)

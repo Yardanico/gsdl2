@@ -2,14 +2,13 @@ import logging
 
 import sdl
 
-from gsdl2.sdlconstants import SDL_WINDOWPOS_UNDEFINED, SDL_WINDOW_FULLSCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP
+from sdl import WINDOWPOS_UNDEFINED, WINDOW_FULLSCREEN, WINDOW_FULLSCREEN_DESKTOP
 from gsdl2.locals import utf8
-
 
 __all__ = ['Window']
 
-
 open_windows = []
+
 
 # log = logging.getLogger(__name__)
 
@@ -19,14 +18,14 @@ def get_list():
 
 
 class Window(object):
-
-    def __init__(self, title='gsdl2', x=SDL_WINDOWPOS_UNDEFINED, y=SDL_WINDOWPOS_UNDEFINED, w=0, h=0, flags=0):
+    def __init__(self, title='gsdl2', x=WINDOWPOS_UNDEFINED, y=WINDOWPOS_UNDEFINED, w=0, h=0, flags=0):
         self.__sdl_window = sdl.createWindow(utf8(title), x, y, w, h, flags)
         open_windows.append(self)
 
     def __getsurface(self):
         surface = sdl.getWindowSurface(self.__sdl_window)
         return Surface((surface.w, surface.h), surface=surface)
+
     surface = property(__getsurface)
 
     def create_renderer(self, index=-1, flags=sdl.RENDERER_ACCELERATED):
@@ -43,11 +42,11 @@ class Window(object):
         sdl.setWindowTitle(self.__sdl_window, utf8(title))
 
     def set_fullscreen(self, bool):
-        flag = SDL_WINDOW_FULLSCREEN if bool else 0
+        flag = WINDOW_FULLSCREEN if bool else 0
         sdl.setWindowFullscreen(self.sdl_window, flag)
 
     def set_fullscreen_desktop(self, bool):
-        flag = SDL_WINDOW_FULLSCREEN_DESKTOP if bool else 0
+        flag = WINDOW_FULLSCREEN_DESKTOP if bool else 0
         sdl.setWindowFullscreen(self.sdl_window, flag)
 
     def close(self):
@@ -59,10 +58,12 @@ class Window(object):
 
     def __getrenderer(self):
         return sdl.getRenderer(self.__sdl_window)
+
     sdl_renderer = property(__getrenderer)
 
     def __getsdlwindow(self):
         return self.__sdl_window
+
     sdl_window = property(__getsdlwindow)
 
     def __del__(self):

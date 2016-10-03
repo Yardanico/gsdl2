@@ -2,13 +2,11 @@
 
 __all__ = ['ffi', 'parse_headers']
 
-
 import re
 
 import cffi
 
 from . import basesdl
-
 
 ffi = cffi.FFI()
 ffi.include(basesdl.ffi)
@@ -168,6 +166,4 @@ void Mix_CloseAudio(void);
 
 """
 
-
 get_cdefs(ffi)
-

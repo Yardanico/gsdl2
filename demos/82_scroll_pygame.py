@@ -30,7 +30,6 @@ except ImportError:
     import pygame
 from pygame.locals import Rect, Color, QUIT, KEYDOWN, KEYUP, K_ESCAPE, K_SPACE, K_LEFT, K_RIGHT, K_UP, K_DOWN
 
-
 CONFIG = dict(
     tilesize=(16, 16),
     mapsize=(100, 100),
@@ -53,14 +52,12 @@ def parse_args():
 
 
 class Sprite(object):
-
     def __init__(self, x, y, image):
         self.image = image
         self.rect = image.get_rect(topleft=(x, y))
 
 
 class Game(object):
-
     # surfaces
     tile_images = []
 

@@ -248,7 +248,7 @@ def polygon(renderer, points, color):
     vy = [int(i) for i in vy]
     n = len(vx)
     draw_color = renderer.draw_color
-    gfx_lib.polygonRGBA( renderer.sdl_renderer, vx, vy, n, r, g, b, a)
+    gfx_lib.polygonRGBA(renderer.sdl_renderer, vx, vy, n, r, g, b, a)
     renderer.draw_color = draw_color
 
 

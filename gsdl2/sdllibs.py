@@ -8,12 +8,10 @@ __all__ = [
     'SDLError',
 ]
 
-
 from gsdl2.sdlffi import *
 
 
 class SDLError(Exception):
-
     def __init__(self):
         message = sdl.ffi.string(sdl.getError()).decode('utf-8')
         Exception.__init__(self, message)

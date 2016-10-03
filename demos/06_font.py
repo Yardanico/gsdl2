@@ -5,7 +5,7 @@ from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_N, S_B, S_I, S_O, S_S, S_U
 def set_caption():
     s = '06_font.py - N: {} | B: {} | I: {} | S: {} | U: {} | O: {}'.format(
         font.get_normal(), font.get_bold() > 0, font.get_italic() > 0, font.get_strikethrough() > 0,
-        font.get_underline() > 0, font.get_outline() > 0)
+                           font.get_underline() > 0, font.get_outline() > 0)
     gsdl2.display.set_caption(s)
 
 

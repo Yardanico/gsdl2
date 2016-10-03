@@ -5,7 +5,6 @@ from gsdl2.texture import Texture
 from gsdl2.display import get_renderer
 from gsdl2.locals import utf8
 
-
 ___all___ = ['load', 'load_texture']
 
 

@@ -23,7 +23,6 @@ https://github.com/r4dian/Xbox-360-Controller-for-Python
 http://support.xbox.com/en-US/xbox-360/accessories/controllers
 """
 
-
 from operator import attrgetter
 import platform
 
@@ -33,8 +32,8 @@ from gsdl2.locals import *
 __version__ = '1.0.0'
 __vernum__ = tuple([int(s) for s in __version__.split('.')])
 
-class Struct(dict):
 
+class Struct(dict):
     def __init__(self, **kwargs):
         dict.__init__(self, **kwargs)
         self.__dict__.update(**kwargs)
@@ -133,10 +132,10 @@ button_right_stick = Struct(rect=Rect(400, 240, 20, 20), value=0)
 #  These are the SDL2 values. The hat takes buttons 0-3, and the other buttons
 # are shifted and assigned differently.
 buttons = {
-    0: None,    # hat up
-    1: None,    # hat down
-    2: None,    # hat left
-    3: None,    # hat right
+    0: None,  # hat up
+    1: None,  # hat down
+    2: None,  # hat left
+    3: None,  # hat right
     4: button_start,
     5: button_back,
     6: button_left_stick,
@@ -181,9 +180,9 @@ while True:
     clock.tick(max_fps)
 
     for e in pygame.event.get():
-        #print('event: {}'.format(pygame.event.event_name(e.type)))
+        # print('event: {}'.format(pygame.event.event_name(e.type)))
         if e.type == JOYAXISMOTION:
-            #print('JOYAXISMOTION: axis {}, value {}'.format(e.axis, e.value))
+            # print('JOYAXISMOTION: axis {}, value {}'.format(e.axis, e.value))
             if e.axis == 4:
                 left_trigger.value = e.value
             elif e.axis == 5:
@@ -197,7 +196,7 @@ while True:
             elif e.axis == 2:
                 right_stick.x = stick_center_snap(e.value)
         elif e.type == JOYBUTTONDOWN:
-            #print('JOYBUTTONDOWN: button {}'.format(e.button))
+            # print('JOYBUTTONDOWN: button {}'.format(e.button))
             if e.button > 3:
                 buttons[e.button].value = 1
             else:
@@ -212,7 +211,7 @@ while True:
                     hatx = 1
                 hats[hatx, haty].value = 1
         elif e.type == JOYBUTTONUP:
-            #print('JOYBUTTONUP: button {}'.format(e.button))
+            # print('JOYBUTTONUP: button {}'.format(e.button))
             if e.button > 3:
                 buttons[e.button].value = 0
             else:

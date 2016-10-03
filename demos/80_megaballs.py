@@ -17,7 +17,6 @@ except ImportError:
     import gsdl2
 from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_SPACE
 
-
 print('Python: {}'.format(sys.executable))
 
 try:
@@ -26,7 +25,7 @@ except ValueError:
     print('usage: python 01_transform.py [num_balls]')
     sys.exit(0)
 except IndexError:
-    #=================================================================
+    # =================================================================
     #  NUM_BALLS NOTE:
     #
     #  pypy on an i5 or i7 with a decent gfx card renders (HW) 20,000
@@ -34,7 +33,7 @@ except IndexError:
     #
     #  CPython on the same platform handles about 2,000 balls in HW.
     #  SW struggles with 2,000 looking a bit choppy.
-    #=================================================================
+    # =================================================================
     if 'pypy' in sys.executable:
         NUM_BALLS = 20000
     else:
@@ -42,7 +41,6 @@ except IndexError:
 
 
 class Ball(object):
-
     surface = None
     texture = None
 
@@ -81,7 +79,6 @@ class Ball(object):
 
 
 class Game(object):
-
     def __init__(self, resolution=(1024, 768)):
         self.screen = gsdl2.display.set_mode(resolution)
         self.screen_rect = self.screen.get_rect()

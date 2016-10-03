@@ -7,7 +7,6 @@ https://bitbucket.org/marcusva/py-sdl2/overview
 
 from collections import deque
 
-
 __all__ = ["Particle", "ParticleEngine"]
 
 
@@ -19,6 +18,7 @@ class Particle(object):
     decreased by 1, everytime the particle is processed by the
     ParticleEngine.
     """
+
     def __init__(self, x, y, life):
         """Creates a new Particle with a x-/y-position and life time."""
         super(Particle, self).__init__()
@@ -46,6 +46,7 @@ class ParticleEngine(object):
     particles by itself and marks them as dead, once the particle's life
     attribute has reached 0 or below.
     """
+
     def __init__(self):
         """Creates a new ParticleEngine."""
         super(ParticleEngine, self).__init__()

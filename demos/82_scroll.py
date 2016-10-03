@@ -32,7 +32,6 @@ except ImportError:
     import gsdl2
 from gsdl2.locals import Rect, Color, QUIT, KEYDOWN, KEYUP, S_ESCAPE, S_SPACE, S_LEFT, S_RIGHT, S_UP, S_DOWN
 
-
 CONFIG = dict(
     tilesize=(16, 16),
     mapsize=(100, 100),
@@ -59,14 +58,12 @@ def parse_args():
 
 
 class Sprite(object):
-
     def __init__(self, x, y, image):
         self.image = image
         self.rect = image.get_rect(topleft=(x, y))
 
 
 class Game(object):
-
     # textures
     tile_images = []
 

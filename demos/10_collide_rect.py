@@ -1,7 +1,6 @@
 import gsdl2
 from gsdl2.locals import Color, Rect, QUIT, KEYDOWN, S_ESCAPE
 
-
 gsdl2.init()
 
 screen = gsdl2.display.set_mode((640, 480))

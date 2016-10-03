@@ -3,14 +3,12 @@ import sdl
 
 __all__ = ['Renderer']
 
-
-#from .window import Window     # see bottom for delayed import
+# from .window import Window     # see bottom for delayed import
 from .rect import Rect
 from .color import Color
 
 
 class Renderer(object):
-
     __src_rect = Rect(0, 0, 1, 1)
     __dst_rect = Rect(0, 0, 1, 1)
 
@@ -18,46 +16,56 @@ class Renderer(object):
         assert isinstance(window, Window)
         self.__window = window
         if sdl_renderer:
-            assert isinstance(sdl_renderer, _sdl.autohelpers.SDL_Renderer)
+            assert isinstance(sdl_renderer, sdl.Renderer)
             self.__sdl_renderer = sdl_renderer
         else:
             self.__sdl_renderer = window.sdl_renderer
 
     def __getwindow(self):
         return self.__window
+
     window = property(__getwindow)
 
     def __getsdlrenderer(self):
         return self.__sdl_renderer
+
     sdl_renderer = property(__getsdlrenderer)
 
     def get_logical_size(self):
         return sdl.renderGetLogicalSize(self.__sdl_renderer)
+
     def set_logical_size(self, size):
         sdl.renderSetLogicalSize(self.__sdl_renderer, *size)
+
     logical_size = property(get_logical_size, set_logical_size)
 
     def get_draw_color(self):
         r, g, b, a = [sdl.ffi.new('Uint8 *') for i in range(4)]
         sdl.getRenderDrawColor(self.__sdl_renderer, r, g, b, a)
         return Color(r[0], g[0], b[0], a[0])
+
     def set_draw_color(self, color):
         sdl.setRenderDrawColor(self.__sdl_renderer, *color)
+
     draw_color = property(get_draw_color, set_draw_color)
 
     def get_viewport(self):
         return sdl.renderGetViewport(self.__sdl_renderer)
+
     def set_viewport(self, rect):
         if not isinstance(rect, Rect):
             self.__dst_rect[:] = rect
             rect = self.__dst_rect
         sdl.renderSetViewport(self.__sdl_renderer, rect.sdl_rect)
+
     viewport = property(get_viewport, set_viewport)
 
     def get_scale(self):
         return sdl.renderGetScale(self.__sdl_renderer)
+
     def set_scale(self, size):
         sdl.renderSetScale(self.__sdl_renderer, *size)
+
     scale = property(get_scale, set_scale)
 
     def get_target(self):
@@ -78,8 +86,10 @@ class Renderer(object):
         sdl.getRenderDrawBlendMode(self.sdl_renderer, blendmode)
         value = int(blendmode[0])
         return value
+
     def set_blendmode(self, blendmode):
         sdl.setRenderDrawBlendMode(self.sdl_renderer, blendmode)
+
     blendmode = property(get_blendmode, set_blendmode)
 
     def fill(self, color, texture=None):

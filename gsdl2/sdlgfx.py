@@ -5,7 +5,6 @@ import re
 # unlike other ffi modules, this one depends on previously loaded sdl.ffi
 from .basesdl import ffi
 
-
 __all__ = ['ffi', 'parse_headers']
 
 
@@ -2613,6 +2612,5 @@ static unsigned char gfxPrimitivesFontdata[2048] = {
 
 };
 """
-
 
 get_cdefs(ffi)

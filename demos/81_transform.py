@@ -24,7 +24,6 @@ except ImportError:
 from gsdl2 import sdlpixels
 from gsdl2.locals import QUIT, KEYDOWN, S_ESCAPE, S_SPACE, S_RETURN
 
-
 print('Python: {}'.format(sys.executable))
 
 PROFILE = False
@@ -42,7 +41,6 @@ except IndexError:
     else:
         NUM_HW_BALLS = 750
 NUM_SW_BALLS = NUM_HW_BALLS // 20
-
 
 # Step through these with K_RETURN if you want to try different surface formats.
 # These only affect blit performance. No effect on texture rendering.
@@ -88,7 +86,6 @@ last_format = formats[-1]
 
 
 class Ball(object):
-
     orig_surface = None
     surface = None
     texture = None
@@ -126,7 +123,6 @@ class Ball(object):
 
 
 class Game(object):
-
     def __init__(self, resolution=(1024, 768)):
         self.screen = gsdl2.display.set_mode(resolution)
         self.screen_rect = self.screen.get_rect()

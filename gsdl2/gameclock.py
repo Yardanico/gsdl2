@@ -123,9 +123,7 @@ other Python-based multi-media and game development libraries.
 __version__ = '$Id: gameclock.py 428 2013-08-28 05:43:47Z stabbingfinger@gmail.com $'
 __author__ = 'Gummbum, (c) 2011-2014'
 
-
 __all__ = ['GameClock']
-
 
 import functools
 import time
@@ -147,10 +145,9 @@ class _IntervalItem(object):
 
 
 class GameClock(object):
-    
     def __init__(self, max_ups=30, max_fps=0, use_wait=False, time_source=time.time, update_callback=None,
                  frame_callback=None, paused_callback=None):
-        
+
         # Configurables.
         self.get_ticks = time_source
         self.max_ups = max_ups
@@ -159,7 +156,7 @@ class GameClock(object):
         self.update_callback = update_callback
         self.frame_callback = frame_callback
         self.paused_callback = paused_callback
-        
+
         # Time keeping.
         TIME = self.get_ticks()
         self._real_time = TIME
@@ -173,12 +170,12 @@ class GameClock(object):
         self._update_ready = False
         self._frame_ready = False
         self._paused = 0
-        
+
         # Schedules
         self._need_sort = False
         self._schedules = []
         self._unschedules = []
-        
+
         # Metrics: update and frame progress counter in the current one-second
         # interval.
         self.num_updates = 0
@@ -193,7 +190,7 @@ class GameClock(object):
         # seconds.
         self.ups = 0.0
         self.fps = 0.0
-    
+
     @property
     def max_ups(self):
         return self._max_ups
@@ -202,7 +199,7 @@ class GameClock(object):
     def max_ups(self, val):
         self._max_ups = val
         self._update_interval = 1.0 / val if val > 0 else 0
-    
+
     @property
     def max_fps(self):
         return self._max_fps
@@ -211,7 +208,7 @@ class GameClock(object):
     def max_fps(self, val):
         self._max_fps = val
         self._frame_interval = 1.0 / val if val > 0 else 0
-    
+
     @property
     def game_time(self):
         """Virtual elapsed time in game milliseconds.
@@ -224,7 +221,7 @@ class GameClock(object):
         is not paused.
         """
         return self._paused
-    
+
     @property
     def interpolate(self):
         interp = (self._real_time - self._last_update_real) / self._update_interval
@@ -236,18 +233,18 @@ class GameClock(object):
         if interp > 1.0:
             return 1.0
         return interp
-    
+
     def tick(self):
         # Now.
         real_time = self.get_ticks()
         self._real_time = real_time
-        
+
         # Pre-emptive pause callback.
         if self._paused:
             if self.paused_callback:
                 self.paused_callback()
             return
-        
+
         # Check if update and frame are due.
         update_interval = self._update_interval
         game_time = self._game_time
@@ -270,8 +267,8 @@ class GameClock(object):
             if self.update_callback:
                 self._update_ready = True
         if real_time - self._last_frame >= self._update_interval or (
-                real_time + self.cost_of_frame < self._next_update and
-                real_time >= self._next_frame):
+                            real_time + self.cost_of_frame < self._next_update and
+                        real_time >= self._next_frame):
             self.dt_frame = real_time - self._last_frame
             self._last_frame = real_time
             self._next_frame = real_time + self._frame_interval
@@ -287,11 +284,11 @@ class GameClock(object):
             sched_due = sched.lasttime + sched.interval
             if real_time >= sched_due:
                 sched_ready = True
-        
+
         # Run schedules if any are due.
         if self._update_ready or sched_ready:
             self._run_schedules()
-        
+
         # Run the frame callback (moved inline to reduce function calls).
         if self.frame_callback and self._frame_ready:
             get_ticks = self.get_ticks
@@ -299,11 +296,11 @@ class GameClock(object):
             self.frame_callback(self.interpolate)
             self.cost_of_frame = get_ticks() - t
             self._frame_ready = False
-        
+
         # Flip metrics counters every second.
         if real_time >= self._next_second:
             self._flip(real_time)
-        
+
         # Sleep to save CPU.
         if self.use_wait:
             upcoming_events = [
@@ -318,7 +315,7 @@ class GameClock(object):
             time_to_sleep = next_due - t
             if time_to_sleep >= 0.002:
                 time.sleep(time_to_sleep)
-        
+
     def pause(self):
         """Pause the clock so that time does not elapse.
         
@@ -331,7 +328,7 @@ class GameClock(object):
         resumed when needed.
         """
         self._paused = self.get_ticks()
-    
+
     def resume(self):
         """Resume the clock from the point that it was paused."""
         real_time = self.get_ticks()
@@ -342,7 +339,7 @@ class GameClock(object):
         self._last_update_real = real_time - (paused - self._last_update_real)
         self._paused = 0
         self._real_time = real_time
-    
+
     def schedule_interval(self, func, interval, life=0, args=[]):
         """Schedule an item to be called back each time an interval elapses.
         
@@ -364,7 +361,7 @@ class GameClock(object):
         self._schedules.append(item)
         self._need_sort = True
         return item.id
-    
+
     def unschedule(self, func):
         """Unschedule managed functions. All matching items are removed."""
         sched = self._schedules
@@ -379,22 +376,22 @@ class GameClock(object):
         sched = self._schedules
         for item in list(sched):
             if item.id == id:
-                sched.remove(item)                
+                sched.remove(item)
 
     @staticmethod
     def _interval_item_sort_key(item):
         return item.lasttime + item.interval
-    
+
     def _run_schedules(self):
         get_ticks = self.get_ticks
-        
+
         # Run the update callback.
         if self.update_callback and self._update_ready:
             t = get_ticks()
             self.update_callback(self.dt_update)
             self.cost_of_update = get_ticks() - t
             self._update_ready = False
-        
+
         # Run the interval callbacks.
         if self._need_sort:
             self._schedules.sort(key=self._interval_item_sort_key)
@@ -421,14 +418,14 @@ class GameClock(object):
             for id in self._unschedules:
                 self.unschedule_by_id(id)
             del self._unschedules[:]
-    
+
     def _flip(self, real_time):
         self.ups = self.num_updates
         self.fps = self.num_frames
-        
+
         self.num_updates = 0
         self.num_frames = 0
-        
+
         self._last_second = real_time
         self._next_second += 1.0
 
@@ -436,9 +433,10 @@ class GameClock(object):
 if __name__ == '__main__':
     import pygame
     from pygame.locals import *
-    
+
+
     class Game(object):
-        
+
         def __init__(self):
             pygame.init()
             self.screen = pygame.display.set_mode((640, 480))
@@ -446,7 +444,7 @@ if __name__ == '__main__':
             self.black = Color('black')
             self.clock = GameClock(max_ups=30, max_fps=256, update_callback=self._update, frame_callback=self._draw)
             self.clock.schedule_interval(self._update_caption, 1.0)
-            
+
             ball = pygame.sprite.Sprite()
             ball.image = pygame.Surface((20, 20))
             ball.rect = ball.image.get_rect()
@@ -455,19 +453,19 @@ if __name__ == '__main__':
             ball.pos = float(ball.rect.centerx), float(ball.rect.centery)
             ball.vec = 3, 5
             self.ball = ball
-            
+
             self.cfg_draw_simple = False
-        
+
         def run(self):
             while 1:
                 self.clock.tick()
-        
+
         def _update(self, dt):
             self._do_events()
-            
+
             ball = self.ball
             screen_rect = self.screen_rect
-            
+
             x, y = ball.pos
             vx, vy = ball.vec
             x += vx
@@ -485,27 +483,27 @@ if __name__ == '__main__':
                 elif ball.rect.top < screen_rect.top:
                     vy *= -1
                 ball.vec = vx, vy
-        
+
         def _update_caption(self, *args):
             pygame.display.set_caption('{0} ups | {1} fps | {2}'.format(
                 self.clock.ups, self.clock.fps,
                 'Draw SIMPLE' if self.cfg_draw_simple else 'Draw COMPLEX'))
-        
+
         def _draw(self, interp):
             ball = self.ball
             screen = self.screen
             black = self.black
-            
+
             screen.fill(black)
-            
+
             x, y = ball.rect.topleft
             vx, vy = ball.vec
             x1 = int(round(ball.rect.x - vx) + (vx * interp))
             y1 = int(round(ball.rect.y - vy) + (vy * interp))
             screen.blit(ball.image, (x, y) if self.cfg_draw_simple else (x1, y1))
-            
+
             pygame.display.flip()
-        
+
         def _do_events(self):
             mouse_motion = None
             for e in pygame.event.get():
@@ -518,5 +516,6 @@ if __name__ == '__main__':
                     mouse_motion = e
             if mouse_motion:
                 pass
-    
+
+
     Game().run()

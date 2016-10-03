@@ -32,6 +32,7 @@ class Rect(object):
 
     def __get_sdl_rect(self):
         return self.__sdl_rect
+
     sdl_rect = property(__get_sdl_rect)
 
     # The following directly access __dim and/or perform calculations:
@@ -54,6 +55,7 @@ class Rect(object):
 
     def __setx(self, x):
         self.__sdl_rect.x = int(x)
+
     x = property(__getx, __setx)
     left = x
 
@@ -62,6 +64,7 @@ class Rect(object):
 
     def __sety(self, y):
         self.__sdl_rect.y = int(y)
+
     y = property(__gety, __sety)
     top = y
 
@@ -70,6 +73,7 @@ class Rect(object):
 
     def __setright(self, x):
         self.x = x - self.w
+
     right = property(__getright, __setright)
 
     def __getbottom(self):
@@ -77,6 +81,7 @@ class Rect(object):
 
     def __setbottom(self, y):
         self.y = y - self.h
+
     bottom = property(__getbottom, __setbottom)
 
     # dimensions: w, width, h, height, size
@@ -86,6 +91,7 @@ class Rect(object):
 
     def __setw(self, width):
         self.__sdl_rect.w = int(width)
+
     w = property(__getw, __setw)
     width = w
 
@@ -94,6 +100,7 @@ class Rect(object):
 
     def __seth(self, height):
         self.__sdl_rect.h = int(height)
+
     h = property(__geth, __seth)
     height = h
 
@@ -102,6 +109,7 @@ class Rect(object):
 
     def __setsize(self, size):
         self.w, self.h = size
+
     size = property(__getsize, __setsize)
 
     # corners: topleft, bottomleft, topright, bottomright
@@ -111,6 +119,7 @@ class Rect(object):
 
     def __settopleft(self, pos):
         self.left, self.top = pos
+
     topleft = property(__gettopleft, __settopleft)
 
     def __getbottomleft(self):
@@ -118,6 +127,7 @@ class Rect(object):
 
     def __setbottomleft(self, pos):
         self.left, self.bottom = pos
+
     bottomleft = property(__getbottomleft, __setbottomleft)
 
     def __gettopright(self):
@@ -125,6 +135,7 @@ class Rect(object):
 
     def __settopright(self, pos):
         self.right, self.top = pos
+
     topright = property(__gettopright, __settopright)
 
     def __getbottomright(self):
@@ -132,6 +143,7 @@ class Rect(object):
 
     def __setbottomright(self, pos):
         self.right, self.bottom = pos
+
     bottomright = property(__getbottomright, __setbottomright)
 
     # centers: center, centerx, centery, midtop, midleft, midbottom, midright
@@ -141,6 +153,7 @@ class Rect(object):
 
     def __setcenter(self, pos):
         self.centerx, self.centery = pos
+
     center = property(__getcenter, __setcenter)
 
     def __getcenterx(self):
@@ -148,6 +161,7 @@ class Rect(object):
 
     def __setcenterx(self, x):
         self.x = x - self.w // 2
+
     centerx = property(__getcenterx, __setcenterx)
 
     def __getcentery(self):
@@ -155,6 +169,7 @@ class Rect(object):
 
     def __setcentery(self, y):
         self.y = y - self.h // 2
+
     centery = property(__getcentery, __setcentery)
 
     def __getmidtop(self):
@@ -162,6 +177,7 @@ class Rect(object):
 
     def __setmidtop(self, pos):
         self.centerx, self.top = pos
+
     midtop = property(__getmidtop, __setmidtop)
 
     def __getmidleft(self):
@@ -169,6 +185,7 @@ class Rect(object):
 
     def __setmidleft(self, pos):
         self.left, self.centery = pos
+
     midleft = property(__getmidleft, __setmidleft)
 
     def __getmidbottom(self):
@@ -176,6 +193,7 @@ class Rect(object):
 
     def __setmidbottom(self, pos):
         self.centerx, self.bottom = pos
+
     midbottom = property(__getmidbottom, __setmidbottom)
 
     def __getmidright(self):
@@ -183,6 +201,7 @@ class Rect(object):
 
     def __setmidright(self, pos):
         self.right, self.centery = pos
+
     midright = property(__getmidright, __setmidright)
 
     # utilities
@@ -287,7 +306,7 @@ class Rect(object):
             x = rect.x + rect.w - self.w
         else:
             x = self.x
-    
+
         if self.h >= rect.h:
             y = rect.y + rect.h / 2 - self.h / 2
         elif self.y < rect.y:
@@ -296,7 +315,7 @@ class Rect(object):
             y = rect.y + rect.h - self.h
         else:
             y = self.y
-    
+
         return Rect(x, y, self.w, self.h)
 
     def clamp_ip(self, rect):
@@ -308,7 +327,7 @@ class Rect(object):
             x = rect.x + rect.w - self.w
         else:
             x = self.x
-    
+
         if self.h >= rect.h:
             y = rect.y + rect.h / 2 - self.h / 2
         elif self.y < rect.y:
@@ -317,7 +336,7 @@ class Rect(object):
             y = rect.y + rect.h - self.h
         else:
             y = self.y
-    
+
         self.x = x
         self.y = y
 

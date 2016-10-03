@@ -12,6 +12,7 @@ def mmx_off():
 def mmx_on():
     gfx_lib.SDL_imageFilterMMXon()
 
+
 # All routines return:
 #   0   OK
 #  -1   Error (internal error, parameter error)

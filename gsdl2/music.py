@@ -29,6 +29,8 @@ def _music_finished():
     if _globals.end_event is not None:
         event.post(event.Event(
             _globals.end_event, code=_globals.code, window=0, data1=_globals.current_name, data2=None))
+
+
 sdl.mixer.hookMusicFinished(_music_finished)
 
 

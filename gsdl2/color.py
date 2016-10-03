@@ -2,17 +2,14 @@ import sdl
 
 __all__ = ['Color']
 
-
 import logging
 
 from gsdl2.colordict import THECOLORS
-
 
 log = logging.getLogger(__name__)
 
 
 class Color(object):
-
     # This is used to iterate slices in __getitem__.
     __i2a = {0: 'r', 1: 'g', 2: 'b', 3: 'a'}
 
@@ -40,34 +37,43 @@ class Color(object):
 
     def __getr(self):
         return self.__color[0]
+
     def __setr(self, r):
         self.__color[0] = r
         self.__sdl_color.r = r
+
     r = property(__getr, __setr)
 
     def __getg(self):
         return self.__color[1]
+
     def __setg(self, g):
         self.__color[1] = g
         self.__sdl_color.g = g
+
     g = property(__getg, __setg)
 
     def __getb(self):
         return self.__color[2]
+
     def __setb(self, b):
         self.__color[2] = b
         self.__sdl_color.b = b
+
     b = property(__getb, __setb)
 
     def __geta(self):
         return self.__color[3]
+
     def __seta(self, a):
         self.__color[3] = a
         self.__sdl_color.a = a
+
     a = property(__geta, __seta)
 
     def __get_sdl_color(self):
         return self.__sdl_color
+
     sdl_color = property(__get_sdl_color)
 
     def __iter__(self):

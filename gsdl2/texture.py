@@ -2,14 +2,12 @@ import sdl
 
 __all__ = ['Texture']
 
-
 import logging
 
 import cffi
 
 from .rect import Rect
 from . import sdlpixels
-
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +45,7 @@ class Texture(object):
 
     def get_size(self):
         return self.__size
+
     size = property(get_size)
 
     def get_rect(self, **kwargs):
@@ -61,20 +60,25 @@ class Texture(object):
         sdl.getTextureBlendMode(self.sdl_texture, cdata)
         value = int(cdata[0])
         return value
+
     def set_blendmode(self, mode):
         sdl.setTextureBlendMode(self.sdl_texture, mode)
+
     blendmode = property(get_blendmode, set_blendmode)
 
     def get_alpha(self):
         cdata = sdl.ffi.new('Uint8 *')
         sdl.getTextureAlphaMod(self.sdl_texture, cdata)
         return cdata[0]
+
     def set_alpha(self, alpha):
         sdl.setTextureAlphaMod(self.sdl_texture, int(alpha))
+
     alpha = property(get_alpha, set_alpha)
 
     def __getsdltexture(self):
         return self.__sdl_texture
+
     sdl_texture = property(__getsdltexture)
 
     def __del__(self):

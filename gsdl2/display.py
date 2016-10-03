@@ -1,6 +1,5 @@
 from . import sdlconstants
 
-
 __all__ = [
     'set_mode', 'get_surface', 'flip', 'set_caption',
     'get_window', 'get_renderer', 'set_clear_color', 'clear', 'present', 'Runtime',
@@ -10,8 +9,8 @@ __all__ = [
 class Runtime:
     # TODO: is this defeating __del__() in the classes?
 
-        window = None
-        renderer = None
+    window = None
+    renderer = None
 
 
 def set_mode(resolution=(0, 0), flags=0, depth=0,

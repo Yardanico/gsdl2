@@ -1,5 +1,5 @@
 import sdl
-from _sdl.structs import  SDLError
+from _sdl.structs import SDLError
 from gsdl2.locals import (
     utf8, QUIT, WINDOWEVENT, SYSWMEVENT,
     KEYDOWN, KEYUP, TEXTEDITING, TEXTINPUT,
@@ -10,9 +10,7 @@ from gsdl2.locals import (
     FINGERDOWN, FINGERUP, FINGERMOTION, DOLLARGESTURE, DOLLARRECORD, MULTIGESTURE,
     CLIPBOARDUPDATE, DROPFILE, RENDER_TARGETS_RESET, USEREVENT, NOEVENT,
 )
-from gsdl2.sdlconstants import SDL_INIT_VIDEO, SDL_QUERY, SDL_IGNORE, SDL_DISABLE, SDL_ENABLE
-
-
+from sdl import INIT_VIDEO, QUERY, IGNORE, DISABLE, ENABLE
 
 # TODO: __all__
 from gsdl2.sdlffi import to_string
@@ -45,8 +43,10 @@ class SysWMEvent(_Struct):
 
 
 class KeyEvent(_Struct):
-    def __init__(self, type=None, window=None, state=None, repeat=None, key=None, mod=None, scancode=None, __event=None):
-        _Struct.__init__(self, type=type, window=window, state=state, repeat=repeat, key=key, mod=mod, scancode=scancode, __event=__event)
+    def __init__(self, type=None, window=None, state=None, repeat=None, key=None, mod=None, scancode=None,
+                 __event=None):
+        _Struct.__init__(self, type=type, window=window, state=state, repeat=repeat, key=key, mod=mod,
+                         scancode=scancode, __event=__event)
 
 
 class TextEditingEvent(_Struct):
@@ -65,8 +65,10 @@ class MouseMotionEvent(_Struct):
 
 
 class MouseButtonEvent(_Struct):
-    def __init__(self, type=None, window=None, mouse=None, button=None, state=None, clicks=None, pos=None, __event=None):
-        _Struct.__init__(self, type=type, window=window, mouse=mouse, button=button, state=state, clicks=clicks, pos=pos, __event=__event)
+    def __init__(self, type=None, window=None, mouse=None, button=None, state=None, clicks=None, pos=None,
+                 __event=None):
+        _Struct.__init__(self, type=type, window=window, mouse=mouse, button=button, state=state, clicks=clicks,
+                         pos=pos, __event=__event)
 
 
 class MouseWheelEvent(_Struct):
@@ -116,17 +118,20 @@ class ControllerDeviceEvent(_Struct):
 
 class TouchFingerEvent(_Struct):
     def __init__(self, type=None, touch=None, finger=None, pos=None, rel=None, pressure=None, __event=None):
-        _Struct.__init__(self, type=type, touch=touch, finger=finger, pos=pos, rel=rel, pressure=pressure, __event=__event)
+        _Struct.__init__(self, type=type, touch=touch, finger=finger, pos=pos, rel=rel, pressure=pressure,
+                         __event=__event)
 
 
 class MultiGestureEvent(_Struct):
     def __init__(self, type=None, touch=None, dtheta=None, ddist=None, pos=None, numfingers=None, __event=None):
-        _Struct.__init__(self, type=type, touch=touch, dtheta=dtheta, ddist=ddist, pos=pos, numfingers=numfingers, __event=__event)
+        _Struct.__init__(self, type=type, touch=touch, dtheta=dtheta, ddist=ddist, pos=pos, numfingers=numfingers,
+                         __event=__event)
 
 
 class DollarGestureEvent(_Struct):
     def __init__(self, type=None, touch=None, gesture=None, numfingers=None, error=None, pos=None, __event=None):
-        _Struct.__init__(self, type=type, touch=touch, gesture=gesture, numfingers=numfingers, error=error, pos=pos, __event=__event)
+        _Struct.__init__(self, type=type, touch=touch, gesture=gesture, numfingers=numfingers, error=error, pos=pos,
+                         __event=__event)
 
 
 class DropEvent(_Struct):
@@ -277,7 +282,8 @@ def _MultiGestureEvent(e):
 def _DollarGestureEvent(e):
     dgesture = e.dgesture
     pos = dgesture.x, dgesture.y
-    event = DollarGestureEvent(e.type, dgesture.touchID, dgesture.gestureID, dgesture.numFingers, dgesture.error, pos, e)
+    event = DollarGestureEvent(e.type, dgesture.touchID, dgesture.gestureID, dgesture.numFingers, dgesture.error, pos,
+                               e)
     return event
 
 
@@ -338,6 +344,8 @@ _factories = {
 # singleton SDL event for internal use
 def _Event():
     return sdl.ffi.new('SDL_Event *')
+
+
 _event = _Event()
 
 
@@ -347,12 +355,12 @@ def pump():
 
     :return: None
     """
-    if sdl.wasInit(SDL_INIT_VIDEO):
+    if sdl.wasInit(INIT_VIDEO):
         sdl.pumpEvents()
 
 
 def _get_internal(filter_type=None):
-    if not sdl.wasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(INIT_VIDEO):
         return
 
     append = queued_events.append
@@ -403,6 +411,8 @@ def get(filter_type=None):
         copy_events = [e for e in queued_events if e.type in filter_type]
     del queued_events[:]
     return copy_events
+
+
 queued_events = []
 
 
@@ -412,7 +422,7 @@ def poll():
 
     :return: Event
     """
-    if not sdl.wasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(INIT_VIDEO):
         return None
 
     if queued_events:
@@ -433,7 +443,7 @@ def wait():
 
     :return: Event
     """
-    if not sdl.wasInit(SDL_INIT_VIDEO):
+    if not sdl.wasInit(INIT_VIDEO):
         return None
 
     if queued_events:
@@ -483,6 +493,8 @@ def event_name(event_type):
     :return: name string
     """
     return event_names[event_type]
+
+
 event_names = {
     0: 'FIRSTEVENT',
     0x100: 'QUIT',
@@ -548,6 +560,8 @@ def set_blocked(filter_type):
         except TypeError:
             if filter_type in event_names and filter_type not in blocked_event_types:
                 blocked_event_types.append(filter_type)
+
+
 blocked_event_types = []
 
 

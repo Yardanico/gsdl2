@@ -2,13 +2,10 @@ import sdl
 
 __all__ = ['Clock', 'FixedDriver', 'GameClock', 'get_ticks', 'wait', 'delay']
 
-
 import collections
 import time
 
-
 from .gameclock import GameClock
-
 
 WORST_CLOCK_ACCURACY = 12
 
@@ -285,7 +282,7 @@ class FixedDriver(object):
         if self._elapsed <= 0.0:
             # TODO: keep eye on this. Had to insert some intelligence because when elapsed falls behind when the CPU
             # is overwhelmed, and then it will spam the master to catch up once CPU is available.
-            #self._elapsed += step
+            # self._elapsed += step
             if self._elapsed + WORST_CLOCK_ACCURACY / 1000.0 < step:
                 self._elapsed = step
             else:
@@ -464,7 +461,7 @@ def _accurate_delay(ticks):
     if ticks <= 0:
         return 0
 
-    funcstart = sdl.getTicks ()
+    funcstart = sdl.getTicks()
     if ticks >= WORST_CLOCK_ACCURACY:
         delay = (ticks - 2) - (ticks % WORST_CLOCK_ACCURACY)
         if delay >= WORST_CLOCK_ACCURACY:
@@ -473,6 +470,6 @@ def _accurate_delay(ticks):
         delay = ticks
 
     while delay > 0:
-        delay = ticks - (sdl.getTicks () - funcstart)
+        delay = ticks - (sdl.getTicks() - funcstart)
 
-    return sdl.getTicks () - funcstart
+    return sdl.getTicks() - funcstart

@@ -34,22 +34,21 @@ except ImportError:
 import gsdl2
 from gsdl2.locals import QUIT, KEYDOWN, MOUSEMOTION, S_ESCAPE, S_TAB, S_SPACE, S_EQUALS, S_MINUS, S_I
 
-
 print('Python: {}'.format(sys.executable))
 
 if 'pypy' in sys.executable:
     CONFIG = dict(
-        image='tomato.png',     # image source
-        scale=3.0,              # pixels per unit
-        max_particles=20000,    # max sparks alive at any time
+        image='tomato.png',  # image source
+        scale=3.0,  # pixels per unit
+        max_particles=20000,  # max sparks alive at any time
         increment=1000,
         profile=False,
     )
 else:
     CONFIG = dict(
-        image='tomato.png',     # image source
-        scale=3.0,              # pixels per unit
-        max_particles=2000,     # max sparks alive at any time
+        image='tomato.png',  # image source
+        scale=3.0,  # pixels per unit
+        max_particles=2000,  # max sparks alive at any time
         increment=100,
         profile=False,
     )
@@ -108,7 +107,7 @@ class Spark(gsdl2.particles.Particle):
         scale = CONFIG['scale']
         vx = self.vx
         vy = self.vy
-        vx -= vx * 1.0/4.0 * dt * scale
+        vx -= vx * 1.0 / 4.0 * dt * scale
         vy += 9.8 * dt * scale
         self.vx = vx
         self.vy = vy

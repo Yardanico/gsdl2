@@ -1,10 +1,8 @@
-__all__ = ['ffi','gfx_ffi']
-
-
-
+__all__ = ['ffi', 'gfx_ffi']
 
 from sdl import ffi
 from . import sdlgfx
+
 gfx_ffi = sdlgfx.ffi
 
 
