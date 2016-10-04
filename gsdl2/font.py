@@ -39,10 +39,13 @@ class Font(object):
 
         self.__sdl_font = sdl.ttf.openFont(utf8(filename), pointsize)
         if self.__sdl_font == sdl.ffi.NULL:
-            log.critical(sdl.ffi.string(sdl.SDL_GetError()).decode('utf-8'))
+            log.critical(sdl.ffi.string(sdl.getError()).decode('utf-8'))
             raise SDLError()
 
-    def render(self, text, antialias, color, background=None, encoding='utf-8', wrap_length=0, palette=False):
+    # render is incompatible with pygame because
+    # render has no argument - "antialiasing" as it used by default
+    # this is ugly hack to make both versions work! (from pygame and gsdl2)
+    def render(self, *args, **kwargs):
         """render text, returning a Surface
 
         If palette is True: the TTF_RenderSolid* routines are used.
@@ -58,6 +61,12 @@ class Font(object):
         :param palette: use 8-bit palette rendering
         :return:
         """
+        if len(args)==2:
+            return self._render(*args,**kwargs)
+        # if there's third argument, just skip it
+        if len(args)==3:
+            return self._render(args[0],args[2],**kwargs)
+    def _render(self, text, color, background=None, encoding='utf-8', wrap_length=0, palette=False):
         if background:
             sdl_surf = self._render_shaded(text, color, background, encoding)
         elif wrap_length:

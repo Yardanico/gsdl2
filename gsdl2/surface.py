@@ -22,17 +22,6 @@ PixelPalette = namedtuple('PixelPalette', 'ncolors color')
 # Color = namedtuple('Color', 'r g b a')
 
 
-def pixel_format(cdata):
-    """returns a PixelFormat
-    """
-    # TODO: this will be different for 8-bit surfaces with a palette
-    buf = ffi.buffer(cdata)
-    pixel_format_elements = struct.unpack('IIBBIIIIBBBBBBBBhI', buf)
-    pixel_format = PixelFormat(*pixel_format_elements)
-    # print(pixel_format)
-    # print('format={}'.format(sdl.getPixelFormatName(pixel_format.format)))
-    return pixel_format
-
 
 class Surface(object):
     __src_rect = Rect(0, 0, 1, 1)
@@ -115,6 +104,7 @@ class Surface(object):
 
     def get_blendmode(self):
         cdata = sdl.ffi.new('SDL_BlendMode *')
+
         sdl.getTextureBlendMode(self.sdl_surface, cdata)
         value = int(cdata[0])
         return value
@@ -331,8 +321,8 @@ class Surface(object):
             converted_surface = Surface((surf.w, surf.h), surface=surf)
         else:
             # TODO: there's probably a more elegant way to do this
-            window_format = pixel_format(get_window_list()[0].surface.sdl_surface.format).format
-            surface_format = pixel_format(self.sdl_surface.format).format
+            window_format = get_window_list()[0].surface.sdl_surface.format.format
+            surface_format = self.sdl_surface.format.format
             surface_layout = sdlpixels.layout_to_name[sdlpixels.pixel_layout(surface_format)]
             window_order = sdlpixels.order_to_name[sdlpixels.pixel_order(window_format)]
 
@@ -380,4 +370,4 @@ class Surface(object):
                 pass
 
 
-from .window import get_list as get_window_list
+from gsdl2.window import get_list as get_window_list

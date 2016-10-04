@@ -72,6 +72,7 @@ from gsdl2 import particles
 from gsdl2 import locals
 from gsdl2 import key
 from gsdl2 import time
+from gsdl2 import transform
 # -----------------------------------
 # Classes and constants
 # -----------------------------------

@@ -82,12 +82,6 @@ import gsdl2
 from gsdl2 import Rect
 from gsdl2._time import get_ticks
 
-# Don't depend on pygame.mask if it's not there...
-try:
-    from pygame.mask import from_surface
-except:
-    pass
-
 
 class Sprite(object):
     """simple base class for visible game objects

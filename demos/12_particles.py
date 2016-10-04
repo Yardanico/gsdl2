@@ -23,6 +23,8 @@ import pstats
 import random
 import sys
 
+import sdl
+
 try:
     import gsdl2
 except ImportError:
@@ -94,7 +96,7 @@ class Spark(gsdl2.particles.Particle):
             else:
                 Spark.image = gsdl2.image.load_texture(CONFIG['image'])
                 Spark.rect = gsdl2.Rect(0, 0, 20, 20)
-            self.image.set_blendmode(gsdl2.sdl_lib.SDL_BLENDMODE_BLEND)
+            self.image.set_blendmode(sdl.BLENDMODE_BLEND)
             Spark.src_rect = self.image.get_rect()
 
     def update(self, dt, world):
