@@ -16,7 +16,8 @@ class Runtime:
 def set_mode(resolution=(0, 0), flags=0, depth=0,
              renderer_flags=(sdlconstants.SDL_WINDOW_HIDDEN |
                              sdlconstants.SDL_RENDERER_ACCELERATED |
-                             sdlconstants.SDL_RENDERER_TARGETTEXTURE),
+                             sdlconstants.SDL_RENDERER_TARGETTEXTURE |
+                             sdlconstants.SDL_RENDERER_PRESENTVSYNC),
              x=sdlconstants.SDL_WINDOWPOS_UNDEFINED, y=sdlconstants.SDL_WINDOWPOS_UNDEFINED):
     if Runtime.window is not None:
         return

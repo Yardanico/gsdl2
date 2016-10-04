@@ -8,10 +8,11 @@ import struct
 import sdl
 from sdl import ffi
 from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
-from gsdl2 import sdlpixels
+from gsdl2 import sdlpixels, SDLError
 from gsdl2 import color
 from gsdl2.rect import Rect
 from gsdl2.locals import palette_8bit, Color
+from gsdl2.surflock import locked
 
 PixelFormat = namedtuple('PixelFormat', 'format palette bitsperpixel bytesperpixel' +
                          ' rmask gmask bmask amask rloss gloss bloss aloss rshift gshift bshift ashift refcount next')
@@ -292,7 +293,22 @@ class Surface(object):
         sdl_dest_rect.h = h
         sdl.upperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, sdl_dest_rect)
         self.unlock()
+    def set_alpha(self, value=None, flags=0):
+        """ set_alpha(value, flags=0) -> None
+        set the alpha value for the full Surface image
+        """
+        if value is not None:
+            value = int(value)
+            if value > 255:
+                value = 255
+            if value < 0:
+                value = 0
+        else:
+            value = 255
 
+        with locked(self.sdl_surface):
+            if sdl.setSurfaceAlphaMod(self.sdl_surface, value) == -1:
+                raise SDLError()
     def convert(self, format=None):
         surf = get_window_list()[0].surface.sdl_surface
         if format is None:

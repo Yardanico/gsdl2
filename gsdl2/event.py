@@ -375,22 +375,23 @@ def _get_internal(filter_type=None):
         # f = get(e.type, None)
         # if f not in (_KeyEvent,):
         #     print(f)
-        if use_filter:
-            # local filter in arg
-            if is_list and e.type in filter_type:
+        if e:
+            if use_filter:
+                # local filter in arg
+                if is_list and e.type in filter_type:
+                    continue
+                elif e.type == filter_type:
+                    continue
+            # global filter
+            if get_blocked(e.type):
                 continue
-            elif e.type == filter_type:
-                continue
-        # global filter
-        if get_blocked(e.type):
-            continue
-        factories = get(e.type, None)
-        if factories:
-            factory = factories[0]
-            e_obj = factory(e)
-            # handle: _KeyEvent returns None if it's a repeat event
-            if e_obj:
-                append(e_obj)
+            factories = get(e.type, None)
+            if factories:
+                factory = factories[0]
+                e_obj = factory(e)
+                # handle: _KeyEvent returns None if it's a repeat event
+                if e_obj:
+                    append(e_obj)
 
 
 def get(filter_type=None):

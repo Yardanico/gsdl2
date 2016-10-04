@@ -32,7 +32,7 @@ from gsdl2 import sdllibs
 from gsdl2 import sdlconstants
 
 gfx_lib = sdllibs.gfx_lib
-
+ffi = sdl.ffi
 SDLError = _sdl.structs.SDLError
 
 # ==============================================================================
@@ -71,6 +71,7 @@ from gsdl2 import gfx
 from gsdl2 import particles
 from gsdl2 import locals
 from gsdl2 import key
+from gsdl2 import time
 # -----------------------------------
 # Classes and constants
 # -----------------------------------
@@ -111,6 +112,9 @@ def get_sdl_version():
 
 def get_error():
     sdl.getError()
+
+def sdl_sleep(mills):
+    sdl.delay(mills)
 
 def init():
     rc = sdl.init(sdlconstants.SDL_INIT_EVERYTHING)

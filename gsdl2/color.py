@@ -1,5 +1,7 @@
 import sdl
 
+import gsdl2
+
 __all__ = ['Color']
 
 import logging
@@ -102,3 +104,16 @@ class Color(object):
 
     def __str__(self):
         return '<{}({}, {}, {}, {})>'.format(self.__class__.__name__, *self[:])
+
+# convert color from tuple or r,g,b ints
+def create_color(color_values):
+    # if color isn't a gsdl2.color instance
+    if not isinstance(color_values, gsdl2.Color):
+        # if it's tuple, let's create a color
+        if isinstance(color_values, tuple):
+            color = gsdl2.Color(*color_values)
+        else:
+            color = gsdl2.Color(color_values)
+    else:
+        color = color_values
+    return color
