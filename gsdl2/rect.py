@@ -288,6 +288,19 @@ class Rect(object):
         return Rect._from4(self.r.x - x // 2, self.r.y - y // 2,
                            self.r.w + x, self.r.h + y)
 
+    def scale(self, factor_x, factor_y):
+        x, y, w, h = self
+        w *= factor_x
+        h *= factor_y
+        rect = Rect(x, y, w, h)
+        rect.center = self.center
+        return rect
+    def scale_ip(self, factor_x, factor_y):
+        c = self.center
+        self.w *= factor_x
+        self.h *= factor_y
+        self.center = c
+        return self
     def normalize(self):
         """ normalize() -> None
         correct negative sizes

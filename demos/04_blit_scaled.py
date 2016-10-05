@@ -6,7 +6,7 @@ gsdl2.init()
 screen = gsdl2.display.set_mode((640, 480))
 gsdl2.display.set_caption("04_blit_scaled.py - It's...tomater?")
 clock = gsdl2.Clock()
-fps = 33
+fps = 60
 
 block = gsdl2.image.load('tomato.png')
 block_rect = block.get_rect()

@@ -4,10 +4,8 @@ __all__ = ['Texture']
 
 import logging
 
-import cffi
-
-from .rect import Rect
-from . import sdlpixels
+from gsdl2.rect import Rect
+from gsdl2 import sdlpixels
 
 log = logging.getLogger(__name__)
 
@@ -35,13 +33,9 @@ class Texture(object):
             self.__size = tuple(size)
 
     def query(self):
-        format = sdl.ffi.new('Uint32 *')
-        access = sdl.ffi.new('int *')
-        w = sdl.ffi.new('int *')
-        h = sdl.ffi.new('int *')
-        sdl.queryTexture(self.sdl_texture, format, access, w, h)
+        _, format, access, w, h = sdl.queryTexture(self.sdl_texture)
         # return int(format[0]), int(access[0]), int(w[0]), int(h[0])
-        return format[0], access[0], w[0], h[0]
+        return format, access, w, h
 
     def get_size(self):
         return self.__size
@@ -67,9 +61,8 @@ class Texture(object):
     blendmode = property(get_blendmode, set_blendmode)
 
     def get_alpha(self):
-        cdata = sdl.ffi.new('Uint8 *')
-        sdl.getTextureAlphaMod(self.sdl_texture, cdata)
-        return cdata[0]
+        _, alpha = sdl.getTextureAlphaMod(self.sdl_texture)
+        return alpha[0]
 
     def set_alpha(self, alpha):
         sdl.setTextureAlphaMod(self.sdl_texture, int(alpha))
