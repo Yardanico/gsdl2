@@ -27,6 +27,9 @@ with_display = 1
 # limit the game loop to 40 fps.
 slow_tick = 0
 
+# I'm able to get 200,000 events/s on my PC with fastevent
+# Without it 100,000 events/s
+# With PyPy - 1mil events/s
 NUM_EVENTS_TO_POST = 2000000
 
 if use_fast_events:
