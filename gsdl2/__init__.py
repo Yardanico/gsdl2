@@ -31,7 +31,7 @@ from gsdl2 import sdlconstants
 
 gfx_lib = sdllibs.gfx_lib
 ffi = sdl.ffi
-SDLError = _sdl.structs.SDLError
+SDLError = sdl.SDLError
 
 # ==============================================================================
 #      _____  _____ _____  _      ___
@@ -175,8 +175,9 @@ def quit():
     sdl.quit()
     # exit sdl2 image
     sdl.image.quit()
-
+    # exit sdl2 ttf
     sdl.ttf.quit()
+    # close audio and exit sdl2 mixer
     sdl.mixer.closeAudio()
     sdl.mixer.quit()
 

@@ -49,5 +49,7 @@ while running:
     scale_rect.size = block_rect.w + stretch_x, block_rect.h + stretch_y
 
     screen.fill((0, 0, 0))
-    screen.blit_scaled(block, scale_rect, block_rect)
+    scaled_block = gsdl2.transform.scale(block, scale_rect.get_size())
+    screen.blit(scaled_block, scale_rect)
+    # screen.blit_scaled(block, scale_rect, block_rect)
     gsdl2.display.flip()

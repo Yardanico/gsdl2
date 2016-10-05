@@ -196,9 +196,9 @@ class Game(object):
         blit = screen.blit
         for ball in self.balls:
             # TODO: software rotate here
-            # scale = ball.scale
-            # r = ball.rect.scale(scale, scale)
-            # self.screen.blit_scaled(ball.surface, r)
+            scale = ball.scale
+            r = ball.rect.scale(scale, scale)
+            self.screen.blit_scaled(ball.surface, r)
             # print('1')
             surf = rotozoom(ball.surface, ball.angle, ball.scale, True)
             # print('2')

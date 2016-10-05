@@ -19,7 +19,7 @@ def scale(surface, size, dest_surface=None):
     if width and height:
         if dest_surface:
             dest_surface.blit_scaled(surface, (0, 0, width, height))
-            return
+            return None
         else:
             new_surf = gsdl2.Surface(size)
             new_surf.blit_scaled(surface, (0, 0, width, height))
@@ -27,7 +27,7 @@ def scale(surface, size, dest_surface=None):
 
 
 def flip(surface, xaxis, yaxis):
-    pass
+    raise NotImplementedError
 
 
 def scale2x(surface, dest_surface=None):
