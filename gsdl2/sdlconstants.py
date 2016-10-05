@@ -3,7 +3,6 @@
 These are #define macros from the C headers.
 """
 
-
 import sys
 
 import sdl
@@ -13,40 +12,37 @@ import sdl
 
 SDL_INIT_TIMER = 0x00000001
 SDL_INIT_AUDIO = 0x00000010
-SDL_INIT_VIDEO = 0x00000020                 # SDL_INIT_VIDEO implies SDL_INIT_EVENTS
-SDL_INIT_JOYSTICK = 0x00000200              # SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS
+SDL_INIT_VIDEO = 0x00000020  # SDL_INIT_VIDEO implies SDL_INIT_EVENTS
+SDL_INIT_JOYSTICK = 0x00000200  # SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS
 SDL_INIT_HAPTIC = 0x00001000
-SDL_INIT_GAMECONTROLLER = 0x00002000        # SDL_INIT_GAMECONTROLLER implies SDL_INIT_JOYSTICK
+SDL_INIT_GAMECONTROLLER = 0x00002000  # SDL_INIT_GAMECONTROLLER implies SDL_INIT_JOYSTICK
 SDL_INIT_EVENTS = 0x00004000
-SDL_INIT_NOPARACHUTE = 0x00100000           # Don't catch fatal signals
+SDL_INIT_NOPARACHUTE = 0x00100000  # Don't catch fatal signals
 SDL_INIT_EVERYTHING = (SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK |
                        SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER)
-
 
 # SDL_video.h
 
 
-SDL_WINDOW_FULLSCREEN = 0x00000001          # fullscreen window
-SDL_WINDOW_OPENGL = 0x00000002              # window usable with OpenGL context
-SDL_WINDOW_SHOWN = 0x00000004               # window is visible
-SDL_WINDOW_HIDDEN = 0x00000008              # window is not visible
-SDL_WINDOW_BORDERLESS = 0x00000010          # no window decoration
-SDL_WINDOW_RESIZABLE = 0x00000020           # window can be resized
-SDL_WINDOW_MINIMIZED = 0x00000040           # window is minimized
-SDL_WINDOW_MAXIMIZED = 0x00000080           # window is maximized
-SDL_WINDOW_INPUT_GRABBED = 0x00000100       # window has grabbed input focus
-SDL_WINDOW_INPUT_FOCUS = 0x00000200         # window has input focus
-SDL_WINDOW_MOUSE_FOCUS = 0x00000400         # window has mouse focus
+SDL_WINDOW_FULLSCREEN = 0x00000001  # fullscreen window
+SDL_WINDOW_OPENGL = 0x00000002  # window usable with OpenGL context
+SDL_WINDOW_SHOWN = 0x00000004  # window is visible
+SDL_WINDOW_HIDDEN = 0x00000008  # window is not visible
+SDL_WINDOW_BORDERLESS = 0x00000010  # no window decoration
+SDL_WINDOW_RESIZABLE = 0x00000020  # window can be resized
+SDL_WINDOW_MINIMIZED = 0x00000040  # window is minimized
+SDL_WINDOW_MAXIMIZED = 0x00000080  # window is maximized
+SDL_WINDOW_INPUT_GRABBED = 0x00000100  # window has grabbed input focus
+SDL_WINDOW_INPUT_FOCUS = 0x00000200  # window has input focus
+SDL_WINDOW_MOUSE_FOCUS = 0x00000400  # window has mouse focus
 SDL_WINDOW_FULLSCREEN_DESKTOP = 0x00001001  # hacked by Gumm ( SDL_WINDOW_FULLSCREEN | 0x00001000 )
-SDL_WINDOW_FOREIGN = 0x00000800             # window not created by SDL
-SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000       # window should be created in high-DPI mode if supported
+SDL_WINDOW_FOREIGN = 0x00000800  # window not created by SDL
+SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000  # window should be created in high-DPI mode if supported
 
-
-SDL_RENDERER_SOFTWARE = 0x00000001          # The renderer is a software fallback
-SDL_RENDERER_ACCELERATED = 0x00000002       # The renderer uses hardware acceleration
-SDL_RENDERER_PRESENTVSYNC = 0x00000004      # Present is synchronized with the refresh rate
-SDL_RENDERER_TARGETTEXTURE = 0x00000008     # The renderer supports rendering to texture
-
+SDL_RENDERER_SOFTWARE = 0x00000001  # The renderer is a software fallback
+SDL_RENDERER_ACCELERATED = 0x00000002  # The renderer uses hardware acceleration
+SDL_RENDERER_PRESENTVSYNC = 0x00000004  # Present is synchronized with the refresh rate
+SDL_RENDERER_TARGETTEXTURE = 0x00000008  # The renderer supports rendering to texture
 
 SDL_WINDOWPOS_UNDEFINED_MASK = 0x1FFF0000
 
@@ -57,13 +53,12 @@ def SDL_WINDOWPOS_UNDEFINED_DISPLAY(X):
 
 SDL_WINDOWPOS_UNDEFINED = SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 
-
 # SDL_surface.h
 
-SDL_SWSURFACE = 0           # Just here for compatibility
-SDL_PREALLOC = 0x00000001   # Surface uses preallocated memory
-SDL_RLEACCEL = 0x00000002   # Surface is RLE encoded
-SDL_DONTFREE = 0x00000004   # Surface is referenced internally
+SDL_SWSURFACE = 0  # Just here for compatibility
+SDL_PREALLOC = 0x00000001  # Surface uses preallocated memory
+SDL_RLEACCEL = 0x00000002  # Surface is RLE encoded
+SDL_DONTFREE = 0x00000004  # Surface is referenced internally
 
 
 def SDL_MUSTLOCK(surface):
@@ -103,7 +98,6 @@ SDL_HINT_WINRT_PRIVACY_POLICY_LABEL = "SDL_HINT_WINRT_PRIVACY_POLICY_LABEL"
 SDL_HINT_WINRT_HANDLE_BACK_BUTTON = "SDL_HINT_WINRT_HANDLE_BACK_BUTTON"
 SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES = "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
-
 # SDL_endian.h
 
 
@@ -111,8 +105,8 @@ SDL_LIL_ENDIAN = 1234
 SDL_BIG_ENDIAN = 4321
 
 if sys.platform == 'linux':
-    #include <endian.h>
-    #define SDL_BYTEORDER  __BYTE_ORDER
+    # include <endian.h>
+    # define SDL_BYTEORDER  __BYTE_ORDER
     SDL_BYTEORDER = SDL_LIL_ENDIAN
     pass
 elif sys.platform in ('hppa', 'm68k', 'mc68000', 'M_M68K', 'MIPS', 'MISPEB', 'ppc', 'POWERPC', 'M_PPC', 'sparc'):
@@ -120,14 +114,12 @@ elif sys.platform in ('hppa', 'm68k', 'mc68000', 'M_M68K', 'MIPS', 'MISPEB', 'pp
 else:
     SDL_BYTEORDER = SDL_LIL_ENDIAN
 
-
 # SDL_event.h
 
 SDL_QUERY = -1
 SDL_IGNORE = 0
 SDL_DISABLE = 0
 SDL_ENABLE = 1
-
 
 # SDL_audio.h
 
@@ -137,60 +129,61 @@ SDL_AUDIO_MASK_ENDIAN = 1 << 12
 SDL_AUDIO_MASK_SIGNED = 1 << 15
 
 
-#define SDL_AUDIO_BITSIZE(x) (x & SDL_AUDIO_MASK_BITSIZE)
+# define SDL_AUDIO_BITSIZE(x) (x & SDL_AUDIO_MASK_BITSIZE)
 def SDL_AUDIO_BITSIZE(x):
     return x & SDL_AUDIO_MASK_BITSIZE
 
 
-#define SDL_AUDIO_ISFLOAT(x) (x & SDL_AUDIO_MASK_DATATYPE)
+# define SDL_AUDIO_ISFLOAT(x) (x & SDL_AUDIO_MASK_DATATYPE)
 def SDL_AUDIO_ISFLOAT(x):
     return x & SDL_AUDIO_MASK_DATATYPE
 
 
-#define SDL_AUDIO_ISBIGENDIAN(x) (x & SDL_AUDIO_MASK_ENDIAN)
+# define SDL_AUDIO_ISBIGENDIAN(x) (x & SDL_AUDIO_MASK_ENDIAN)
 def SDL_AUDIO_ISBIGENDIAN(x):
     return x & SDL_AUDIO_MASK_ENDIAN
 
 
-#define SDL_AUDIO_ISSIGNED(x) (x & SDL_AUDIO_MASK_SIGNED)
+# define SDL_AUDIO_ISSIGNED(x) (x & SDL_AUDIO_MASK_SIGNED)
 def SDL_AUDIO_ISSIGNED(x):
     return x & SDL_AUDIO_MASK_SIGNED
 
 
-#define SDL_AUDIO_ISINT(x) (!SDL_AUDIO_ISFLOAT(x))
+# define SDL_AUDIO_ISINT(x) (!SDL_AUDIO_ISFLOAT(x))
 def SDL_AUDIO_ISINT(x):
     return not SDL_AUDIO_ISFLOAT(x)
 
 
-#define SDL_AUDIO_ISLITTLEENDIAN(x) (!SDL_AUDIO_ISBIGENDIAN(x))
+# define SDL_AUDIO_ISLITTLEENDIAN(x) (!SDL_AUDIO_ISBIGENDIAN(x))
 def SDL_AUDIO_ISLITTLEENDIAN(x):
     return not SDL_AUDIO_ISBIGENDIAN(x)
 
 
-#define SDL_AUDIO_ISUNSIGNED(x) (!SDL_AUDIO_ISSIGNED(x))
+# define SDL_AUDIO_ISUNSIGNED(x) (!SDL_AUDIO_ISSIGNED(x))
 def SDL_AUDIO_ISUNSIGNED(x):
     return not SDL_AUDIO_ISSIGNED(x)
+
 
 # Audio format flags
 
 # Defaults to LSB byte order.
-AUDIO_U8 = 0x0008       # Unsigned 8-bit samples
-AUDIO_S8 = 0x8008       # Signed 8-bit samples
-AUDIO_U16LSB = 0x0010   # Unsigned 16-bit samples
-AUDIO_S16LSB = 0x8010   # Signed 16-bit samples
-AUDIO_U16MSB = 0x1010   # As above, but big-endian byte order
-AUDIO_S16MSB = 0x9010   # As above, but big-endian byte order
+AUDIO_U8 = 0x0008  # Unsigned 8-bit samples
+AUDIO_S8 = 0x8008  # Signed 8-bit samples
+AUDIO_U16LSB = 0x0010  # Unsigned 16-bit samples
+AUDIO_S16LSB = 0x8010  # Signed 16-bit samples
+AUDIO_U16MSB = 0x1010  # As above, but big-endian byte order
+AUDIO_S16MSB = 0x9010  # As above, but big-endian byte order
 AUDIO_U16 = AUDIO_U16LSB
 AUDIO_S16 = AUDIO_S16LSB
 
 # int32 support
-AUDIO_S32LSB = 0x8020   # 32-bit integer samples
-AUDIO_S32MSB = 0x9020   # As above, but big-endian byte order
+AUDIO_S32LSB = 0x8020  # 32-bit integer samples
+AUDIO_S32MSB = 0x9020  # As above, but big-endian byte order
 AUDIO_S32 = AUDIO_S32LSB
 
 # float32 support
-AUDIO_F32LSB = 0x8120   # 32-bit floating point samples
-AUDIO_F32MSB = 0x9120   # As above, but big-endian byte order
+AUDIO_F32LSB = 0x8120  # 32-bit floating point samples
+AUDIO_F32MSB = 0x9120  # As above, but big-endian byte order
 AUDIO_F32 = AUDIO_F32LSB
 
 # Native audio byte ordering
@@ -213,7 +206,6 @@ SDL_AUDIO_ALLOW_CHANNELS_CHANGE = 0x00000004
 SDL_AUDIO_ALLOW_ANY_CHANGE = (
     SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE)
 
-
 # SDL_image.h
 
 
@@ -222,7 +214,6 @@ IMG_INIT_PNG = 0x00000002
 IMG_INIT_TIF = 0x00000004
 IMG_INIT_WEBP = 0x00000008
 IMG_INIT_EVERYTHING = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP
-
 
 # SDL_joystick.h
 
@@ -237,8 +228,6 @@ SDL_HAT_RIGHTDOWN = SDL_HAT_RIGHT | SDL_HAT_DOWN
 SDL_HAT_LEFTUP = SDL_HAT_LEFT | SDL_HAT_UP
 SDL_HAT_LEFTDOWN = SDL_HAT_LEFT | SDL_HAT_DOWN
 
-
-
 # SDL_ttf.h
 
 
@@ -252,7 +241,6 @@ TTF_HINTING_NORMAL = 0
 TTF_HINTING_LIGHT = 1
 TTF_HINTING_MONO = 2
 TTF_HINTING_NONE = 3
-
 
 # SDL_mixer.h
 
@@ -273,7 +261,6 @@ if SDL_BYTEORDER == SDL_LIL_ENDIAN:
 else:
     MIX_DEFAULT_FORMAT = AUDIO_S16MSB
 MIX_DEFAULT_CHANNELS = 2
-MIX_MAX_VOLUME = 128        # Volume of a chunk
+MIX_MAX_VOLUME = 128  # Volume of a chunk
 MIX_CHANNEL_POST = -2
 MIX_EFFECTSMAXSPEED = "MIX_EFFECTSMAXSPEED"
-

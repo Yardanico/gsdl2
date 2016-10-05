@@ -8,7 +8,6 @@ from gsdl2 import sdl
 
 
 class locked(object):
-
     def __init__(self, surface):
         self.surface = surface
 

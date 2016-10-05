@@ -18,10 +18,12 @@ def get_pos():
     state, x, y = sdl.getMouseState()
     return x, y
 
+
 def set_visible(toggle):
     if not isinstance(toggle, int):
         raise TypeError("expected int, got %s" % (toggle,))
     return sdl.showCursor(toggle)
+
 
 def get_rel():
     """ get_rel() -> (x, y)

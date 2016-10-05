@@ -19,7 +19,7 @@ class Color(object):
         assert len(args)
 
         self.__color = [0] * 4
-        self.__sdl_color = sdl.Color() #sdl.ffi.new('SDL_Color *')
+        self.__sdl_color = sdl.Color()  # sdl.ffi.new('SDL_Color *')
         if isinstance(args[0], str):
             color_name = args[0]
             if color_name in THECOLORS:
@@ -78,7 +78,7 @@ class Color(object):
     sdl_color = property(__get_sdl_color)
 
     def __repr__(self):
-        return "<gsdl2.Color r=%i, g=%i, b=%i>" %(self.r, self.g, self.b)
+        return "<gsdl2.Color r=%i, g=%i, b=%i>" % (self.r, self.g, self.b)
 
     def __iter__(self):
         for c in self.__color:
@@ -106,6 +106,7 @@ class Color(object):
 
     def __str__(self):
         return '<{}({}, {}, {}, {})>'.format(self.__class__.__name__, *self[:])
+
 
 # convert color or many colors from tuple or r, g, b ints
 def create_color(*color_values):

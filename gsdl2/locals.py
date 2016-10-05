@@ -88,7 +88,6 @@ USEREVENT = 0x8000
 # This last event is only for bounding internal arrays
 LASTEVENT = 0xFFFF
 
-
 # Taken from pygame-cffi
 BLEND_RGB_ADD = 0x01
 BLEND_RGB_SUB = 0x02
@@ -107,7 +106,7 @@ BLEND_SUB = BLEND_RGB_SUB
 BLEND_MULT = BLEND_RGB_MULT
 BLEND_MIN = BLEND_RGB_MIN
 BLEND_MAX = BLEND_RGB_MAX
-SRCALPHA    = 0x00010000
+SRCALPHA = 0x00010000
 #
 #  Keyboard Scancodes (event.scancode)
 #

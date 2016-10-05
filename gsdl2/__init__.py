@@ -4,11 +4,9 @@ import _sdl
 
 __all__ = [
     'init', 'Clock', 'Color', 'GameClock', 'Font', 'Rect', 'Renderer', 'Surface', 'SysFont', 'Texture', 'Window',
-    'sdlconstants', 'sdlkeys',
-    'sdl_ffi', 'image_ffi', 'ttf_ffi', 'gfx_lib',
-    'sdl_lib', 'image_lib', 'ttf_lib', 'gfx_ffi',
+    'sdlconstants',
     'color', 'colordict', 'display', 'draw', 'event', 'font', 'gameclock', 'gfx', 'image', 'joystick', 'mixer', 'mouse',
-    'music', 'particles', 'rect', 'renderer', 'surface', 'time', 'texture', 'window', 'utf8',
+    'music', 'particles', 'rect', 'renderer', 'surface', 'time', 'texture', 'window', 'utf8', 'transform', 'ffi'
 ]
 
 # ==============================================================================
@@ -111,11 +109,14 @@ def get_sdl_version():
     ver = sdl.getVersion(())
     return ver.major, ver.minor, ver.patch
 
+
 def get_error():
     sdl.getError()
 
+
 def sdl_sleep(mills):
     sdl.delay(mills)
+
 
 def init():
     rc = sdl.init(sdlconstants.SDL_INIT_EVERYTHING)

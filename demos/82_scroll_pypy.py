@@ -253,9 +253,12 @@ class Game(object):
             # rect.y = sprite.rect.y - cy + yd
             blit(sprite.image, rect.move(-cx + xd, -cy + yd))
         gsdl2.display.flip()
+
+
 def main():
     game = Game(CONFIG['screen'], CONFIG['tilesize'], CONFIG['mapsize'])
     game.run()
+
 
 if __name__ == '__main__':
     parse_args()

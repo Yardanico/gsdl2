@@ -45,9 +45,11 @@ def get_surface():
 def flip():
     Runtime.window.update_surface()
 
+
 # pygame compat
 def update():
     flip()
+
 
 def set_caption(caption):
     Runtime.window.set_title(caption)

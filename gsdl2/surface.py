@@ -282,6 +282,7 @@ class Surface(object):
         sdl_dest_rect.h = h
         sdl.upperBlitScaled(source.sdl_surface, area.sdl_rect, dest_surface, sdl_dest_rect)
         self.unlock()
+
     def set_alpha(self, value=None, flags=0):
         """ set_alpha(value, flags=0) -> None
         set the alpha value for the full Surface image
@@ -298,6 +299,7 @@ class Surface(object):
         with locked(self.sdl_surface):
             if sdl.setSurfaceAlphaMod(self.sdl_surface, value) == -1:
                 raise SDLError()
+
     def convert(self, format=None):
         surf = get_window_list()[0].surface.sdl_surface
         if format is None:

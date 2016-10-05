@@ -1,5 +1,6 @@
 import sdl
 
+
 # taken from pygame-cffi
 def get_pressed():
     """ get_pressed() -> bools

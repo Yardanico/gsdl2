@@ -85,9 +85,10 @@ def main():
                 break
             elif e.type == MOUSEBUTTONDOWN and e.button == 1:
                 WINCENTER[:] = list(e.pos)
-        clock.tick(1000) # max fps
+        clock.tick(1000)  # max fps
         fps = clock.get_fps()
         gsdl2.display.set_caption(str(fps))
+
 
 # if python says run, then we should run
 if __name__ == '__main__':

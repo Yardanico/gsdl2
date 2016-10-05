@@ -20,8 +20,8 @@ while True:
             if e.scancode == S_ESCAPE:
                 quit()
         elif e.type == MOUSEBUTTONDOWN:
-            x,y = gsdl2.mouse.get_pos()
-            for z in range(-5,5):
-                screen.set_at((x+z,y), red)
-                screen.set_at((x,y+z), red)
+            x, y = gsdl2.mouse.get_pos()
+            for z in range(-5, 5):
+                screen.set_at((x + z, y), red)
+                screen.set_at((x, y + z), red)
     gsdl2.display.flip()

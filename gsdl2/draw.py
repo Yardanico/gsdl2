@@ -326,7 +326,7 @@ def aalines():
 def lines(surface, color, closed, pointlist, width=1):
     if debug:
         print('gsdl2.draw.lines')
-    # 	PyObject *surfobj, *colorobj, *closedobj, *points, *item;
+    # PyObject *surfobj, *colorobj, *closedobj, *points, *item;
     # 	SDL_Surface* surf;
     # 	int x, y;
     # 	int top, left, bottom, right;
@@ -383,7 +383,7 @@ def lines(surface, color, closed, pointlist, width=1):
     if width < 1:
         return Rect(left, top, 0, 0)
 
-    # 	if(!PySurface_Lock(surfobj)) return NULL;
+    # if(!PySurface_Lock(surfobj)) return NULL;
     surface.lock()
 
     # 	drawn = 1;
@@ -421,20 +421,20 @@ def lines(surface, color, closed, pointlist, width=1):
             right = max(max(pts[0], pts[2]), right)
             bottom = max(max(pts[1], pts[3]), bottom)
 
-        # 	if(closed && drawn > 2)
-        # 	{
-        # 		item = PySequence_GetItem(points, 0);
-        # 		result = TwoIntsFromObj(item, &x, &y);
-        # 		Py_DECREF(item);
-        # 		if(result)
-        # 		{
-        # 			pts[0] = startx;
-        # 			pts[1] = starty;
-        # 			pts[2] = x;
-        # 			pts[3] = y;
-        # 			clip_and_draw_line_width(surf, &surf->clip_rect, color, width, pts);
-        # 		}
-        # 	}
+            # 	if(closed && drawn > 2)
+            # 	{
+            # 		item = PySequence_GetItem(points, 0);
+            # 		result = TwoIntsFromObj(item, &x, &y);
+            # 		Py_DECREF(item);
+            # 		if(result)
+            # 		{
+            # 			pts[0] = startx;
+            # 			pts[1] = starty;
+            # 			pts[2] = x;
+            # 			pts[3] = y;
+            # 			clip_and_draw_line_width(surf, &surf->clip_rect, color, width, pts);
+            # 		}
+            # 	}
     if closed and drawn > 2:
         x, y = pointlist[0]
         pts[0] = startx
@@ -443,7 +443,7 @@ def lines(surface, color, closed, pointlist, width=1):
         pts[3] = y
         clip_and_draw_line_width(surface, surf.clip_rect, color, width, pts)
 
-    # 	if(!PySurface_Unlock(surfobj)) return NULL;
+    # if(!PySurface_Unlock(surfobj)) return NULL;
     surface.unlock()
 
     # 	/*compute return rect*/
@@ -547,7 +547,7 @@ def arc(surface, color, rect, start_angle, stop_angle, width=1):
     # TODO
     if debug:
         print('gsdl.draw.arc')
-    # 	PyObject *surfobj, *colorobj, *rectobj;
+    # PyObject *surfobj, *colorobj, *rectobj;
     # 	GAME_Rect *rect, temp;
     # 	SDL_Surface* surf;
     # 	Uint8 rgba[4];
@@ -665,7 +665,7 @@ def ellipse(surface, color, rect, width=0):
     # TODO
     if debug:
         print('gsdl.draw.ellipse')
-    # 	PyObject *surfobj, *colorobj, *rectobj;
+    # PyObject *surfobj, *colorobj, *rectobj;
     # 	GAME_Rect *rect, temp;
     # 	SDL_Surface* surf;
     # 	Uint8 rgba[4];
@@ -815,7 +815,7 @@ def circle(surface, color, center, radius, width=1):
 def polygon(surface, color, pointlist, width=1):
     if debug:
         print('gsdl2.draw.polygon')
-    # 	PyObject *surfobj, *colorobj, *points, *item;
+    # PyObject *surfobj, *colorobj, *points, *item;
     # 	SDL_Surface* surf;
     # 	Uint8 rgba[4];
     # 	Uint32 color;
@@ -840,7 +840,7 @@ def polygon(surface, color, pointlist, width=1):
         ret = lines(surface, color, 1, pointlist, width)
         return ret
 
-    # 	surf = PySurface_AsSurface(surfobj);
+    # surf = PySurface_AsSurface(surfobj);
     surf = surface.sdl_surface
 
     # 	if(surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4)
@@ -849,7 +849,7 @@ def polygon(surface, color, pointlist, width=1):
         # TODO: real exception
         raise Exception("unsupport bit depth for line draw")
 
-    # 	if(PyInt_Check(colorobj))
+    # if(PyInt_Check(colorobj))
     # 		color = (Uint32)PyInt_AsLong(colorobj);
     # 	else if(RGBAFromColorObj(colorobj, rgba))
     # 		color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
@@ -866,7 +866,7 @@ def polygon(surface, color, pointlist, width=1):
         # TODO: real exception
         raise Exception("points argument must contain more than 2 points")
 
-    # 	item = PySequence_GetItem(points, 0);
+    # item = PySequence_GetItem(points, 0);
     # 	result = TwoIntsFromObj(item, &x, &y);
     # 	Py_DECREF(item);
     # 	if(!result) return RAISE(PyExc_TypeError, "points must be number pairs");
@@ -907,7 +907,7 @@ def polygon(surface, color, pointlist, width=1):
         right = max(x, right)
         bottom = max(y, bottom)
 
-    # 	if(!PySurface_Lock(surfobj))
+    # if(!PySurface_Lock(surfobj))
     # 	{
     # 		PyMem_Del(xlist); PyMem_Del(ylist);
     # 		return NULL;
@@ -1029,7 +1029,7 @@ def polygon(surface, color, pointlist, width=1):
 def rect(surface, color, rect, width=1):
     if debug:
         print('gsdl2.draw.rect')
-    # 	PyObject *surfobj, *colorobj, *rectobj, *points, *args, *ret=NULL;
+    # PyObject *surfobj, *colorobj, *rectobj, *points, *args, *ret=NULL;
     # 	GAME_Rect* rect, temp;
     # 	int t, l, b, r, width=0;
     #
@@ -1114,7 +1114,7 @@ def clip_and_draw_line(surface, clip_rect, color, pts):
     if not clipline(pts, clip_rect.x, clip_rect.y, clip_rect.x + clip_rect.w - 1, clip_rect.y + clip_rect.h - 1):
         return 0
 
-    # 	if(pts[1] == pts[3])
+    # if(pts[1] == pts[3])
     # 		drawhorzline(surf, color, pts[0], pts[1], pts[2]);
     # 	else if(pts[0] == pts[2])
     # 		drawvertline(surf, color, pts[0], pts[1], pts[3]);
@@ -1127,7 +1127,7 @@ def clip_and_draw_line(surface, clip_rect, color, pts):
     else:
         drawline(surface, color, pts[0], pts[1], pts[2], pts[3])
 
-    # 	return 1;
+    # return 1;
     return 1
 
 
@@ -1151,7 +1151,7 @@ def clip_and_draw_line_width(surface, clip_rect, color, width, pts):
     """
     if debug:
         print('gsdl2.draw.clip_and_draw_line_width')
-    # 	int loop;
+    # int loop;
     # 	int xinc=0, yinc=0;
     # 	int newpts[4];
     # 	int range[4];
@@ -1168,7 +1168,7 @@ def clip_and_draw_line_width(surface, clip_rect, color, width, pts):
     else:
         xinc = 1
 
-    # 	memcpy(newpts, pts, sizeof(int)*4);
+    # memcpy(newpts, pts, sizeof(int)*4);
     newpts = list(pts)
 
     # 	if(clip_and_draw_line(surf, rect, color, newpts))
@@ -1188,7 +1188,7 @@ def clip_and_draw_line_width(surface, clip_rect, color, width, pts):
         rng[0] = rng[1] = 10000
         rng[2] = rng[3] = -10000
 
-    # 	for(loop = 1; loop < width; loop += 2)
+    # for(loop = 1; loop < width; loop += 2)
     # 	{
     for loop in range(1, width, 2):
         # 		newpts[0] = pts[0] + xinc*(loop/2+1);
@@ -1215,7 +1215,7 @@ def clip_and_draw_line_width(surface, clip_rect, color, width, pts):
             rng[2] = max(newpts[2], rng[2])
             rng[3] = max(newpts[3], rng[3])
 
-        # 		if(loop+1<width)
+        # if(loop+1<width)
         # 		{
         # 			newpts[0] = pts[0] - xinc*(loop/2+1);
         # 			newpts[1] = pts[1] - yinc*(loop/2+1);
@@ -1241,13 +1241,13 @@ def clip_and_draw_line_width(surface, clip_rect, color, width, pts):
                 rng[2] = max(newpts[2], rng[2])
                 rng[3] = max(newpts[3], rng[3])
 
-            # 	if(anydrawn)
-            # 		memcpy(pts, range, sizeof(int)*4);
+                # 	if(anydrawn)
+                # 		memcpy(pts, range, sizeof(int)*4);
     if anydrawn:
         for i, v in enumerate(rng):
             pts[i] = v
 
-        # 	return anydrawn;
+            # 	return anydrawn;
     return anydrawn
 
 
@@ -1474,12 +1474,12 @@ def clipline(pts, left, top, right, bottom):
             draw = 1
             break
 
-        # 		else if(REJECT(code1, code2))
+        # else if(REJECT(code1, code2))
         # 			break;
         elif REJECT(code1, code2):
             break
 
-        # 		else {
+        # else {
         # 			if(INSIDE(code1)) {
         # 				swaptmp = x2; x2 = x1; x1 = swaptmp;
         # 				swaptmp = y2; y2 = y1; y1 = swaptmp;
@@ -1499,7 +1499,7 @@ def clipline(pts, left, top, right, bottom):
                 code2 = code1
                 code1 = swaptmp
 
-            # 			if(x2 != x1)
+            # if(x2 != x1)
             # 				m = (y2 - y1) / (float)(x2 - x1);
             # 			else
             # 				m = 1.0f;
@@ -1508,7 +1508,7 @@ def clipline(pts, left, top, right, bottom):
             else:
                 m = 1.0
 
-            # 			if(code1 & LEFT_EDGE) {
+            # if(code1 & LEFT_EDGE) {
             # 				y1 += (int)((left - x1) * m);
             # 				x1 = left;
             # 			}
@@ -1516,7 +1516,7 @@ def clipline(pts, left, top, right, bottom):
                 y1 += int((left - x1) * m)
                 x1 = left
 
-            # 			else if(code1 & RIGHT_EDGE) {
+            # else if(code1 & RIGHT_EDGE) {
             # 				y1 += (int)((right - x1) * m);
             # 				x1 = right;
             # 			}
@@ -1524,7 +1524,7 @@ def clipline(pts, left, top, right, bottom):
                 y1 += int((right - x1) * m)
                 x1 = right
 
-            # 			else if(code1 & BOTTOM_EDGE) {
+            # else if(code1 & BOTTOM_EDGE) {
             # 				if(x2 != x1)
             # 					x1 += (int)((bottom - y1) / m);
             # 				y1 = bottom;
@@ -1534,7 +1534,7 @@ def clipline(pts, left, top, right, bottom):
                     x1 += int((bottom - y1) / m)
                 y1 = bottom
 
-            # 			else if(code1 & TOP_EDGE) {
+            # else if(code1 & TOP_EDGE) {
             # 				if(x2 != x1)
             # 					x1 += (int)((top - y1) / m);
             # 				y1 = top;
@@ -1543,17 +1543,17 @@ def clipline(pts, left, top, right, bottom):
                     x1 += int((top - y1) / m)
                 y1 = top
 
-            # 	if(draw) {
-            # 		pts[0] = x1; pts[1] = y1;
-            # 		pts[2] = x2; pts[3] = y2;
-            # 	}
+                # 	if(draw) {
+                # 		pts[0] = x1; pts[1] = y1;
+                # 		pts[2] = x2; pts[3] = y2;
+                # 	}
     if draw:
         pts[0] = x1
         pts[1] = y1
         pts[2] = x2
         pts[3] = y2
 
-    # 	return draw;
+    # return draw;
     return draw
 
 
@@ -1895,7 +1895,7 @@ def drawline(surface, color, x1, y1, x2, y2):
         pixx = pixy
         pixy = swaptmp
 
-    # 	switch(surf->format->BytesPerPixel)
+    # switch(surf->format->BytesPerPixel)
     # 	{
     # 	case 1:
     # 		for(; x < deltax; x++, pixel += pixx) {
@@ -1914,11 +1914,11 @@ def drawline(surface, color, x1, y1, x2, y2):
                 pixel8 += pixy
             pixel8 += pixx
 
-        # 	case 2:
-        # 		for(; x < deltax; x++, pixel += pixx) {
-        # 			*(Uint16*)pixel = (Uint16)color;
-        # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
-        # 		}break;
+            # 	case 2:
+            # 		for(; x < deltax; x++, pixel += pixx) {
+            # 			*(Uint16*)pixel = (Uint16)color;
+            # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
+            # 		}break;
     elif surf.format.BytesPerPixel == 2:
         pixel16 = sdl.ffi.cast('Uint16 *', pixel)
         c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
@@ -1931,15 +1931,15 @@ def drawline(surface, color, x1, y1, x2, y2):
                 pixel16 += pixy // 2
             pixel16 += pixx // 2
 
-        # 	case 3:
-        # 		if(SDL_BYTEORDER == SDL_BIG_ENDIAN) color <<= 8;
-        # 		colorptr = (Uint8*)&color;
-        # 		for(; x < deltax; x++, pixel += pixx) {
-        # 			pixel[0] = colorptr[0];
-        # 			pixel[1] = colorptr[1];
-        # 			pixel[2] = colorptr[2];
-        # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
-        # 		}break;
+            # 	case 3:
+            # 		if(SDL_BYTEORDER == SDL_BIG_ENDIAN) color <<= 8;
+            # 		colorptr = (Uint8*)&color;
+            # 		for(; x < deltax; x++, pixel += pixx) {
+            # 			pixel[0] = colorptr[0];
+            # 			pixel[1] = colorptr[1];
+            # 			pixel[2] = colorptr[2];
+            # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
+            # 		}break;
     elif surf.format.BytesPerPixel == 3:
         pixel8 = sdl.ffi.cast('Uint8 *', pixel)
         c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
@@ -1958,10 +1958,10 @@ def drawline(surface, color, x1, y1, x2, y2):
                 pixel8 += pixy
             pixel8 += pixx
 
-        # 	default: /*case 4*/
-        # 		for(; x < deltax; x++, pixel += pixx) {
-        # 	        *(Uint32*)pixel = (Uint32)color;
-        # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
+            # 	default: /*case 4*/
+            # 		for(; x < deltax; x++, pixel += pixx) {
+            # 	        *(Uint32*)pixel = (Uint32)color;
+            # 			y += deltay; if(y >= deltax) {y -= deltax; pixel += pixy;}
     else:  # case 4
         pixel32 = sdl.ffi.cast('Uint32 *', pixel)
         c = sdl.mapRGBA(surf.format, colorptr.r, colorptr.g, colorptr.b, colorptr.a)
@@ -2398,7 +2398,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
     # gsdl2.draw.circle(surf, gsdl2.Color('red'), rect.center, rect.w // 2, width)
     if debug:
         print('gsdl.draw.draw_fillellipse')
-    # 	int ix, iy;
+    # int ix, iy;
     # 	int h, i, j, k;
     # 	int oh, oi, oj, ok;
 
@@ -2412,7 +2412,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
         set_at((x, y), color)
         return
 
-    # 	if (rx==0) { /* Special case for rx=0 - draw a vline */
+    # if (rx==0) { /* Special case for rx=0 - draw a vline */
     # 		drawvertlineclip( dst, color, x, (Sint16)(y-ry), (Sint16)(y+ry) );
     # 		return;
     # 	}
@@ -2420,7 +2420,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
         drawvertlineclip(surface, color, y - ry, y + ry)
         return
 
-    # 	if (ry==0) { /* Special case for ry=0 - draw a hline */
+    # if (ry==0) { /* Special case for ry=0 - draw a hline */
     # 		drawhorzlineclip( dst, color, (Sint16)(x-rx), y, (Sint16)(x+rx) );
     # 		return;
     # 	}
@@ -2428,7 +2428,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
         drawhorzlineclip(surface, color, x - rx, y, x + rx)
         return
 
-    # 	/* Init vars */
+    # /* Init vars */
     # 	oh = oi = oj = ok = 0xFFFF;
     # Init vars
     oh = oi = oj = ok = 0
@@ -2462,7 +2462,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
                 drawhorzlineclip(surface, color, x - h, y - k - 1, x + h - 1)
                 drawhorzlineclip(surface, color, x - h, y + k, x + h - 1)
                 ok = k
-            # 			if ((oj!=j) && (ok!=j) && (k!=j))  {
+            # if ((oj!=j) && (ok!=j) && (k!=j))  {
             # 				drawhorzlineclip(dst, color, x-i, y+j, x+i-1);
             # 				drawhorzlineclip(dst, color, x-i, y-j-1, x+i-1);
             # 				oj=j;
@@ -2471,7 +2471,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
                 drawhorzlineclip(surface, color, x - i, y + j, x + i - 1)
                 drawhorzlineclip(surface, color, x - i, y - j - 1, x + i - 1)
                 oj = j
-            # 			ix = ix + iy / rx;
+            # ix = ix + iy / rx;
             # 			iy = iy - ix / rx;
             ix += iy / rx
             iy -= ix / rx
@@ -2479,7 +2479,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
             # 		} while (i > h);
             i_gt_h = i > h
 
-        # 	} else {
+            # 	} else {
     else:
         # 		ix = 0;
         # 		iy = ry * 64;
@@ -2508,7 +2508,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
                 drawhorzlineclip(surface, color, x - j, y - i - 1, x + j - 1)
                 oi = i
 
-            # 			if ((oh!=h) && (oi!=h) && (i!=h)) {
+            # if ((oh!=h) && (oi!=h) && (i!=h)) {
             # 				drawhorzlineclip(dst, color, x-k, y+h, x+k-1);
             # 				drawhorzlineclip(dst, color, x-k, y-h-1, x+k-1);
             # 				oh=h;
@@ -2518,7 +2518,7 @@ def draw_fillellipse(surface, x, y, rx, ry, color):
                 drawhorzlineclip(surface, color, x - k, y - h - 1, x + k - 1)
                 oh = h
 
-            # 			ix = ix + iy / ry;
+            # ix = ix + iy / ry;
             # 			iy = iy - ix / ry;
             ix += iy / ry
             iy -= ix / ry
@@ -2609,7 +2609,7 @@ def compare_int(a, b):
 def draw_fillpoly(surface, vx, vy, n, color):
     if debug:
         print('gsdl.draw.draw_fillpoly')
-    # 	int i;
+    # int i;
     # 	int y;
     # 	int miny, maxy;
     # 	int x1, y1;
@@ -2654,7 +2654,7 @@ def draw_fillpoly(surface, vx, vy, n, color):
             else:
                 ind1 = i - 1
                 ind2 = i
-            # 			y1 = vy[ind1];
+            # y1 = vy[ind1];
             # 			y2 = vy[ind2];
             y1 = vy[ind1]
             y2 = vy[ind2]
@@ -2677,7 +2677,7 @@ def draw_fillpoly(surface, vx, vy, n, color):
                 y1 = vy[ind2]
                 x2 = vx[ind1]
                 x1 = vx[ind2]
-            # 			if ((y >= y1) && (y < y2)) {
+            # if ((y >= y1) && (y < y2)) {
             # 				polyints[ints++] = (y-y1) * (x2-x1) / (y2-y1) + x1;
             # 			} else if ((y == maxy) && (y > y1) && (y <= y2)) {
             # 				polyints[ints++] = (y-y1) * (x2-x1) / (y2-y1) + x1;
@@ -2688,11 +2688,11 @@ def draw_fillpoly(surface, vx, vy, n, color):
             elif y == maxy and y1 < y <= y2:
                 polyints[ints] = (y - y1) * (x2 - x1) / (y2 - y1) + x1
                 ints += 1
-            # 		}
-            # 		qsort(polyints, ints, sizeof(int), compare_int);
-            #
-            # 		for (i=0; (i<ints); i+=2) {
-            # 			drawhorzlineclip(dst, color, polyints[i], y, polyints[i+1]);
+                # 		}
+                # 		qsort(polyints, ints, sizeof(int), compare_int);
+                #
+                # 		for (i=0; (i<ints); i+=2) {
+                # 			drawhorzlineclip(dst, color, polyints[i], y, polyints[i+1]);
         for i in range(0, ints, 2):
             drawhorzlineclip(surface, color, polyints[i], y, polyints[i + 1])
 

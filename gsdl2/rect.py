@@ -3,6 +3,7 @@ Module for the rectangle object
 """
 import sdl
 
+
 def rect_vals_from_obj(obj):
     if isinstance(obj, Rect):
         return int(obj.r.x), int(obj.r.y), int(obj.r.w), int(obj.r.h)
@@ -20,6 +21,7 @@ def rect_vals_from_obj(obj):
     except (ValueError, AttributeError):
         raise TypeError("Argument must be rect style object")
 
+
 class GameRect(object):
     def __init__(self, x, y, w, h):
         self.x = x
@@ -29,12 +31,11 @@ class GameRect(object):
 
 
 class Rect(object):
-
     def __new__(cls, *args, **kwargs):
         # Subclasses of Rect expect to be able to manipulate the values of the rect
         # before calling Rect.__init__, so we ensure that self.r always exists.
         obj = super(Rect, cls).__new__(cls)
-        obj.r =  GameRect(0, 0, 0, 0)
+        obj.r = GameRect(0, 0, 0, 0)
         return obj
 
     def __init__(self, *args):
@@ -104,11 +105,11 @@ class Rect(object):
 
     def __setitem__(self, index, value):
         if isinstance(value, tuple):
-            if len(value)==4:
+            if len(value) == 4:
                 self.r.x, self.r.y, self.w, self.h = value
                 return
-            elif len(value)==2:
-                self.r.x, self.r.y, self.w, self.h = value[0][0], value[0][1],value[1][0],value[1][1]
+            elif len(value) == 2:
+                self.r.x, self.r.y, self.w, self.h = value[0][0], value[0][1], value[1][0], value[1][1]
                 return
         value = int(value)
         index = int(index)
@@ -141,76 +142,96 @@ class Rect(object):
 
     def get_x(self):
         return self.r.x
+
     def set_x(self, new_x):
         self.r.x = int(new_x)
+
     x = property(get_x, set_x)
     left = property(get_x, set_x)
 
     def get_y(self):
         return self.r.y
+
     def set_y(self, new_y):
         self.r.y = int(new_y)
+
     y = property(get_y, set_y)
     top = property(get_y, set_y)
 
     def get_w(self):
         return self.r.w
+
     def set_w(self, new_w):
         self.r.w = int(new_w)
+
     w = property(get_w, set_w)
     width = property(get_w, set_w)
 
     def get_h(self):
         return self.r.h
+
     def set_h(self, new_h):
         self.r.h = int(new_h)
+
     h = property(get_h, set_h)
     height = property(get_h, set_h)
 
     def get_right(self):
         return self.r.x + self.r.w
+
     def set_right(self, r):
         self.r.x = int(r) - self.r.w
+
     right = property(get_right, set_right)
 
     def get_bottom(self):
         return self.r.y + self.r.h
+
     def set_bottom(self, b):
         self.r.y = int(b) - self.r.h
+
     bottom = property(get_bottom, set_bottom)
 
     def get_topleft(self):
         return (self.r.x, self.r.y)
+
     def set_topleft(self, pos):
         x, y = pos
         self.r.x = int(x)
         self.r.y = int(y)
+
     topleft = property(get_topleft, set_topleft)
 
     def get_topright(self):
         return (self.r.x + self.r.w, self.r.y)
+
     def set_topright(self, pos):
         x, y = pos
         self.r.x = int(x) - self.r.w
         self.r.y = int(y)
+
     topright = property(get_topright, set_topright)
 
     def get_midleft(self):
         return (self.r.x,
                 self.r.y + self.r.h // 2)
+
     def set_midleft(self, pos):
         x, y = pos
         self.r.x = int(x)
         self.r.y = int(y) - self.r.h // 2
+
     midleft = property(get_midleft, set_midleft)
 
     def get_midright(self):
         return (self.r.x + self.r.w,
                 self.r.y + self.r.h // 2)
+
     def set_midright(self, pos):
         x, y = pos
         self.r.x = int(x) - self.r.w
         self.r.y = int(y) - self.r.h // 2
+
     midright = property(get_midright, set_midright)
 
     def get_midtop(self):
@@ -220,6 +241,7 @@ class Rect(object):
         x, y = pos
         self.r.x = int(x) - self.r.w // 2
         self.r.y = int(y)
+
     midtop = property(get_midtop, set_midtop)
 
     def get_center(self):
@@ -230,59 +252,73 @@ class Rect(object):
         x, y = pos
         self.r.x = int(x) - self.r.w // 2
         self.r.y = int(y) - self.r.h // 2
+
     center = property(get_center, set_center)
 
     def get_centerx(self):
         return self.r.x + self.r.w // 2
+
     def set_centerx(self, x):
         self.r.x = int(x) - self.r.w // 2
+
     centerx = property(get_centerx, set_centerx)
 
     def get_centery(self):
         return self.r.y + self.r.h // 2
+
     def set_centery(self, y):
         self.r.y = int(y) - self.r.h // 2
+
     centery = property(get_centery, set_centery)
 
     def get_bottomleft(self):
         return (self.r.x,
                 self.r.y + self.r.h)
+
     def set_bottomleft(self, pos):
         x, y = pos
         self.r.x = int(x)
         self.r.y = int(y) - self.r.h
+
     bottomleft = property(get_bottomleft, set_bottomleft)
 
     def get_midbottom(self):
         return (self.r.x + self.r.w // 2,
                 self.r.y + self.r.h)
+
     def set_midbottom(self, pos):
         x, y = pos
         self.r.x = int(x) - self.r.w // 2
         self.r.y = int(y) - self.r.h
+
     midbottom = property(get_midbottom, set_midbottom)
 
     def get_bottomright(self):
         return (self.r.x + self.r.w,
                 self.r.y + self.r.h)
+
     def set_bottomright(self, pos):
         x, y = pos
         self.r.x = int(x) - self.r.w
         self.r.y = int(y) - self.r.h
+
     bottomright = property(get_bottomright, set_bottomright)
 
     def get_size(self):
         return (self.r.w, self.r.h)
+
     def set_size(self, size):
         w, h = size
         self.r.w = int(w)
         self.r.h = int(h)
+
     size = property(get_size, set_size)
 
     def get_sdl_rect(self):
         return sdl_rect_from_rect(self)
 
     sdl_rect = property(get_sdl_rect)
+
     def colliderect(self, other):
         other = game_rect_from_obj(other)
         return do_rects_intersect(self.r, other)
@@ -290,6 +326,7 @@ class Rect(object):
     def inflate(self, x, y):
         return Rect._from4(self.r.x - x // 2, self.r.y - y // 2,
                            self.r.w + x, self.r.h + y)
+
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
         w *= factor_x
@@ -297,12 +334,14 @@ class Rect(object):
         rect = Rect(x, y, w, h)
         rect.center = self.center
         return rect
+
     def scale_ip(self, factor_x, factor_y):
         c = self.center
         self.w *= factor_x
         self.h *= factor_y
         self.center = c
         return self
+
     def normalize(self):
         """ normalize() -> None
         correct negative sizes
@@ -328,7 +367,7 @@ class Rect(object):
         elif self.r.x < other.x:
             x = other.x
         elif (self.r.x + self.r.w >
-              other.x + other.w):
+                      other.x + other.w):
             x = other.x + other.w - self.r.w
         else:
             x = self.r.x
@@ -338,7 +377,7 @@ class Rect(object):
         elif self.r.y < other.y:
             y = other.y
         elif (self.r.y + self.r.h >
-              other.y + other.h):
+                      other.y + other.h):
             y = other.y + other.h - self.r.h
         else:
             y = self.r.y
@@ -360,44 +399,44 @@ class Rect(object):
         other = game_rect_from_obj(rect)
 
         if ((self.r.x >= other.x) and
-            (self.r.x < (other.x + other.w))):
+                (self.r.x < (other.x + other.w))):
             x = self.r.x
         elif ((other.x >= self.r.x) and
-              (other.x < (self.r.x + self.r.w))):
+                  (other.x < (self.r.x + self.r.w))):
             x = other.x
         else:
             # no intersect
             return Rect._from4(self.r.x, self.r.y, 0, 0)
 
         if (((self.r.x + self.r.w) > other.x) and
-            ((self.r.x + self.r.w) <=
-             (other.x + other.w))):
+                ((self.r.x + self.r.w) <=
+                     (other.x + other.w))):
             w = (self.r.x + self.r.w) - x
         elif (((other.x + other.w) > self.r.x) and
-              ((other.x + other.w) <=
-               (self.r.x + self.r.w))):
+                  ((other.x + other.w) <=
+                       (self.r.x + self.r.w))):
             w = (other.x + other.w) - x
         else:
             # no intersect
             return Rect._from4(self.r.x, self.r.y, 0, 0)
 
         if ((self.r.y >= other.y) and (
-             self.r.y < (other.y + other.h))):
+                    self.r.y < (other.y + other.h))):
             y = self.r.y
         elif ((other.y >= self.r.y) and
-              (other.y < (self.r.y + self.r.h))):
+                  (other.y < (self.r.y + self.r.h))):
             y = other.y
         else:
             # no intersect
             return Rect._from4(self.r.x, self.r.y, 0, 0)
 
         if (((self.r.y + self.r.h) > other.y) and
-            ((self.r.y + self.r.h) <=
-             (other.y + other.h))):
+                ((self.r.y + self.r.h) <=
+                     (other.y + other.h))):
             h = (self.r.y + self.r.h) - y
         elif (((other.y + other.h) > self.r.y) and
-              ((other.y + other.h) <=
-               (self.r.y + self.r.h))):
+                  ((other.y + other.h) <=
+                       (self.r.y + self.r.h))):
             h = (other.y + other.h) - y
         else:
             # no intersect
@@ -615,4 +654,4 @@ def sdl_rect_from_rect(*rects):
         sdlrect = sdl.ffi.new("SDL_Rect*")
         sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h = rect_vals_from_obj(rect)
         result.append(sdlrect)
-    return result if len(rects)>1 else result[0]
+    return result if len(rects) > 1 else result[0]

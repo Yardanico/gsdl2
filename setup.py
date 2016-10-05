@@ -1,4 +1,3 @@
-
 from setuptools import setup
 
 setup(name='gsdl2',
@@ -9,4 +8,4 @@ setup(name='gsdl2',
       url='https://github.com/TiberiumPY/gsdl2',
       packages=['gsdl2'],
       install_requires=['pysdl2-cffi']
-     )
+      )
