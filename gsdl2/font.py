@@ -74,6 +74,9 @@ class Font(object):
 
         color, background = create_color(color, background) # convert to color's
 
+        if encoding not in ('utf-8','ascii','unicode','glyph'):
+            raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph',encoding))
+
         if background:
             sdl_surf = self._render_shaded(text, color, background, encoding)
         elif wrap_length:
@@ -110,8 +113,6 @@ class Font(object):
         elif encoding == 'glyph':
             sdl_surf = sdl.ttf.renderGlyph_Shaded(
                 self.__sdl_font, text, color.sdl_color, background.sdl_color)
-        else:
-            raise Exception('valid encodings are {}, not {}'.format(('utf-8', 'ascii', 'unicode', 'glyph'), encoding))
         return sdl_surf
 
     def _render_solid(self, text, color, encoding):
@@ -129,8 +130,6 @@ class Font(object):
             sdl_surf = sdl.ttf.renderUNICODE_Solid(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'glyph':
             sdl_surf = sdl.ttf.renderGlyph_Solid(self.__sdl_font, text, color.sdl_color)
-        else:
-            raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph'))
         return sdl_surf
 
     def _render_blended_wrapped(self, text, color, encoding, wrap_length):
@@ -148,8 +147,6 @@ class Font(object):
             sdl_surf = sdl.ttf.renderUNICODE_Blended_Wrapped(self.__sdl_font, text, color.sdl_color[0], wrap_length)
         elif encoding == 'glyph':
             sdl_surf = self._render_blended(text, color, encoding)
-        else:
-            raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph'))
         return sdl_surf
 
     def _render_blended(self, text, color, encoding):
@@ -167,8 +164,6 @@ class Font(object):
             sdl_surf = sdl.ttf.renderUNICODE_Blended(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'glyph':
             sdl_surf = sdl.ttf.renderGlyph_Blended(self.__sdl_font, text, color.sdl_color)
-        else:
-            raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph'))
         return sdl_surf
 
     def size(self, text, encoding='utf-8'):
