@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+"""A simple starfield example. Note you can move the 'center' of
+the starfield by leftclicking in the window. This example show
+the basics of creating a window, simple pixel plotting, and input
+event management"""
+
+import random, math
+import gsdl2
+from gsdl2.locals import *
+
+# constants
+WINSIZE = [640, 480]
+WINCENTER = [320, 240]
+NUMSTARS = 2500
+
+
+def init_star():
+    "creates new star values"
+    dir = random.randrange(100000)
+    velmult = random.random() * .6 + .4
+    vel = [math.sin(dir) * velmult, math.cos(dir) * velmult]
+    return vel, WINCENTER[:]
+
+
+def initialize_stars():
+    "creates a new starfield"
+    stars = []
+    for x in range(NUMSTARS):
+        star = init_star()
+        vel, pos = star
+        steps = random.randint(0, WINCENTER[0])
+        pos[0] = pos[0] + (vel[0] * steps)
+        pos[1] = pos[1] + (vel[1] * steps)
+        vel[0] = vel[0] * (steps * .09)
+        vel[1] = vel[1] * (steps * .09)
+        stars.append(star)
+    move_stars(stars)
+    return stars
+
+
+def draw_stars(surface, stars, color):
+    "used to draw (and clear) the stars"
+    for vel, pos in stars:
+        pos = (int(pos[0]), int(pos[1]))
+        surface.set_at(pos, color)
+
+
+def move_stars(stars):
+    "animate the star values"
+    for vel, pos in stars:
+        pos[0] = pos[0] + vel[0]
+        pos[1] = pos[1] + vel[1]
+        if not 0 <= pos[0] <= WINSIZE[0] or not 0 <= pos[1] <= WINSIZE[1]:
+            vel[:], pos[:] = init_star()
+        else:
+            vel[0] = vel[0] * 1.05
+            vel[1] = vel[1] * 1.05
+
+
+def main():
+    "This is the starfield code"
+    # create our starfield
+    random.seed()
+    stars = initialize_stars()
+    clock = gsdl2.time.Clock()
+    # initialize and prepare screen
+    gsdl2.init()
+    screen = gsdl2.display.set_mode(WINSIZE)
+    gsdl2.display.set_caption('pygame Stars Example')
+    white = 255, 240, 200
+    black = 20, 20, 40
+    screen.fill(black)
+
+    # main game loop
+    done = 0
+    while not done:
+        draw_stars(screen, stars, black)
+        move_stars(stars)
+        draw_stars(screen, stars, white)
+        gsdl2.display.flip()
+        for e in gsdl2.event.get():
+            if e.type == QUIT or (e.type == KEYUP and e.key == K_ESCAPE):
+                done = 1
+                break
+            elif e.type == MOUSEBUTTONDOWN and e.button == 1:
+                WINCENTER[:] = list(e.pos)
+        clock.tick(1000) # max fps
+        fps = clock.get_fps()
+        gsdl2.display.set_caption(str(fps))
+
+# if python says run, then we should run
+if __name__ == '__main__':
+    main()
