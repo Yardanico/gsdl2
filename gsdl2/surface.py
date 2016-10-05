@@ -9,7 +9,7 @@ from gsdl2 import sdl, ffi
 from gsdl2.sdlconstants import get_sdl_byteorder
 from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from gsdl2 import sdlpixels, SDLError
-from gsdl2.rect import Rect, sdl_rect_from_rect
+from gsdl2.rect import Rect, sdl_rect_from_rect, game_rect_from_obj
 from gsdl2.locals import palette_8bit, Color
 from gsdl2.surflock import locked
 
@@ -209,6 +209,7 @@ class Surface(object):
                     break
 
         return Rect._from4(min_x, min_y, max_x - min_x, max_y - min_y)
+
 
     def get_at(self, pos):
         # TODO; I think this is causing random segfaults

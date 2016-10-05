@@ -113,7 +113,7 @@ def convert_to_color(*color_values):
     color_result = []
     for color_value in color_values:
         if not color_value:
-            raise TypeError("color_value can't be None!")
+            color_result.append(None)
         elif not isinstance(color_value, gsdl2.Color):
             # if it's tuple, let's create a color
             if isinstance(color_value, tuple):

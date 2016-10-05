@@ -1,7 +1,7 @@
 from _sdl.structs import SDLError
 
-import gsdl2
 from gsdl2.color import convert_to_color
+from gsdl2.sysfont import get_fonts, match_font, SysFont
 
 __all__ = ['Font', 'SysFont']
 
@@ -334,12 +334,7 @@ class Font(object):
         self.close()
 
     def __str__(self):
-        return '<{}({}, {}>'.format(self.__class__.__name__, self.__filename, self.__size)
+        return '<{}({}, {}>'.format(self.__class__.__name__, self.__filename, self.__sdl_font.sizeText)
 
 
-def SysFont(object):
-    def __init__(self, name, size, bold=False, italic=False):
-        raise NotImplementedError
-
-
-from .surface import Surface
+from gsdl2.surface import Surface
