@@ -17,8 +17,8 @@ However... on my debian duron 850 machine fastevents is faster.
 # use the fastevent module or not.
 import pygame
 from pygame import event, USEREVENT
-
-use_fast_events = 0
+import pygame.fastevents as fastevent
+use_fast_events = 1
 
 # use pygame.display.flip().
 #    otherwise we test raw event processing throughput.
@@ -30,7 +30,6 @@ slow_tick = 0
 NUM_EVENTS_TO_POST = 2000000
 
 if use_fast_events:
-    import fastevent
     event_module = fastevent
 else:
     event_module = event
