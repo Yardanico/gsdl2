@@ -237,19 +237,19 @@ class Channel(object):
 
     def queue(self, sound):
         # TODO
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_queue(self):
         # TODO
-        raise NotImplemented
+        raise NotImplementedError
 
     def send_endevent(self, type=None):
         # TODO
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_endevent(self):
         # TODO
-        raise NotImplemented
+        raise NotImplementedError
 
     def __get_channelid(self):
         return self.__channel_id

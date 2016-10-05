@@ -84,9 +84,9 @@ class Rect(object):
                 other_r = Rect(other)
                 return self == other_r
             except TypeError:
-                # Doesn't seem to be rect-like, so NotImplemented
-                return NotImplemented
-        return NotImplemented
+                # Doesn't seem to be rect-like, so NotImplementedError
+                return NotImplementedError
+        return NotImplementedError
 
     def __len__(self):
         return 4

@@ -179,7 +179,7 @@ class Font(object):
         elif encoding == 'unicode':
             _, w, h = sdl.ttf.sizeUNICODE(self.__sdl_font, text)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
         return w, h
 
@@ -339,7 +339,7 @@ class Font(object):
 
 def SysFont(object):
     def __init__(self, name, size, bold=False, italic=False):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 from .surface import Surface

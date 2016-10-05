@@ -453,7 +453,7 @@ def delay(ms):
 
 def set_timer(eventid, ms):
     # TODO
-    raise NotImplemented
+    raise NotImplementedError
 
 
 def _accurate_delay(ticks):
