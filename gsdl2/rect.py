@@ -5,7 +5,7 @@ import sdl
 
 def rect_vals_from_obj(obj):
     if isinstance(obj, Rect):
-        return obj.r.x, obj.r.y, obj.r.w, obj.r.h
+        return int(obj.r.x), int(obj.r.y), int(obj.r.w), int(obj.r.h)
     try:
         if len(obj) == 1:
             r = obj[0].r
@@ -42,16 +42,16 @@ class Rect(object):
             if len(args) == 1:
                 if isinstance(args[0], Rect):
                     # Copy the rect parameters
-                    self.r = GameRect(args[0].r.x,
-                                      args[0].r.y,
-                                      args[0].r.w,
-                                      args[0].r.h)
+                    self.r = GameRect(int(args[0].r.x),
+                                      int(args[0].r.y),
+                                      int(args[0].r.w),
+                                      int(args[0].r.h))
                 elif len(args[0]) == 4:
                     self.r = GameRect(int(args[0][0]), int(args[0][1]),
                                       int(args[0][2]), int(args[0][3]))
                 elif len(args[0]) == 2:
                     # Try recurse
-                    rect = Rect(args[0][0], args[0][1])
+                    rect = Rect(int(args[0][0]), int(args[0][1]))
                     self.r = rect.r
             elif len(args) == 4:
                 self.r = GameRect(int(args[0]), int(args[1]),
@@ -103,10 +103,13 @@ class Rect(object):
         return data[index]
 
     def __setitem__(self, index, value):
-        if isinstance(value, tuple) and len(value)==4:
-            self.r.x, self.r.y, self.w, self.h = value
-            return
-
+        if isinstance(value, tuple):
+            if len(value)==4:
+                self.r.x, self.r.y, self.w, self.h = value
+                return
+            elif len(value)==2:
+                self.r.x, self.r.y, self.w, self.h = value[0][0], value[0][1],value[1][0],value[1][1]
+                return
         value = int(value)
         index = int(index)
 
@@ -287,7 +290,6 @@ class Rect(object):
     def inflate(self, x, y):
         return Rect._from4(self.r.x - x // 2, self.r.y - y // 2,
                            self.r.w + x, self.r.h + y)
-
     def scale(self, factor_x, factor_y):
         x, y, w, h = self
         w *= factor_x

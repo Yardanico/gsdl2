@@ -5,16 +5,30 @@ __all__ = []
 
 
 def get_pressed():
-    pass
+    """ get_pressed() -> (button1, button2, button3)
+    get the state of the mouse buttons
+    """
+    state, x, y = sdl.getMouseState()
+    return (int((state & sdl.BUTTON_LEFT) != 0),
+            int((state & sdl.BUTTON_MIDDLE) != 0),
+            int((state & sdl.BUTTON_RIGHT) != 0))
 
 
 def get_pos():
     state, x, y = sdl.getMouseState()
     return x, y
 
+def set_visible(toggle):
+    if not isinstance(toggle, int):
+        raise TypeError("expected int, got %s" % (toggle,))
+    return sdl.showCursor(toggle)
 
 def get_rel():
-    pass
+    """ get_rel() -> (x, y)
+    get the amount of mouse movement
+    """
+    x, y = sdl.getRelativeMouseState(x, y)
+    return x, y
 
 
 def set_pos(x, y, window=None):
@@ -48,7 +62,7 @@ def set_cursor(size, hotspot, xormasks, andmasks):
     try:
         xordata = sdl.ffi.new('uint8_t[]', [int(m) for m in xormasks])
         anddata = sdl.ffi.new('uint8_t[]', [int(andmasks[i]) for i
-                                        in range(len(xormasks))])
+                                            in range(len(xormasks))])
     except (ValueError, TypeError):
         raise TypeError("Invalid number in mask array")
     except OverflowError:
