@@ -31,9 +31,9 @@ except ImportError:
 from pygame.locals import Rect, Color, QUIT, KEYDOWN, KEYUP, K_ESCAPE, K_SPACE, K_LEFT, K_RIGHT, K_UP, K_DOWN
 
 CONFIG = dict(
-    tilesize=(16, 16),
-    mapsize=(100, 100),
-    screen=(1024, 768),
+    tilesize=(8, 8),
+    mapsize=(500, 500),
+    screen=(800, 600),
 )
 
 

@@ -73,7 +73,7 @@ class Color(object):
     a = property(__geta, __seta)
 
     def __get_sdl_color(self):
-        return self.__sdl_color
+        return self.__sdl_color.cdata[0]
 
     sdl_color = property(__get_sdl_color)
 
@@ -120,5 +120,4 @@ def create_color(*color_values):
                 color = gsdl2.Color(color_value)
             yield color
         else:
-            color = color_value
-            yield color
+            yield color_value

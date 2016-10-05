@@ -6,11 +6,9 @@ import logging
 import struct
 
 import sdl
-from sdl import ffi
 from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from gsdl2 import sdlpixels, SDLError
-from gsdl2 import color
-from gsdl2.rect import Rect
+from gsdl2.rect import Rect, sdl_rect_from_rect
 from gsdl2.locals import palette_8bit, Color
 from gsdl2.surflock import locked
 
@@ -20,7 +18,6 @@ PixelPalette = namedtuple('PixelPalette', 'ncolors color')
 
 
 # Color = namedtuple('Color', 'r g b a')
-
 
 
 class Surface(object):
@@ -230,7 +227,8 @@ class Surface(object):
             # rect = Rect(*rect)
             self.__src_rect[:] = rect
             rect = self.__src_rect
-        sdl.fillRect(surface, rect.sdl_rect, map_color(surface.format, *color))
+        rect = sdl_rect_from_rect(rect)
+        sdl.fillRect(surface, rect, map_color(surface.format, *color))
         self.unlock()
         # return Rect()  # rather a tuple?
 
@@ -254,7 +252,8 @@ class Surface(object):
             d.topleft = dest_rect[0:2]
             d.size = size
             dest_rect = d
-        sdl.upperBlit(source.sdl_surface, area.sdl_rect, dest_surface, dest_rect.sdl_rect)
+        area, dest_rect = sdl_rect_from_rect(area, dest_rect)
+        sdl.upperBlit(source.sdl_surface, area, dest_surface, dest_rect)
         self.unlock()
 
     def blit_scaled(self, source, dest_rect, area=None):

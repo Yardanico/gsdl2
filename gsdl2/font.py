@@ -122,13 +122,13 @@ class Font(object):
         SDL_Surface * TTF_RenderGlyph_Solid(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
         if encoding == 'utf-8':
-            sdl_surf = sdl.ttf.renderUTF8_Solid(self.__sdl_font, utf8(text), color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderUTF8_Solid(self.__sdl_font, utf8(text), color.sdl_color)
         elif encoding == 'ascii':
-            sdl_surf = sdl.ttf.renderText_Solid(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderText_Solid(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'unicode':
-            sdl_surf = sdl.ttf.renderUNICODE_Solid(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderUNICODE_Solid(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'glyph':
-            sdl_surf = sdl.ttf.renderGlyph_Solid(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderGlyph_Solid(self.__sdl_font, text, color.sdl_color)
         else:
             raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph'))
         return sdl_surf
@@ -160,13 +160,13 @@ class Font(object):
         SDL_Surface * TTF_RenderGlyph_Blended(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
         if encoding == 'utf-8':
-            sdl_surf = sdl.ttf.renderUTF8_Blended(self.__sdl_font, utf8(text), color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderUTF8_Blended(self.__sdl_font, utf8(text), color.sdl_color)
         elif encoding == 'ascii':
-            sdl_surf = sdl.ttf.renderText_Blended(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderText_Blended(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'unicode':
-            sdl_surf = sdl.ttf.renderUNICODE_Blended(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderUNICODE_Blended(self.__sdl_font, text, color.sdl_color)
         elif encoding == 'glyph':
-            sdl_surf = sdl.ttf.renderGlyph_Blended(self.__sdl_font, text, color.sdl_color[0])
+            sdl_surf = sdl.ttf.renderGlyph_Blended(self.__sdl_font, text, color.sdl_color)
         else:
             raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph'))
         return sdl_surf
@@ -316,13 +316,8 @@ class Font(object):
 
         ;return; tuple of int; minx, maxx, miny, maxy, advance
         """
-        minx = sdl.ffi.new('int *')
-        maxx = sdl.ffi.new('int *')
-        miny = sdl.ffi.new('int *')
-        maxy = sdl.ffi.new('int *')
-        advance = sdl.ffi.new('int *')
-        sdl.ttf.glyphMetrics(self.__sdl_font, ch, minx, maxx, miny, maxy, advance)
-        return minx[0], max[0], miny[0], maxy[0], advance[0]
+        _, min_x, max_x, min_y, max_y , advance = sdl.ttf.glyphMetrics(self.__sdl_font, ch)
+        return min_x, max_x, min_y, max_y, advance
 
     def filename(self):
         return self.__filename

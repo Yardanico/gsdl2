@@ -4,7 +4,7 @@ import sdl
 __all__ = ['Renderer']
 
 # from .window import Window     # see bottom for delayed import
-from .rect import Rect
+from .rect import Rect, sdl_rect_from_rect
 from .color import Color
 
 
@@ -126,7 +126,8 @@ class Renderer(object):
         if not isinstance(dst_rect, Rect):
             self.__dst_rect[:] = dst_rect
             dst_rect = self.__dst_rect
-        sdl.renderCopy(self.__sdl_renderer, texture.sdl_texture, src_rect.sdl_rect, dst_rect.sdl_rect)
+        src_rect, dst_rect = sdl_rect_from_rect(src_rect, dst_rect)
+        sdl.renderCopy(self.__sdl_renderer, texture.sdl_texture, src_rect, dst_rect)
 
     def copy_ex(self, texture, dst_rect, src_rect, angle, center, flip):
         if not isinstance(src_rect, Rect):
