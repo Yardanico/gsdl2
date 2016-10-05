@@ -231,7 +231,6 @@ class AMazeing(_CellDraw):
         for click in gsdl2.event.get():
             if click.type == MOUSEBUTTONDOWN:
                 hit = gsdl2.mouse.get_pressed()
-                print(hit)
                 if hit[0]:
                     self.target = gsdl2.mouse.get_pos()
                     if (0 < self.target[0] < self.screen.get_width()) and (0 < self.target[1] < MAZESIZE[1]):
