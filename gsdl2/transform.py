@@ -18,8 +18,12 @@ def scale(surface, size, dest_surface=None):
         raise ValueError("Cannot scale to negative size")
     if width and height:
         if dest_surface:
-            dest_surface.blit_scaled(surface, (0, 0, width, height))
-            return None
+            # TODO: Duplicated code
+            # This is for pygame compat
+            new_surf = gsdl2.Surface(size)
+            new_surf.blit_scaled(surface, (0, 0, width, height))
+            dest = dest_surface.blit_scaled(surface, (0, 0, width, height))
+            return new_surf
         else:
             new_surf = gsdl2.Surface(size)
             new_surf.blit_scaled(surface, (0, 0, width, height))

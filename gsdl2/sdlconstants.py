@@ -114,6 +114,9 @@ elif sys.platform in ('hppa', 'm68k', 'mc68000', 'M_M68K', 'MIPS', 'MISPEB', 'pp
 else:
     SDL_BYTEORDER = SDL_LIL_ENDIAN
 
+def get_sdl_byteorder():
+    return SDL_BYTEORDER
+
 # SDL_event.h
 
 SDL_QUERY = -1

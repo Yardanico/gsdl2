@@ -1,7 +1,7 @@
 from _sdl.structs import SDLError
 
 import gsdl2
-from gsdl2.color import create_color
+from gsdl2.color import convert_to_color
 
 __all__ = ['Font', 'SysFont']
 
@@ -72,7 +72,7 @@ class Font(object):
 
     def _render(self, text, color, background=None, encoding='utf-8', wrap_length=0, palette=False):
 
-        color, background = create_color(color, background)  # convert to color's
+        color, background = convert_to_color(color, background)  # convert to color's
 
         if encoding not in ('utf-8', 'ascii', 'unicode', 'glyph'):
             raise Exception('valid encodings are {}, not {}'.format('utf-8', 'ascii', 'unicode', 'glyph', encoding))

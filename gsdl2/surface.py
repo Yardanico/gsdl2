@@ -3,9 +3,10 @@
 
 from collections import namedtuple
 import logging
-import struct
 
-import sdl
+
+from gsdl2 import sdl, ffi
+from gsdl2.sdlconstants import get_sdl_byteorder
 from gsdl2.sdlconstants import SDL_BYTEORDER, SDL_LIL_ENDIAN, SDL_BIG_ENDIAN, SDL_MUSTLOCK
 from gsdl2 import sdlpixels, SDLError
 from gsdl2.rect import Rect, sdl_rect_from_rect
@@ -23,7 +24,6 @@ PixelPalette = namedtuple('PixelPalette', 'ncolors color')
 class Surface(object):
     __src_rect = Rect(0, 0, 1, 1)
     __dst_rect = Rect(0, 0, 1, 1)
-
     def __init__(self, size_or_surf, flags=0, depth=0, masks=None, surface=None):
         if depth == 0:
             depth = 32
@@ -126,6 +126,89 @@ class Surface(object):
         for k, v in kwargs.items():
             setattr(r, k, v)
         return r
+
+    def get_bounding_rect(self, min_alpha=1):
+        """ get_bounding_rect(min_alpha = 1) -> Rect
+        find the smallest rect containing data
+        """
+
+        min_alpha = int(min_alpha)
+        if min_alpha > 255:
+            min_alpha = 255
+        elif min_alpha < 0:
+            min_alpha = 0
+
+        r, g, b, a = (ffi.new('uint8_t *'), ffi.new('uint8_t *'),
+                      ffi.new('uint8_t *'), ffi.new('uint8_t *'))
+
+        format = self.sdl_surface.format
+        if self.sdl_surface.flags & sdl.TRUE:
+            keyr = ffi.new('uint8_t *')
+            keyg = ffi.new('uint8_t *')
+            keyb = ffi.new('uint8_t *')
+            try:
+                sdl.getRGBA(format.colorkey,
+                                format, keyr, keyg, keyb, a)
+                keyr, keyg, keyb = keyr[0], keyg[0], keyb[0]
+            except:
+                pass
+        else:
+            keyr = keyg = keyb = None
+
+        min_x, min_y, max_x, max_y = 0, 0, self.w, self.h
+
+        def check_alpha(x, y):
+            value = self.get_at((x,y))
+            sdl.getRGBA(value, format, r, g, b, a)
+            if (keyr is None and a[0] >= min_alpha) or \
+               (keyr is not None and (r[0] != keyr or
+                                      g[0] != keyg or
+                                      b[0] != keyb)):
+               return True
+            return False
+
+        with locked(self.sdl_surface):
+            found_alpha = False
+            for y in range(max_y - 1, -1, -1):
+                for x in range(min_x, max_x):
+                    found_alpha = check_alpha(x, y)
+                    if found_alpha:
+                        break
+                if found_alpha:
+                    break
+                max_y = y
+
+            found_alpha = False
+            for x in range(max_x - 1, -1, -1):
+                for y in range(min_y, max_y):
+                    found_alpha = check_alpha(x, y)
+                    if found_alpha:
+                        break
+                if found_alpha:
+                    break
+                max_x = x
+
+            found_alpha = False
+            for y in range(min_y, max_y):
+                min_y = y
+                for x in range(min_x, max_x):
+                    found_alpha = check_alpha(x, y)
+                    if found_alpha:
+                        break
+                if found_alpha:
+                    break
+
+            found_alpha = False
+            for x in range(min_x, max_x):
+                min_x = x
+                for y in range(min_y, max_y):
+                    found_alpha = check_alpha(x, y)
+                    if found_alpha:
+                        break
+                if found_alpha:
+                    break
+
+        return Rect._from4(min_x, min_y, max_x - min_x, max_y - min_y)
 
     def get_at(self, pos):
         # TODO; I think this is causing random segfaults
@@ -231,7 +314,6 @@ class Surface(object):
         sdl.fillRect(surface, rect, map_color(surface.format, *color))
         self.unlock()
         # return Rect()  # rather a tuple?
-
     def blit(self, source, dest_rect, area=None, special_flags=0):
         dest_surface = self.__sdl_surface
         if SDL_MUSTLOCK(dest_surface):
@@ -308,7 +390,43 @@ class Surface(object):
         if new_surf is None:
             # TODO: proper exception
             raise Exception('could not convert surface')
-        return Surface((new_surf.w, new_surf.h), surface=new_surf)
+        new_surf = Surface((new_surf.w, new_surf.h), surface=new_surf)
+        if not new_surf:
+            SDLError()
+        return new_surf
+
+    def _set_at(self, x, y, c_color):
+        bpp = self.sdl_surface.format.BytesPerPixel
+        if bpp == 1:
+            pixels = ffi.cast("uint8_t*", self.sdl_surface.pixels)
+            pixels[y * self.sdl_surface.pitch // bpp + x] = c_color
+        elif bpp == 2:
+            pixels = ffi.cast("uint16_t*", self.sdl_surface.pixels)
+            pixels[y * self.sdl_surface.pitch // bpp + x] = c_color
+        elif bpp == 3:
+            pixels = ffi.cast("uint8_t*", self.sdl_surface.pixels)
+            base = y * self.sdl_surface.pitch + x * 3
+            fmt = self.sdl_surface.format
+            if get_sdl_byteorder() == SDL_LIL_ENDIAN:
+                pixels[base + (fmt.Rshift >> 3)] = ffi.cast('uint8_t', c_color >> 16)
+                pixels[base + (fmt.Gshift >> 3)] = ffi.cast('uint8_t', c_color >> 8)
+                pixels[base + (fmt.Bshift >> 3)] = ffi.cast('uint8_t', c_color)
+            else:
+                pixels[base + 2 - (fmt.Rshift >> 3)] = ffi.cast('uint8_t', c_color >> 16)
+                pixels[base + 2 - (fmt.Gshift >> 3)] = ffi.cast('uint8_t', c_color >> 8)
+                pixels[base + 2 - (fmt.Bshift >> 3)] = ffi.cast('uint8_t', c_color)
+        elif bpp == 4:
+            pixels = ffi.cast("uint32_t*", self.sdl_surface.pixels)
+            pixels[y * (self.sdl_surface.pitch // bpp) + x] = c_color
+        else:
+            raise RuntimeError("invalid color depth for surface")
+
+    def get_clip(self):
+        """ get_clip() -> Rect
+        get the current clipping area of the Surface
+        """
+        c_rect = self.sdl_surface.clip_rect
+        return Rect._from4(c_rect.x, c_rect.y, c_rect.w, c_rect.h)
 
     def convert_alpha(self, format=None):
         # This gets the best blit performance on my system.

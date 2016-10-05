@@ -13,6 +13,8 @@ def load(name):
     if sdl_surface == sdl.ffi.NULL:
         raise sdl.SDLError()
     surf = Surface((sdl_surface.w, sdl_surface.h), surface=sdl_surface)
+    if not surf:
+        raise sdl.SDLError()
     return surf
 
 

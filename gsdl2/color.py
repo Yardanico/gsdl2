@@ -109,16 +109,41 @@ class Color(object):
 
 
 # convert color or many colors from tuple or r, g, b ints
-def create_color(*color_values):
+def convert_to_color(*color_values):
+    color_result = []
     for color_value in color_values:
         if not color_value:
-            yield None
+            raise TypeError("color_value can't be None!")
         elif not isinstance(color_value, gsdl2.Color):
             # if it's tuple, let's create a color
             if isinstance(color_value, tuple):
                 color = gsdl2.Color(*color_value)
             else:
                 color = gsdl2.Color(color_value)
-            yield color
+            color_result.append(color)
         else:
-            yield color_value
+            color_result.append(color_value)
+    return color_result[0] if len(color_result)==1 else color_result
+
+def _check_range(val):
+    if not 0 <= val <= 255:
+        raise ValueError("Color should be between 0 and 255")
+    return val
+
+def create_color(color, color_format):
+    if isinstance(color, (int, long)):
+        return color
+    if isinstance(color, Color):
+        return sdl.mapRGBA(color_format, color.r, color.g, color.b,
+                               color.a)
+    if isinstance(color, tuple) and len(color) == 1:
+        return create_color(color[0], color_format)
+    if hasattr(color, '__iter__') and 3 <= len(color) <= 4:
+        if len(color) == 3:
+            a = 255
+        else:
+            a = _check_range(color[3])
+        return sdl.mapRGBA(color_format, _check_range(color[0]),
+                               _check_range(color[1]),
+                               _check_range(color[2]), a)
+    raise ValueError("Unrecognized color format %s" % (color, ))
