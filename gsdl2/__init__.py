@@ -49,7 +49,7 @@ SDLError = _sdl.structs.SDLError
 # -----------------------------------
 # Modules
 # -----------------------------------
-
+from gsdl2 import cursors
 from gsdl2 import color
 from gsdl2 import colordict
 from gsdl2 import event

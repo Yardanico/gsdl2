@@ -24,9 +24,11 @@ from gsdl2.locals import utf8
 
 log = logging.getLogger(__name__)
 
+
 # init ttf library
 def init():
     sdl.ttf.init()
+
 
 class Font(object):
     def __init__(self, filename, pointsize):
@@ -61,12 +63,17 @@ class Font(object):
         :param palette: use 8-bit palette rendering
         :return:
         """
-        if len(args)==2:
-            return self._render(*args,**kwargs)
-        # if there's third argument, just skip it
-        if len(args)==3:
-            return self._render(args[0],args[2],**kwargs)
+        # if second argument is int - it's antialias value, we just ignore it:)
+        if isinstance(args[1], int):
+            return self._render(args[0], *args[2:], **kwargs)
+        # if everything normal - call standart func
+        else:
+            return self._render(*args, **kwargs)
+
     def _render(self, text, color, background=None, encoding='utf-8', wrap_length=0, palette=False):
+
+        color, background = create_color(color, background) # convert to color's
+
         if background:
             sdl_surf = self._render_shaded(text, color, background, encoding)
         elif wrap_length:
@@ -84,26 +91,25 @@ class Font(object):
 
         return Surface((sdl_surf.w, sdl_surf.h), surface=sdl_surf)
 
-    def _render_shaded(self, text, color, background=None, encoding='utf-8'):
+    def _render_shaded(self, text, color, background, encoding='utf-8'):
         """
         SDL_Surface * TTF_RenderUTF8_Shaded(TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg);
         SDL_Surface * TTF_RenderText_Shaded(TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg);
         SDL_Surface * TTF_RenderUNICODE_Shaded(TTF_Font *font, const Uint16 *text, SDL_Color fg, SDL_Color bg);
         SDL_Surface * TTF_RenderGlyph_Shaded(TTF_Font *font, Uint16 ch, SDL_Color fg, SDL_Color bg);
         """
-        color = create_color(color)
         if encoding == 'utf-8':
             sdl_surf = sdl.ttf.renderUTF8_Shaded(
-                self.__sdl_font, utf8(text), color.sdl_color[0], background.sdl_color)
+                self.__sdl_font, utf8(text), color.sdl_color, background.sdl_color)
         elif encoding == 'ascii':
             sdl_surf = sdl.ttf.renderText_Shaded(
-                self.__sdl_font, text, color.sdl_color[0], background.sdl_color)
+                self.__sdl_font, text, color.sdl_color, background.sdl_color)
         elif encoding == 'unicode':
             sdl_surf = sdl.ttf.renderUNICODE_Shaded(
-                self.__sdl_font, text, color.sdl_color[0], background.sdl_color)
+                self.__sdl_font, text, color.sdl_color, background.sdl_color)
         elif encoding == 'glyph':
             sdl_surf = sdl.ttf.renderGlyph_Shaded(
-                self.__sdl_font, text, color.sdl_color[0], background.sdl_color)
+                self.__sdl_font, text, color.sdl_color, background.sdl_color)
         else:
             raise Exception('valid encodings are {}, not {}'.format(('utf-8', 'ascii', 'unicode', 'glyph'), encoding))
         return sdl_surf
@@ -115,7 +121,6 @@ class Font(object):
         SDL_Surface * TTF_RenderUNICODE_Solid(TTF_Font *font, const Uint16 *text, SDL_Color fg);
         SDL_Surface * TTF_RenderGlyph_Solid(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
-        color = create_color(color)
         if encoding == 'utf-8':
             sdl_surf = sdl.ttf.renderUTF8_Solid(self.__sdl_font, utf8(text), color.sdl_color[0])
         elif encoding == 'ascii':
@@ -134,7 +139,6 @@ class Font(object):
         SDL_Surface * TTF_RenderText_Blended_Wrapped(TTF_Font *font, const char *text, SDL_Color fg, Uint32 wrapLength);
         SDL_Surface * TTF_RenderUNICODE_Blended_Wrapped(TTF_Font *font, const Uint16 *text, SDL_Color fg, Uint32 wrapLength);
         """
-        color = create_color(color)
         if encoding == 'utf-8':
             sdl_surf = sdl.ttf.renderUTF8_Blended_Wrapped(
                 self.__sdl_font, utf8(text), color.sdl_color[0], wrap_length)
@@ -155,7 +159,6 @@ class Font(object):
         SDL_Surface * TTF_RenderUNICODE_Blended(TTF_Font *font, const Uint16 *text, SDL_Color fg);
         SDL_Surface * TTF_RenderGlyph_Blended(TTF_Font *font, Uint16 ch, SDL_Color fg);
         """
-        color = create_color(color)
         if encoding == 'utf-8':
             sdl_surf = sdl.ttf.renderUTF8_Blended(self.__sdl_font, utf8(text), color.sdl_color[0])
         elif encoding == 'ascii':
@@ -174,18 +177,16 @@ class Font(object):
         TTF_SizeUTF8(TTF_Font *font, const char *text, int *w, int *h)
         TTF_SizeUNICODE(TTF_Font *font, const Uint16 *text, int *w, int *h)
         """
-        cdef_w = sdl.ffi.new('int *')
-        cdef_h = sdl.ffi.new('int *')
         if encoding == 'utf-8':
-            sdl.ttf.sizeUTF8(self.__sdl_font, utf8(text), cdef_w, cdef_h)
+            _, w, h = sdl.ttf.sizeUTF8(self.__sdl_font, utf8(text))
         elif encoding == 'ascii':
-            sdl.ttf.sizeText(self.__sdl_font, text, cdef_w, cdef_h)
+            _, w, h = sdl.ttf.sizeText(self.__sdl_font, text)
         elif encoding == 'unicode':
-            sdl.ttf.sizeUNICODE(self.__sdl_font, text, cdef_w, cdef_h)
+            _, w, h = sdl.ttf.sizeUNICODE(self.__sdl_font, text)
         else:
             raise NotImplemented
 
-        return cdef_w[0], cdef_h[0]
+        return w, h
 
     def set_hinting(self, hinting):
         """
