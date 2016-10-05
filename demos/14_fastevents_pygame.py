@@ -17,7 +17,7 @@ However... on my debian duron 850 machine fastevents is faster.
 # use the fastevent module or not.
 import pygame
 from pygame import event, USEREVENT
-import pygame.fastevents as fastevent
+import pygame.fastevent as fastevent
 use_fast_events = 1
 
 # use pygame.display.flip().
