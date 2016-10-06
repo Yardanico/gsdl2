@@ -362,6 +362,9 @@ def rect(surface, color, rect, width=0):
 def circle(surface, color, pos, radius, width=0):
     """pygame.draw.circle(Surface, color, pos, radius, width=0): return Rect
        draw a circle around a point"""
+    # We make this silent
+    pos = map(int, pos)
+    radius = int(radius)
     if radius < 0:
         raise ValueError("negative radius")
     if width < 0:
