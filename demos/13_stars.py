@@ -6,8 +6,12 @@ the basics of creating a window, simple pixel plotting, and input
 event management"""
 
 import random, math
-import gsdl2
-from gsdl2.locals import *
+try:
+    import gsdl2 as pygame
+    from gsdl2.locals import *
+except:
+    import pygame
+    from pygame.locals import *
 
 # constants
 WINSIZE = [640, 480]
@@ -63,11 +67,11 @@ def main():
     # create our starfield
     random.seed()
     stars = initialize_stars()
-    clock = gsdl2.time.Clock()
+    clock = pygame.time.Clock()
     # initialize and prepare screen
-    gsdl2.init()
-    screen = gsdl2.display.set_mode(WINSIZE)
-    gsdl2.display.set_caption('pygame Stars Example')
+    pygame.init()
+    screen = pygame.display.set_mode(WINSIZE)
+    pygame.display.set_caption('pygame Stars Example')
     white = 255, 240, 200
     black = 20, 20, 40
     screen.fill(black)
@@ -78,8 +82,8 @@ def main():
         draw_stars(screen, stars, black)
         move_stars(stars)
         draw_stars(screen, stars, white)
-        gsdl2.display.flip()
-        for e in gsdl2.event.get():
+        pygame.display.flip()
+        for e in pygame.event.get():
             if e.type == QUIT or (e.type == KEYUP and e.key == K_ESCAPE):
                 done = 1
                 break
@@ -87,7 +91,7 @@ def main():
                 WINCENTER[:] = list(e.pos)
         clock.tick(1000)  # max fps
         fps = clock.get_fps()
-        gsdl2.display.set_caption(str(fps))
+        pygame.display.set_caption(str(fps))
 
 
 # if python says run, then we should run

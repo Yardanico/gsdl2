@@ -5,59 +5,99 @@ __all__ = ['Clock', 'FixedDriver', 'GameClock', 'get_ticks', 'wait', 'delay']
 import collections
 import time
 
-from .gameclock import GameClock
+from gsdl2.gameclock import GameClock
 
 WORST_CLOCK_ACCURACY = 12
 
 _start_time = time.time()
 
+def _get_init():
+    return sdl.wasInit(sdl.INIT_TIMER)
 
+def _try_init():
+    if not _get_init():
+        if sdl.initSubSystem(sdl.INIT_TIMER):
+            raise sdl.SDLError()
+
+
+# clock class from pygame-cffi
 class Clock(object):
-    """just yer basic clock, a la pygame"""
+    """ Clock() -> Clock
+    create an object to help track time
+    """
 
     def __init__(self):
-        self._times = collections.deque()
-        self._last_time = time.time()
-        self._dt = 0
-        self._raw = 0
-        self._history = 1.0
+        _try_init()
+        self._last_tick = get_ticks()
+        self._rawpassed = 0
+        self._fps_count = 0
+        self._fps_tick = 0
+        self._fps = 0.0
 
-    def tick(self, fps=0):
-        t1 = time.time()
-        t0 = self._last_time
-        self._last_time = t1
+    def _base(self, framerate=None, use_accurate_delay=False):
+        if framerate:
+            endtime = int((1.0 / framerate) * 1000.)
+            self._rawpassed = sdl.getTicks() - self._last_tick
+            delay = endtime - self._rawpassed
 
-        times = self._times
-        times.append(t1)
-        t_minus = t1 - self._history
-        while times[0] <= t_minus:
-            times.popleft()
+            _try_init()
 
-        if fps <= 0:
-            ms = (t1 - t0) * 1000.0
-            self._raw = 0
-        else:
-            dt = 1.0 / fps
-            ms = _accurate_delay(dt * 1000)
-            self._raw = ms - dt * 1000
+            if use_accurate_delay:
+                delay = _accurate_delay(delay)
+            else:
+                delay = max(delay, 0)
+                sdl.delay(delay)
 
-        self._dt = ms
-        return ms
+        nowtime = sdl.getTicks()
+        self._timepassed = nowtime - self._last_tick
+        self._fps_count += 1
+        self._last_tick = nowtime
+        if not framerate:
+            self._rawpassed = self._timepassed
 
-    def tick_busy_loop(self, fps=0):
-        # TODO
-        return self.tick(fps)
+        if not self._fps_tick:
+            self._fps_count = 0
+            self._fps_tick = nowtime
+        elif self._fps_count >= 10:
+            try:
+                self._fps = (self._fps_count /
+                             ((nowtime - self._fps_tick) / 1000.0))
+            except ZeroDivisionError:
+                self._fps = float('inf')
+            self._fps_count = 0
+            self._fps_tick = nowtime
 
-    def get_time(self):
-        return int(self._dt)
+        return self._timepassed
 
-    def get_raw_time(self):
-        # TODO: did I do this right?
-        return self._raw
+    def tick(self, framerate=0):
+        """ tick(framerate=0) -> milliseconds
+        update the clock
+        """
+        return self._base(framerate)
 
     def get_fps(self):
-        return len(self._times) // int(self._history)
+        """ get_fps() -> float
+        compute the clock framerate
+        """
+        return self._fps
 
+    def get_time(self):
+        """ get_time() -> milliseconds
+        time used in the previous tick
+        """
+        return self._timepassed
+
+    def get_rawtime(self):
+        """ get_rawtime() -> milliseconds
+        actual time used in the previous tick
+        """
+        return self._rawpassed
+
+    def tick_busy_loop(self, framerate=0):
+        """ tick_busy_loop(framerate=0) -> milliseconds
+        update the clock
+        """
+        return self._base(framerate, True)
 
 def _schedule_sort_key(self):
     return self._due
@@ -438,24 +478,83 @@ class FixedDriver(object):
 
 
 def get_ticks():
-    return int((time.time() - _start_time) * 1000.0)
+    """ get_ticks() -> milliseconds
+    get the time in milliseconds
+    """
+    if not _get_init():
+        return 0
+    return sdl.getTicks()
 
 
-def wait(ms):
-    sdl.delay(int(ms))
-    return time.time()
+def wait(milliseconds):
+    """ wait(milliseconds) -> time
+    pause the program for an amount of time
+    """
+    try:
+        milliseconds = int(milliseconds)
+    except (ValueError, TypeError):
+        raise TypeError("wait requires one integer argument")
+
+    _try_init()
+
+    milliseconds = max(milliseconds, 0)
+
+    start = sdl.getTicks()
+    sdl.delay(milliseconds)
+    return sdl.getTicks() - start
 
 
-def delay(ms):
-    _accurate_delay(ms)
-    return time.time()
+def delay(milliseconds):
+    """ delay(milliseconds) -> time
+    pause the program for an amount of time
+    """
+    try:
+        milliseconds = int(milliseconds)
+    except (ValueError, TypeError):
+        raise TypeError("delay requires one integer argument")
 
+    _try_init()
 
-def set_timer(eventid, ms):
-    # TODO
-    raise NotImplementedError
+    # don't check for negative milliseconds since _accurate_delay does that
+    return _accurate_delay(milliseconds)
 
+_event_timers = {}
 
+'''
+@sdl.ffi.callback("unsigned int(*)(unsigned int, void *)")
+def _timer_callback(interval, param):
+    if sdl.wasInit(sdl.INIT_VIDEO):
+        event = sdl.ffi.new("SDL_Event*")
+        event.type = sdl.ffi.cast("intptr_t", param)
+        # SDL will make a copy of the event while handling SDL_PushEvent,
+        # so we don't need to hold the allocated memory after this call.
+        sdl.pushEvent(event)
+    return interval
+
+def set_timer(eventid, milliseconds):
+    """set_timer(eventid, milliseconds) -> None
+    repeatedly create an event on the event queue"
+    """
+    if eventid <= int(0x7FFF) or eventid >= int(0x10000):
+        raise ValueError("Event id must be between NOEVENT(0x8000) and"
+                         " NUMEVENTS(0xFFFF)")
+
+    old_event = _event_timers.pop(eventid, None)
+    if old_event:
+        sdl.removeTimer(old_event)
+
+    if milliseconds <= 0:
+        return
+
+    _try_init()
+
+    handle = sdl.ffi.cast("void *", eventid)
+    newtimer = sdl.addTimer(milliseconds, _timer_callback, handle)
+    if not newtimer:
+        raise sdl.SDLError()
+
+    _event_timers[eventid] = newtimer
+'''
 def _accurate_delay(ticks):
     ticks = int(ticks)
     if ticks <= 0:

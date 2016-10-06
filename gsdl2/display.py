@@ -1,7 +1,9 @@
-from . import sdlconstants
+import sdl
+
+from gsdl2 import sdlconstants
 
 __all__ = [
-    'set_mode', 'get_surface', 'flip', 'set_caption',
+    'init', 'set_mode', 'get_surface', 'flip', 'set_caption',
     'get_window', 'get_renderer', 'set_clear_color', 'clear', 'present', 'Runtime',
 ]
 
@@ -12,6 +14,8 @@ class Runtime:
     window = None
     renderer = None
 
+def init():
+    sdl.init(sdl.INIT_VIDEO)
 
 def set_mode(resolution=(0, 0), flags=0, depth=0,
              renderer_flags=(sdlconstants.SDL_WINDOW_HIDDEN |
