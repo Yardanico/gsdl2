@@ -8,6 +8,7 @@ import logging
 
 from gsdl2.colordict import THECOLORS
 
+COLORS = THECOLORS  # better-looking :)
 log = logging.getLogger(__name__)
 
 # http://stackoverflow.com/questions/4296249/how-do-i-convert-a-hex-triplet-to-an-rgb-tuple-and-back

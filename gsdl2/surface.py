@@ -353,7 +353,10 @@ class Surface(object):
             d.topleft = dest_rect[0:2]
             d.size = size
             dest_rect = d
-        area, dest_rect = sdl_rect_from_rect(area, dest_rect)
+
+        area = sdl_rect_from_rect(area)
+        dest_rect = sdl_rect_from_rect(dest_rect)
+
         sdl.upperBlit(source.sdl_surface, area, dest_surface, dest_rect)
         self.unlock()
 

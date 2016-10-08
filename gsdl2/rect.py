@@ -3,10 +3,23 @@ Module for the rectangle object
 """
 import sdl
 
+from sdl import Rect as SDLRect
+
 
 def rect_vals_from_obj(obj):
-    r = obj[0].r
-    return r.x, r.y, r.w, r.h
+    try:
+        if len(obj) == 1:
+            r = obj[0].r
+            return r.x, r.y, r.w, r.h
+        elif len(obj) == 4:
+            # truncate and normalize
+            return int(obj[0]), int(obj[1]), int(obj[2]), int(obj[3])
+        elif len(obj) == 2:
+            # truncate and normalize
+            return int(obj[0][0]), int(obj[0][1]), int(obj[1][0]), int(obj[1][1])
+    except:
+        raise TypeError("Argument must be rect style object")
+
 
 
 class GameRect(object):
@@ -634,12 +647,7 @@ def game_rect_from_obj(obj):
         raise TypeError("Argument must be rect style object")
 
 
-def sdl_rect_from_rect(*rects):
-    result = []
-    for rect in rects:
-        if not isinstance(rect, Rect):
-            raise TypeError("rect must be an Rect object")
-        sdlrect = sdl.ffi.new("SDL_Rect*")
-        sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h = rect_vals_from_obj(rect)
-        result.append(sdlrect)
-    return result if len(rects) > 1 else result[0]
+def sdl_rect_from_rect(rect):
+    sdlrect = sdl.ffi.new("SDL_Rect*")
+    sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h = rect_vals_from_obj(rect)
+    return sdlrect

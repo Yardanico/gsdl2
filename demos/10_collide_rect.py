@@ -1,6 +1,6 @@
 import gsdl2
 from gsdl2.locals import Color, Rect, QUIT, KEYDOWN, S_ESCAPE
-
+from gsdl2.color import COLORS
 gsdl2.init()
 
 screen = gsdl2.display.set_mode((640, 480))
@@ -8,11 +8,11 @@ gsdl2.display.set_caption('08_surface_colorkey.py - Colorkey transparency')
 clock = gsdl2.Clock()
 fps = 100
 
-white = Color(255, 255, 255)
-red = Color(255, 0, 0)
-green = Color(0, 255, 0)
-blue = Color(0, 0, 255)
-purple = Color(255, 0, 255)
+white = COLORS['white']
+red = COLORS['red']
+green = COLORS['green']
+blue = COLORS['blue']
+purple = COLORS['purple']
 
 # some colored squares for backround variation
 i = 128

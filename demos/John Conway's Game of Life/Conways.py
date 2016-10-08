@@ -4,9 +4,9 @@ from gsdl2.locals import *
 
 gsdl2.init()
 
-speed = 500  # how many iterations per second
-squares = 1  # size of squares: 0 = 8X8, 1 = 16X16, 2 = 32X32, 3 = 64X64
-map_size = 32  # the width and height
+speed = 100  # how many iterations per second
+squares = 0  # size of squares: 0 = 8X8, 1 = 16X16, 2 = 32X32, 3 = 64X64
+map_size = 64  # the width and height
 
 if squares == 0:
     imgs = ["res/alive_8.png", "res/dead_8.png", 8]
@@ -106,12 +106,13 @@ class board:
         for i in xrange(len(a)): b.append(mapa[a[i][0]][a[i][1]].alive)
         for i in b:  # c houses how many cells are alive around it
             if i == True: c += 1
+
         if cell.alive == True:  # rules
             if c < 2: cell.to_be = False
             if c > 3: cell.to_be = False
         else:
             if c == 3: cell.to_be = True
-        # rules
+            # rules
 
     def update_frame(self):
         for i in xrange(map_size):
@@ -147,10 +148,12 @@ board.draw()
 tp = 0
 run = False
 
+gsdl2.display.set_caption("John Conway'S Game Of Life - paused - press Space to start")
+
 while done == False:
-    milliseconds = clock.tick()
-    seconds = milliseconds / 1000.0
-    tp += milliseconds
+    clock.tick(60)  # 60 fps, board updated separately
+    # seconds = milliseconds / 1000.0
+    # tp += milliseconds
 
     for event in gsdl2.event.get():
         if event.type == QUIT:
@@ -159,6 +162,10 @@ while done == False:
         if event.type == KEYDOWN:
             if event.key == K_SPACE:
                 run = not run
+                if run:
+                    gsdl2.display.set_caption("John Conway'S Game Of Life - running - press Space to pause")
+                if not run:
+                    gsdl2.display.set_caption("John Conway'S Game Of Life - paused - press Space to start")
 
         if event.type == KEYUP:
             if event.key == K_q:
@@ -184,8 +191,7 @@ while done == False:
         board.fill(True)
         board.draw()
 
-    if run == True and tp >= 1000 / speed:
-        tp = 0
+    if run == True:  # and tp >= 1000 / speed:
         board.update_frame()
         board.update()
 
