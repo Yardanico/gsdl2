@@ -1,6 +1,6 @@
-"""82_scroll_pygame.py - scrolling tiles using pygame for performance comparison to 82_scroll.py
+"""82_scroll.py - many, many scrolling tiles using the texture renderer
 
-Usage: python 82_scroll_pygame.py [tilesize=WxH] [mapsize=WxH] [screen=WxH]
+Usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH] [profile]
 
 tilesize is the WxH of a tile in pixels
 mapsize is the WxH of a map in tiles
@@ -15,8 +15,9 @@ Recommended for CPython:
     tilesize=64x64
 
 Example:
-    python 82_scroll_pygame.py tilesize=64x64
+    python 82_scroll.py tilesize=64x64
 """
+
 import cProfile
 import pstats
 import random
@@ -29,18 +30,21 @@ except ImportError:
     sys.path.append('.')
     sys.path.append('..')
     import gsdl2
-from gsdl2.locals import Rect, Color, QUIT, KEYDOWN, KEYUP, K_ESCAPE, K_SPACE, K_LEFT, K_RIGHT, K_UP, K_DOWN
+from gsdl2.locals import Rect, Color, QUIT, KEYDOWN, KEYUP, S_ESCAPE, S_SPACE, S_LEFT, S_RIGHT, S_UP, S_DOWN
 
 CONFIG = dict(
-    tilesize=(8, 8),
+    tilesize=(4, 4),
     mapsize=(500, 500),
     screen=(800, 600),
-    profile=False
+    profile=False,
 )
 
 
 def parse_args():
     """update CONFIG from sys.argv"""
+    if 'profile' in sys.argv:
+        sys.argv.remove('profile')
+        CONFIG['profile'] = True
     try:
         for arg in sys.argv[1:]:
             key, value = arg.split('=')
@@ -49,7 +53,7 @@ def parse_args():
             assert w > 0 and h > 0
             CONFIG[key] = (w, h)
     except ValueError:
-        print('usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH]')
+        print('usage: python 82_scroll.py [tilesize=WxH] [mapsize=WxH] [screen=WxH] [profile]')
         sys.exit(1)
 
 
@@ -60,7 +64,7 @@ class Sprite(object):
 
 
 class Game(object):
-    # surfaces
+    # textures
     tile_images = []
 
     def __init__(self, resolution, tile_size, map_size):
@@ -76,16 +80,18 @@ class Game(object):
         tw, th = tile_size
         self.world_rect = Rect(0, 0, tw * mw, th * mh)
 
-        # load surfaces
+        # load textures
         if not Game.tile_images:
+            renderer = gsdl2.display.get_renderer()
             for color_name in 'green1', 'green2', 'green3', 'green4':
                 color = Color(color_name)
                 tile_image = gsdl2.Surface((tw, th))
                 tile_image.fill(color)
                 gsdl2.draw.rect(tile_image, Color('white'), Rect(0, 0, tw, th), 1)
-                Game.tile_images.append(tile_image)
+                tx = gsdl2.texture.Texture(renderer, tile_image)
+                Game.tile_images.append(tx)
 
-        # make the tile sprites
+        # make the tile sprites; we'll use 2D array math to get rows and cols
         self.tiles = []
         ww, wh = self.world_rect.size
         tw, th = self.tile_size
@@ -106,53 +112,25 @@ class Game(object):
 
         # these are used to manage culling and drawing
         self.visible_tiles = []
-        self.scrap_rect = Rect(0, 0, tw, th)
+        self.dst_rect = Rect(0, 0, tw, th)
+        self.src_rect = Rect(0, 0, tw, th)
         self.cam_rect = Rect(self.screen_rect)
         self.cam_pos_old = self.cam_rect.topleft
         # force visible tile selection
         self.cache_visible_tiles()
 
-        # make the clock and schedule a couple timers
-        self.clock = gsdl2.time.Clock()
-        self.dt = 1.0 / 30.0
-        self.update_timer = self.dt
-        self.caption_timer = 1.0
+        # make the clock and schedule some callbacks
+        self.clock = gsdl2.time.FixedDriver(self.update, 1.0 / 30.0)
+        self.draw_sched = self.clock.new_schedule(self.draw, 1.0 / 60.0, keep_history=True)
+        self.clock.new_schedule(self.update_caption, 0.5)
         self.running = False
 
     def run(self):
         self.running = True
         while self.running:
-            # step the timers
-            ms = self.clock.tick()
-            dt = ms / 1000.0
-            self.update_timer -= dt
-            self.caption_timer -= dt
+            self.clock.tick()
 
-            # update caption
-            if self.update_timer <= 0.0:
-                self.update(self.dt)
-                self.update_timer += self.dt
-
-            # calculate interpolation for draw()
-            diff = self.dt - self.update_timer
-            if diff <= 0.0:
-                interp = 0.0
-            else:
-                interp = diff / self.dt
-            if interp < 0.0:
-                interp = 0.0
-            elif interp > 1.0:
-                interp = 1.0
-
-            # draw game
-            self.draw(interp)
-
-            # update caption
-            if self.caption_timer <= 0.0:
-                self.update_caption(self.dt)
-                self.caption_timer += 1.0
-
-    def update(self, dt):
+    def update(self, sched):
         """update the model - called each game tick"""
         self.update_events()
         self.update_camera()
@@ -170,7 +148,7 @@ class Game(object):
 
     def cache_visible_tiles(self):
         del self.visible_tiles[:]
-        # calculate the visible bounds as array indices
+        # calculate the visible bounds as array indices; this is 2D array math
         old_x, old_y = self.cam_pos_old
         cam_rect = self.cam_rect
         cam_rect.clamp_ip(self.world_rect)
@@ -203,56 +181,63 @@ class Game(object):
             elif e.type == KEYUP:
                 self.on_keyup(e)
 
-    def update_caption(self, dt):
-        cam = tuple(self.cam_rect)
-        cap = 'FPS {} | Visible {} | Camera {}'.format(int(self.clock.get_fps()), len(self.visible_tiles), cam)
+    def update_caption(self, sched):
+        cam = self.cam_rect
+        cap = 'FPS {} | Visible {} | Camera {}'.format(
+            self.draw_sched.per_second(), len(self.visible_tiles), (cam.x, cam.y, cam.right, cam.bottom))
         gsdl2.display.set_caption(cap)
 
     def on_quit(self, e):
         self.running = False
 
     def on_keydown(self, e):
-        key = e.key
-        if key == K_ESCAPE:
+        code = e.scancode
+        if code == S_ESCAPE:
             self.running = False
-        elif key == K_DOWN:
+        elif code == S_DOWN:
             self.movey += 1
-        elif key == K_RIGHT:
+        elif code == S_RIGHT:
             self.movex += 1
-        elif key == K_UP:
+        elif code == S_UP:
             self.movey -= 1
-        elif key == K_LEFT:
+        elif code == S_LEFT:
             self.movex -= 1
+        elif code == S_SPACE:
+            if self.draw_sched.period == 0.0:
+                self.draw_sched.period = 1.0 / 60.0
+            else:
+                self.draw_sched.period = 0.0
 
     def on_keyup(self, e):
-        key = e.key
-        if key == K_DOWN:
+        code = e.scancode
+        if code == S_DOWN:
             self.movey -= 1
-        elif key == K_RIGHT:
+        elif code == S_RIGHT:
             self.movex -= 1
-        elif key == K_UP:
+        elif code == S_UP:
             self.movey += 1
-        elif key == K_LEFT:
+        elif code == S_LEFT:
             self.movex += 1
 
-    def draw(self, interp):
+    def draw(self, sched):
         """draw the visible sprites which are cached"""
-        screen = self.screen
-        screen.fill(self.bgcolor)
-        blit = screen.blit
-        # calculate interpolation to add steps to the scrolling; this smooths the appearance
+        interp = sched.interp
+        renderer = gsdl2.display.get_renderer()
+        renderer.clear()
+        # calculate interpolation to add steps to the scrolling; this smoothes the appearance of scrolling
         cam_rect = self.cam_rect
         cx, cy = cam_rect.x, cam_rect.y
         ox, oy = self.cam_pos_old
-        xd = int((cx - ox) * (1.0 - interp))
-        yd = int((cy - oy) * (1.0 - interp))
+        xd = -cx + int((cx - ox) * (1.0 - interp))
+        yd = -cy + int((cy - oy) * (1.0 - interp))
         # render the sprites, translating their world coordinates to the screen
+        dst_rect = self.dst_rect
+        src_rect = self.src_rect
         for sprite in self.visible_tiles:
-            rect = sprite.rect
-            # rect.x = sprite.rect.x - cx + xd
-            # rect.y = sprite.rect.y - cy + yd
-            blit(sprite.image, rect.move(-cx + xd, -cy + yd))
-        gsdl2.display.flip()
+            dst_rect.x = sprite.rect.x + xd
+            dst_rect.y = sprite.rect.y + yd
+            renderer.copy(sprite.image, dst_rect, src_rect)
+        renderer.present()
 
 
 def main():

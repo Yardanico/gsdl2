@@ -89,7 +89,7 @@ def main():
                 break
             elif e.type == MOUSEBUTTONDOWN and e.button == 1:
                 WINCENTER[:] = list(e.pos)
-        clock.tick(1000)  # max fps
+        clock.tick()  # max fps
         fps = clock.get_fps()
         pygame.display.set_caption(str(fps))
 

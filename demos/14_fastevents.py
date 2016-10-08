@@ -15,21 +15,24 @@ However... on my debian duron 850 machine fastevents is faster.
 
 # TODO: re-enable when the fastevent module is implemented
 # use the fastevent module or not.
-import pygame
-from pygame import event, USEREVENT
-import pygame.fastevent as fastevent
-use_fast_events = 1
+try:
+    import gsdl2 as pygame
+    from gsdl2 import event, USEREVENT, time
 
-# use pygame.display.flip().
-#    otherwise we test raw event processing throughput.
-with_display = 1
+    use_fast_events = 0
+except:
+    import pygame
+    from pygame import event, USEREVENT, time
+    import pygame.fastevent as fastevent
 
-# limit the game loop to 40 fps.
-slow_tick = 0
+    use_fast_events = 1
+
+# limit the game loop to 60 fps.
+slow_tick = 1
 
 # I'm able to get 200,000 events/s on my PC with fastevent
 # Without it 100,000 events/s
-# With PyPy - 1mil events/s
+# With gsdl2 - 1mil events/s - maybe because of SDL2
 NUM_EVENTS_TO_POST = 2000000
 
 if use_fast_events:
@@ -76,10 +79,9 @@ def main():
 
     if use_fast_events:
         fastevent.init()
-    from pygame import time
-    c = time.Clock()
+    clock = time.Clock()
 
-    win = pygame.display.set_mode((640, 480))
+    window = pygame.display.set_mode((640, 480))
     pygame.display.set_caption("fastevent Workout")
 
     poster = post_them()
@@ -101,17 +103,16 @@ def main():
 
         for e in event_list:
             if e.type == pygame.QUIT:
-                print (c.get_fps())
+                print (clock.get_fps())
                 poster.stop.append(1)
                 going = False
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
-                    print (c.get_fps())
+                    print(clock.get_fps())
                     poster.stop.append(1)
                     going = False
         if poster.done:
-            print (c.get_fps())
-            print (c)
+            print (clock.get_fps())
             t2 = pytime.time()
             print ("total time:%s" % (t2 - t1))
             print ("events/second:%s" % (NUM_EVENTS_TO_POST / (t2 - t1)))
@@ -119,7 +120,7 @@ def main():
         if with_display:
             pygame.display.flip()
         if slow_tick:
-            c.tick(40)
+            clock.tick(60)
 
     pygame.quit()
 

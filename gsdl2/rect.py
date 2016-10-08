@@ -5,21 +5,8 @@ import sdl
 
 
 def rect_vals_from_obj(obj):
-    if isinstance(obj, Rect):
-        return int(obj.r.x), int(obj.r.y), int(obj.r.w), int(obj.r.h)
-    try:
-        if len(obj) == 1:
-            r = obj[0].r
-            return r.x, r.y, r.w, r.h
-        elif len(obj) == 4:
-            # truncate and normalize
-            return int(obj[0]), int(obj[1]), int(obj[2]), int(obj[3])
-        elif len(obj) == 2:
-            # truncate and normalize
-            return int(obj[0][0]), int(obj[0][1]), int(obj[1][0]), int(obj[1][1])
-        raise TypeError("Argument must be rect style object")
-    except (ValueError, AttributeError):
-        raise TypeError("Argument must be rect style object")
+    r = obj[0].r
+    return r.x, r.y, r.w, r.h
 
 
 class GameRect(object):
@@ -60,6 +47,7 @@ class Rect(object):
             elif len(args) == 2:
                 self.r = GameRect(int(args[0][0]), int(args[0][1]),
                                   int(args[1][0]), int(args[1][1]))
+            self._sdl_rect = None
 
         except (IndexError, TypeError):
             raise TypeError("Argument must be rect style object")
@@ -315,8 +303,10 @@ class Rect(object):
     size = property(get_size, set_size)
 
     def get_sdl_rect(self):
-        return sdl_rect_from_rect(self)
-
+        if not self._sdl_rect:
+            return sdl_rect_from_rect(self)
+        else:
+            return self._sdl_rect
     sdl_rect = property(get_sdl_rect)
 
     def colliderect(self, other):
@@ -647,8 +637,6 @@ def game_rect_from_obj(obj):
 def sdl_rect_from_rect(*rects):
     result = []
     for rect in rects:
-        if not rect:
-            raise TypeError("rect can't be None")
         if not isinstance(rect, Rect):
             raise TypeError("rect must be an Rect object")
         sdlrect = sdl.ffi.new("SDL_Rect*")

@@ -3,26 +3,30 @@
 # License: Free for everyone and anything (no warranty expressed or implied).
 
 # Code taken from http://www.pygame.org/project-Lost+the+Plot-2097-.html
-# Almost no modification - just changed pygame to gsdl2 (really)
-import sys, os, random, math
+# Some code refactoring done
+import sys,random
 
-import gsdl2
-from gsdl2.locals import *
+try:
+    import gsdl2 as pygame
+    from gsdl2.locals import *
+except ImportError:
+    import pygame
+    from pygame.locals import *
 
-gsdl2.init()
+pygame.init()
 
 MAZESIZE = (800, 600)
 SCREENSIZE = (800, 700)
-SCREEN = gsdl2.display.set_mode(SCREENSIZE)
+SCREEN = pygame.display.set_mode(SCREENSIZE)
 
 # graphics and fonts
-mazebar = gsdl2.image.load("mazebar.png").convert()
-checkbox = gsdl2.image.load("checkbox.png").convert()
-pressed = gsdl2.image.load("pressed.png").convert_alpha()
+mazebar = pygame.image.load("mazebar.png").convert()
+checkbox = pygame.image.load("checkbox.png").convert()
+pressed = pygame.image.load("pressed.png").convert_alpha()
 ##arialsmall = pygame.font.SysFont("arial", 13, bold=True, italic=False)
-arialsmall = gsdl2.font.Font("ArialNb.TTF", 13)
+arialsmall = pygame.font.Font("ArialNb.TTF", 13)
 ##arial      = pygame.font.SysFont("arial", 20, bold=True, italic=False)
-arial = gsdl2.font.Font("ArialNb.TTF", 20)
+arial = pygame.font.Font("ArialNb.TTF", 20)
 
 # constant globals
 MYCOLORS = {"start": (255, 155, 0), "goal": (0, 100, 255), "halls": (255, 255, 255),
@@ -105,7 +109,7 @@ class AMazeing(_CellDraw):
         # Putting this much above 1% gets silly really quickly. Possibly even lower would be better.
         self.loopchance = 1
 
-        self.clock = gsdl2.time.Clock()
+        self.clock = pygame.time.Clock()
         self.fps = 65  # I don't think I currently use this anywhere.
         self.sizeind = 4
         self.wallind = 2
@@ -131,15 +135,15 @@ class AMazeing(_CellDraw):
         # generates the border with regards to the cell size
         # if generators are allowed in the border it must be two cells thick (at least)
         for i in range(self.screen.get_width() // self.cell_size[0]):
-            self.border |= set(((i, 0),))
-            self.border |= set(((i, -1),))  ##
-            self.border |= set(((i, MAZESIZE[1] // self.cell_size[1] - 1),))
-            self.border |= set(((i, MAZESIZE[1] // self.cell_size[1]),))  ##
+            self.border |= {(i, 0)}
+            self.border |= {(i, -1)}  ##
+            self.border |= {(i, MAZESIZE[1] // self.cell_size[1] - 1)}
+            self.border |= {(i, MAZESIZE[1] // self.cell_size[1])}  ##
         for j in range(MAZESIZE[1] // self.cell_size[1]):
-            self.border |= set(((0, j),))
-            self.border |= set(((-1, j),))  ##
-            self.border |= set(((self.screen.get_width() // self.cell_size[0] - 1, j),))
-            self.border |= set(((self.screen.get_width() // self.cell_size[0], j),))  ##
+            self.border |= {(0, j)}
+            self.border |= {(-1, j)}  ##
+            self.border |= {(self.screen.get_width() // self.cell_size[0] - 1, j)}
+            self.border |= {(self.screen.get_width() // self.cell_size[0], j)}  ##
 
         self.timestart = 0.0
         self.timeend = 0.0
@@ -170,12 +174,12 @@ class AMazeing(_CellDraw):
         self.screen.fill(MYCOLORS["bord"], ((0, 0), (MAZESIZE[0], self.cell_size[1] + self.buffer[1])))
         self.screen.fill(MYCOLORS["bord"], ((0, 0), (self.cell_size[0] + self.buffer[0], MAZESIZE[1])))
         self.screen.fill(MYCOLORS["bord"], (
-        (0, (MAZESIZE[1] // self.cell_size[1] - 1) * self.cell_size[1] + self.buffer[1] + self.wall_size[1]),
-        (MAZESIZE[0], self.cell_size[1] + self.buffer[1] + 10)))
+            (0, (MAZESIZE[1] // self.cell_size[1] - 1) * self.cell_size[1] + self.buffer[1] + self.wall_size[1]),
+            (MAZESIZE[0], self.cell_size[1] + self.buffer[1] + 10)))
 
         self.screen.fill(MYCOLORS["bord"], (
-        ((MAZESIZE[0] // self.cell_size[0] - 1) * self.cell_size[0] + self.buffer[0] + self.wall_size[0], 0),
-        (self.cell_size[0] + self.buffer[0] + 10, MAZESIZE[1])))
+            ((MAZESIZE[0] // self.cell_size[0] - 1) * self.cell_size[0] + self.buffer[0] + self.wall_size[0], 0),
+            (self.cell_size[0] + self.buffer[0] + 10, MAZESIZE[1])))
         self.maze_bar()
         if not self.animate and self.state in ("SOLVED", "DONE") or self.reset:
             if self.difcol:
@@ -235,46 +239,48 @@ class AMazeing(_CellDraw):
 
     def cell_targ(self):
         return (
-        (self.target[0] - self.buffer[0]) // self.cell_size[0], (self.target[1] - self.buffer[1]) // self.cell_size[1])
+            (self.target[0] - self.buffer[0]) // self.cell_size[0],
+            (self.target[1] - self.buffer[1]) // self.cell_size[1])
 
     def event_loop(self):
-        self.target = gsdl2.mouse.get_pos()
-        for click in gsdl2.event.get():
+        self.target = pygame.mouse.get_pos()
+        for click in pygame.event.get():
             if click.type == MOUSEBUTTONDOWN:
-                hit = gsdl2.mouse.get_pressed()
-                if hit[0]:
-                    self.target = gsdl2.mouse.get_pos()
-                    if (0 < self.target[0] < self.screen.get_width()) and (0 < self.target[1] < MAZESIZE[1]):
-                        # place start/goal
-                        if self.state == "START":
-                            self.place_gen()
-                        elif self.state == "DONE":
-                            self.place_goal()
-                    # reset button
-                    elif 300 < self.target[0] < 400 and (MAZESIZE[1] + 40 < self.target[1] < MAZESIZE[1] + 90):
-                        self.init()
-                        self.resetpress = True
-                    # start button
-                    elif 425 < self.target[0] < 525 and (MAZESIZE[1] + 40 < self.target[1] < MAZESIZE[1] + 90):
-                        self.start_it()
-                    # toggle animation on/off
-                    elif 31 < self.target[0] < 128 and (MAZESIZE[1] + 59 < self.target[1] < MAZESIZE[1] + 77):
-                        self.tog_anim()
-                    # toggle loops on/off
-                    elif 146 < self.target[0] < 226 and (MAZESIZE[1] + 59 < self.target[1] < MAZESIZE[1] + 77):
-                        self.tog_loop()
+                hit = pygame.mouse.get_pressed()
+                if not hit[0]:
+                    continue
+                self.target = pygame.mouse.get_pos()
+                if (0 < self.target[0] < self.screen.get_width()) and (0 < self.target[1] < MAZESIZE[1]):
+                    # place start/goal
+                    if self.state == "START":
+                        self.place_gen()
+                    elif self.state == "DONE":
+                        self.place_goal()
+                # reset button
+                elif 300 < self.target[0] < 400 and (MAZESIZE[1] + 40 < self.target[1] < MAZESIZE[1] + 90):
+                    self.init()
+                    self.resetpress = True
+                # start button
+                elif 425 < self.target[0] < 525 and (MAZESIZE[1] + 40 < self.target[1] < MAZESIZE[1] + 90):
+                    self.start_it()
+                # toggle animation on/off
+                elif 31 < self.target[0] < 128 and (MAZESIZE[1] + 59 < self.target[1] < MAZESIZE[1] + 77):
+                    self.tog_anim()
+                # toggle loops on/off
+                elif 146 < self.target[0] < 226 and (MAZESIZE[1] + 59 < self.target[1] < MAZESIZE[1] + 77):
+                    self.tog_loop()
 
-                    if self.state not in ["GENERATE", "SOLVING"]:
-                        # make cell size bigger/smaller
-                        if 759 < self.target[0] < 779 and (MAZESIZE[1] + 18 < self.target[1] < MAZESIZE[1] + 38):
-                            self.cell_up()
-                        elif 759 < self.target[0] < 779 and (MAZESIZE[1] + 61 < self.target[1] < MAZESIZE[1] + 81):
-                            self.cell_down()
-                        # make walls thinner/thicker
-                        elif 667 < self.target[0] < 687 and (MAZESIZE[1] + 18 < self.target[1] < MAZESIZE[1] + 38):
-                            self.wall_up()
-                        elif 667 < self.target[0] < 687 and (MAZESIZE[1] + 61 < self.target[1] < MAZESIZE[1] + 81):
-                            self.wall_down()
+                if self.state not in ["GENERATE", "SOLVING"]:
+                    # make cell size bigger/smaller
+                    if 759 < self.target[0] < 779 and (MAZESIZE[1] + 18 < self.target[1] < MAZESIZE[1] + 38):
+                        self.cell_up()
+                    elif 759 < self.target[0] < 779 and (MAZESIZE[1] + 61 < self.target[1] < MAZESIZE[1] + 81):
+                        self.cell_down()
+                    # make walls thinner/thicker
+                    elif 667 < self.target[0] < 687 and (MAZESIZE[1] + 18 < self.target[1] < MAZESIZE[1] + 38):
+                        self.wall_up()
+                    elif 667 < self.target[0] < 687 and (MAZESIZE[1] + 61 < self.target[1] < MAZESIZE[1] + 81):
+                        self.wall_down()
 
             # hotkeys
             if click.type == KEYDOWN:
@@ -301,7 +307,7 @@ class AMazeing(_CellDraw):
                     if self.state != "START":
                         self.reset = True
                         self.draw()
-                        gsdl2.display.update()
+                        pygame.display.update()
 
                 # change cell size
                 if self.state not in ["GENERATE", "SOLVING"]:
@@ -318,21 +324,21 @@ class AMazeing(_CellDraw):
                 if self.startpress:
                     self.startpress = False
                     self.screen.blit(mazebar, (425, MAZESIZE[1] + 40), (425, 40, 100, 50))
-                    gsdl2.display.update()
+                    pygame.display.update()
                 elif self.resetpress:
                     self.resetpress = False
                     self.screen.blit(mazebar, (300, MAZESIZE[1] + 40), (300, 40, 100, 50))
-                    gsdl2.display.update()
+                    pygame.display.update()
 
-            if click.type == gsdl2.QUIT: self.state = "QUIT"
+            if click.type == pygame.QUIT: self.state = "QUIT"
 
         # make start/reset buttons pushed
         if self.startpress:
             self.screen.blit(pressed, (425, MAZESIZE[1] + 40))
-            gsdl2.display.update()
+            pygame.display.update()
         elif self.resetpress:
             self.screen.blit(pressed, (300, MAZESIZE[1] + 40))
-            gsdl2.display.update()
+            pygame.display.update()
 
     def initial(self):
         # resets maze to an unsolved state without deleting current maze
@@ -370,7 +376,7 @@ class AMazeing(_CellDraw):
     # creates a solver class
     def create_solver(self):
         self.MySolver = Solver(self.startcell, self.goalcell, self.dirdict, self.animate, self.screen)
-        self.MySolver.timestart = gsdl2.time.get_ticks()
+        self.MySolver.timestart = pygame.time.get_ticks()
         self.MySolver.get_openset()
         self.MySolver.cell_size = self.cell_size
         self.MySolver.wall_size = self.wall_size
@@ -409,7 +415,7 @@ class AMazeing(_CellDraw):
             self.screen.blit(mazebar, (114, MAZESIZE[1] + 61), (114, 61, 13, 13))
         else:
             self.screen.blit(checkbox, (114, MAZESIZE[1] + 61))
-        gsdl2.display.update()
+        pygame.display.update()
 
     # toggle loops on/off
     def tog_loop(self):
@@ -418,13 +424,13 @@ class AMazeing(_CellDraw):
             self.screen.blit(mazebar, (212, MAZESIZE[1] + 61), (212, 61, 13, 13))
         else:
             self.screen.blit(checkbox, (212, MAZESIZE[1] + 61))
-        gsdl2.display.update()
+        pygame.display.update()
 
     # start button functionality
     def start_it(self):
         if self.genpoints and not self.solvetime and self.state != "GENERATE":
             self.state = "GENERATE"
-            self.timestart = gsdl2.time.get_ticks()
+            self.timestart = pygame.time.get_ticks()
             if self.animate:
                 for Gen in self.genpoints:
                     for check in self.neighbors[Gen.gencell[0]]:
@@ -443,7 +449,7 @@ class AMazeing(_CellDraw):
             self.create_solver()
         self.startpress = True
         self.maze_bar()
-        gsdl2.display.update()
+        pygame.display.update()
 
     # place generator points
     def place_gen(self):
@@ -469,39 +475,39 @@ class AMazeing(_CellDraw):
             NewGen.visited[NewGen.gencell[0]] = NewGen.gencell[1]
             self.dirdict[NewGen.gencell[0]] = NewGen.gencell[1]
             for vis in NewGen.visited:
-                self.visited |= set((vis,))
-            self.visited |= set((NewGen.gencell[0],))
+                self.visited |= {vis}
+            self.visited |= {NewGen.gencell[0]}
             self.screen.fill(MYCOLORS["start"], ((gencell[0][0] * self.cell_size[0] + self.buffer[0],
                                                   gencell[0][1] * self.cell_size[1] + self.buffer[1]), self.cell_size))
             self.maze_bar()
-            gsdl2.display.update()
+            pygame.display.update()
 
     def check_overlap(self, Gen):
         # This deals with generators being placed close together.
         for OtherGen in self.genpoints:
             if Gen.gencell[0] == OtherGen.gencell[0]:
                 return 0
-            else:
-                checklist = Gen.myneighbors[:]
-                for vis, way in checklist:
-                    if vis in OtherGen.visited:
-                        Gen.myneighbors.remove((vis, way))
-                        Gen.get_gen_bounds()
-                    if vis == OtherGen.gencell[0]:
-                        if Gen.gencell[0] in OtherGen.visited:
-                            OtherGen.visited.pop(Gen.gencell[0])
-                        for cell in OtherGen.currentcell:
-                            if cell[0] == Gen.gencell[0]:
-                                OtherGen.currentcell.remove(cell)
-                                OtherGen.myneighbors.remove(cell)
-                                OtherGen.get_gen_bounds()
-                                OtherGen.visited[OtherGen.gencell[0]] = OtherGen.gencell[1]
-                                self.dirdict[OtherGen.gencell[0]] = OtherGen.gencell[1]
-                        for stack in OtherGen.stack:
-                            for cell in stack:
-                                if cell == Gen.gencell[0]:
-                                    OtherGen.stack.remove(stack)
-                                    break
+            checklist = Gen.myneighbors[:]
+            for vis, way in checklist:
+                if vis in OtherGen.visited:
+                    Gen.myneighbors.remove((vis, way))
+                    Gen.get_gen_bounds()
+                if not vis == OtherGen.gencell[0]:
+                    continue
+                if Gen.gencell[0] in OtherGen.visited:
+                    OtherGen.visited.pop(Gen.gencell[0])
+                for cell in OtherGen.currentcell:
+                    if cell[0] == Gen.gencell[0]:
+                        OtherGen.currentcell.remove(cell)
+                        OtherGen.myneighbors.remove(cell)
+                        OtherGen.get_gen_bounds()
+                        OtherGen.visited[OtherGen.gencell[0]] = OtherGen.gencell[1]
+                        self.dirdict[OtherGen.gencell[0]] = OtherGen.gencell[1]
+                for stack in OtherGen.stack:
+                    for cell in stack:
+                        if cell == Gen.gencell[0]:
+                            OtherGen.stack.remove(stack)
+                            break
         return 1
 
     # placing start/goal cells
@@ -512,11 +518,11 @@ class AMazeing(_CellDraw):
         else:
             self.goalcell = self.cell_targ()
             self.border.discard(self.goalcell)
-            self.visited |= set((self.goalcell,))
+            self.visited |= {self.goalcell}
             self.state = "SOLVE"
             self.draw_core((self.goalcell, None), MYCOLORS["goal"])
         self.maze_bar()
-        gsdl2.display.update()
+        pygame.display.update()
 
     def generation(self):
         def gen_anim(Gen, check):
@@ -547,7 +553,7 @@ class AMazeing(_CellDraw):
                 else:
                     self.draw_walls(updatecell, Gen.color)
                     self.draw_walls((check[0], OtherGen.visited[check[0]]), OtherGen.color)
-                gsdl2.display.update()
+                pygame.display.update()
 
         # Definately a little messy on determining when to stop but works. (I'm sure there is an easier, simpler way)
         go = False
@@ -560,94 +566,95 @@ class AMazeing(_CellDraw):
             if self.state == "DONE":
                 break
             for stack in Gen.stack:
-                if go:
-                    for i in range(len(Gen.stack)):
-                        if Gen.currentcell[i]:
-                            if Gen.currentcell[i][0] not in self.neighbors:
-                                self.neighbors[Gen.currentcell[i][0]] = Gen.get_neighbors(Gen.currentcell[i][0])
-                            if self.neighbors[Gen.currentcell[i][0]]:
-                                check = random.choice(self.neighbors[Gen.currentcell[i][0]])
-                                self.neighbors[Gen.currentcell[i][0]].remove(check)
-                                if check[0] not in self.border:
-                                    for OtherGen in self.genpoints:
-                                        if check[0] not in self.visited:
-                                            updatecell = (
-                                            Gen.currentcell[i][0], Gen.currentcell[i][1] | OPWALLS[check[1]])
-                                            Gen.visited[updatecell[0]] = updatecell[1]
-                                            self.dirdict[updatecell[0]] = updatecell[1]
-                                            if self.animate:
-                                                if not self.difcol:
-                                                    self.draw_walls(updatecell, MYCOLORS["halls"])
-                                                else:
-                                                    self.draw_walls(updatecell, Gen.color)
-                                                gsdl2.display.update()
-                                            Gen.stack[i].append(check[0])
-                                            self.dirdict[check[0]] = check[1]
-                                            Gen.currentcell[i] = check
-                                            Gen.visited[check[0]] = check[1]
-                                            self.visited |= set((check[0],))
-                                            gen_anim(Gen, check)
-                                            break
-                                        elif not (Gen.genID & OtherGen.genID) and check[0] in OtherGen.visited:
-                                            merge_gens(Gen, OtherGen, check)
-                                            # The below logic assures that generators only connect once,
-                                            # thereby retaining a perfect maze (unless of course 'loops' is on).
-                                            newID = Gen.genID | OtherGen.genID
-                                            thisold = Gen.genID;
-                                            otherold = OtherGen.genID
-                                            for ID in self.genpoints:
-                                                if ID.genID in [thisold, otherold]:
-                                                    ID.genID = newID
-                                            break
-                                        elif self.loops:
-                                            # Reconnect to a visited cell at the chance set in 'self.loopchance'.
-                                            chance = random.randint(1, 100)
-                                            if chance <= self.loopchance and check[0] in OtherGen.visited:
-                                                merge_gens(Gen, OtherGen, check)
-                                                break
-                                    else:
-                                        self.dirdict[Gen.currentcell[i][0]] = Gen.currentcell[i][1]
-                            else:
-                                if Gen.stack[i]:
-                                    popped = Gen.stack[i].pop()
-                                    Gen.currentcell[i] = (popped, self.dirdict[popped])
-                                else:
-                                    Gen.currentcell[i] = None
-                else:
-                    self.timeend = gsdl2.time.get_ticks()
+                if not go:
+                    self.timeend = pygame.time.get_ticks()
                     self.gentime = str(self.timeend - self.timestart)
                     self.solvetime = True
                     self.state = "DONE"
                     self.maze_bar()
-                    gsdl2.display.update()
+                    pygame.display.update()
                     if not self.animate:
                         self.drawn = False
                     break
+                for i in range(len(Gen.stack)):
+                    if not Gen.currentcell[i]:
+                        continue
+                    if Gen.currentcell[i][0] not in self.neighbors:
+                        self.neighbors[Gen.currentcell[i][0]] = Gen.get_neighbors(Gen.currentcell[i][0])
+                    if self.neighbors[Gen.currentcell[i][0]]:
+                        check = random.choice(self.neighbors[Gen.currentcell[i][0]])
+                        self.neighbors[Gen.currentcell[i][0]].remove(check)
+                        if not check[0] not in self.border:
+                            continue
+                        for OtherGen in self.genpoints:
+                            if check[0] not in self.visited:
+                                updatecell = (
+                                    Gen.currentcell[i][0], Gen.currentcell[i][1] | OPWALLS[check[1]])
+                                Gen.visited[updatecell[0]] = updatecell[1]
+                                self.dirdict[updatecell[0]] = updatecell[1]
+                                if self.animate:
+                                    if not self.difcol:
+                                        self.draw_walls(updatecell, MYCOLORS["halls"])
+                                    else:
+                                        self.draw_walls(updatecell, Gen.color)
+                                    pygame.display.update()
+                                Gen.stack[i].append(check[0])
+                                self.dirdict[check[0]] = check[1]
+                                Gen.currentcell[i] = check
+                                Gen.visited[check[0]] = check[1]
+                                self.visited |= {check[0]}
+                                gen_anim(Gen, check)
+                                break
+                            elif not (Gen.genID & OtherGen.genID) and check[0] in OtherGen.visited:
+                                merge_gens(Gen, OtherGen, check)
+                                # The below logic assures that generators only connect once,
+                                # thereby retaining a perfect maze (unless of course 'loops' is on).
+                                newID = Gen.genID | OtherGen.genID
+                                thisold = Gen.genID;
+                                otherold = OtherGen.genID
+                                for ID in self.genpoints:
+                                    if ID.genID in [thisold, otherold]:
+                                        ID.genID = newID
+                                break
+                            elif self.loops:
+                                # Reconnect to a visited cell at the chance set in 'self.loopchance'.
+                                chance = random.randint(1, 100)
+                                if chance <= self.loopchance and check[0] in OtherGen.visited:
+                                    merge_gens(Gen, OtherGen, check)
+                                    break
+                        else:
+                            self.dirdict[Gen.currentcell[i][0]] = Gen.currentcell[i][1]
+                    else:
+                        if Gen.stack[i]:
+                            popped = Gen.stack[i].pop()
+                            Gen.currentcell[i] = (popped, self.dirdict[popped])
+                        else:
+                            Gen.currentcell[i] = None
 
     def update(self):
         if self.state not in ["GENERATE", "SOLVING"]:
             if not self.drawn:
                 self.screen.fill(MYCOLORS["halls"])
                 self.draw()
-                gsdl2.display.update()
+                pygame.display.update()
                 self.drawn = True
             self.event_loop()
         elif self.state == "GENERATE":
             if self.animate:
-                gsdl2.display.update()
+                pygame.display.update()
             self.generation()
             self.event_loop()
-            gsdl2.event.pump()
+            pygame.event.pump()
         elif self.state == "SOLVING":
             if self.animate:
-                gsdl2.display.update()
+                pygame.display.update()
             if self.MySolver.solved:
                 self.solution = self.MySolver.evaluate()
                 self.slvtime = str(self.MySolver.timeend - self.MySolver.timestart)
                 self.length = str(len(self.solution))
                 self.state = "SOLVED"
                 self.maze_bar()
-                gsdl2.display.update()
+                pygame.display.update()
                 if not self.animate:
                     self.drawn = False
             else:
@@ -659,10 +666,10 @@ class AMazeing(_CellDraw):
                     if not self.animate:
                         self.drawn = False
             self.event_loop()
-            gsdl2.event.pump()
+            pygame.event.pump()
 
         if self.state == "QUIT":
-            gsdl2.quit();
+            pygame.quit()
             sys.exit()
 
 
@@ -698,7 +705,7 @@ class Solver(_CellDraw):
         self.gx[self.startcell] = 0
         self.hx[self.startcell] = self.get_dist(self.startcell, self.goalcell)
 
-        self.closedset |= set((self.startcell,))
+        self.closedset |= {self.startcell}
         self.came_from = {}
 
         self.state = None
@@ -715,7 +722,7 @@ class Solver(_CellDraw):
         for (i, j) in ADJACENTS:
             check = (self.currentcell[0] + i, self.currentcell[1] + j)
             if (ADJCHECK[(i, j)] & self.dirdict[self.currentcell]) and check not in self.closedset:
-                openset |= set((check,))
+                openset |= {check}
         return openset
 
     def get_openset(self):
@@ -772,7 +779,7 @@ class Solver(_CellDraw):
                 self.pathtime = True
 
             self.openset.discard(self.currentcell)
-            self.closedset |= set((self.currentcell,))
+            self.closedset |= {self.currentcell}
             if self.animate:
                 if self.currentcell not in (self.startcell, self.goalcell):
                     self.draw_cell((self.currentcell, self.dirdict[self.currentcell]), MYCOLORS["search"])
@@ -783,7 +790,7 @@ class Solver(_CellDraw):
             for cell in neighbors:
                 tent_g = self.gx[self.currentcell] + 1
                 if cell not in self.openset:
-                    self.openset |= set((cell,))
+                    self.openset |= {cell}
                     tent_better = True
                 elif cell in self.gx and tent_g < self.gx[cell]:
                     tent_better = True
@@ -804,7 +811,7 @@ class Solver(_CellDraw):
             self.get_path(self.currentcell)
             return self.closedset
         elif self.pathdone:
-            self.timeend = gsdl2.time.get_ticks()
+            self.timeend = pygame.time.get_ticks()
             if not self.solved:
                 self.solved = True
                 self.state = "DONE"
@@ -814,7 +821,7 @@ class Solver(_CellDraw):
         else:
             # reached if no solution is found or possible.
             # Beware that searching for a solution when no solution is possible is very time consuming.
-            self.timeend = gsdl2.time.get_ticks()
+            self.timeend = pygame.time.get_ticks()
             self.state = "DONE"
             return 0
 

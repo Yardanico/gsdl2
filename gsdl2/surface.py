@@ -39,7 +39,8 @@ class Surface(object):
             do_blit = True
         else:
             if surface is None:
-                width, height = size_or_surf
+                # some weird stuff
+                width, height = [int(val) for val in size_or_surf]
                 self.__sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
             else:
                 self.__sdl_surface = surface
@@ -126,6 +127,23 @@ class Surface(object):
         for k, v in kwargs.items():
             setattr(r, k, v)
         return r
+
+    def get_abs_offset(self):
+        """ get_abs_offset() -> (x, y)
+        find the absolute position of a child subsurface inside its top level parent
+        """
+        if False:
+            # FIXME: Implement this
+            subsurf = None
+            owner = subsurf.owner
+            offsetx, offsety = subsurf.xoffset, subsurf.yoffset
+            while owner.subsurfacedata:
+                subsurf = owner.subsurfacedata
+                owner = subsurf.owner
+                offsetx += subsurf.xoffset
+                offsety += subsurf.yoffset
+            return (offsetx, offsety)
+        return (0, 0)
 
     def get_bounding_rect(self, min_alpha=1):
         """ get_bounding_rect(min_alpha = 1) -> Rect
