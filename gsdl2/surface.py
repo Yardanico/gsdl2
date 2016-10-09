@@ -35,17 +35,17 @@ class Surface(object):
             width, height = surf.get_size()
             flags = surf.get_flags()
             depth = surf.get_bitsize()
-            self.__sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
+            self._sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
             do_blit = True
         else:
             if surface is None:
                 # some weird stuff
                 width, height = [int(val) for val in size_or_surf]
-                self.__sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
+                self._sdl_surface = sdl.createRGBSurface(flags, width, height, depth, *masks)
             else:
-                self.__sdl_surface = surface
+                self._sdl_surface = surface
         if depth == 8:
-            palette_colors = sdl.ffi.cast('SDL_Color *', self.__sdl_surface.format.palette.colors)
+            palette_colors = sdl.ffi.cast('SDL_Color *', self._sdl_surface.format.palette.colors)
             for i in range(256):
                 c = palette_colors[i]
                 c.r, c.g, c.b, c.a = palette_8bit[i]
@@ -53,48 +53,48 @@ class Surface(object):
             self.blit(size_or_surf, (0, 0))
 
     def get_size(self):
-        surf = self.__sdl_surface
+        surf = self._sdl_surface
         return surf.w, surf.h
 
     size = property(get_size)
 
     def get_width(self):
-        return self.__sdl_surface.w
+        return self._sdl_surface.w
 
     width = property(get_width)
     w = width
 
     def get_height(self):
-        return self.__sdl_surface.w
+        return self._sdl_surface.w
 
     height = property(get_height)
     h = height
 
     def get_flags(self):
-        return self.__sdl_surface.flags
+        return self._sdl_surface.flags
 
     flags = property(get_flags)
 
     def get_masks(self):
-        f = self.__sdl_surface.format
+        f = self._sdl_surface.format
         return f.Rmask, f.Gmask, f.Bmask, f.Amask
 
     masks = property(get_masks)
 
     def get_bitsize(self):
-        return self.__sdl_surface.format.BitsPerPixel
+        return self._sdl_surface.format.BitsPerPixel
 
     bitsize = property(get_bitsize)
 
     def get_colorkey(self):
-        surface = self.__sdl_surface
+        surface = self._sdl_surface
         c = Color(0, 0, 0, 0)
         sdl.getColorKey(surface, c.sdl_color)
         return c
 
     def set_colorkey(self, color, flag=1):
         """set flag=1 to enable, flag=0 to disable"""
-        surface = self.__sdl_surface
+        surface = self._sdl_surface
         map_color = sdl.mapRGBA if len(color) == 4 else sdl.mapRGB
         sdl.setColorKey(surface, flag, map_color(surface.format, *color))
 
@@ -233,7 +233,7 @@ class Surface(object):
         # TODO; I think this is causing random segfaults
 
         x, y = pos
-        surf = self.__sdl_surface
+        surf = self._sdl_surface
         format = surf.format
         bpp = format.BytesPerPixel
         pixels = surf.pixels
@@ -270,7 +270,7 @@ class Surface(object):
 
     def set_at(self, pos, color_):
         x, y = pos
-        surf = self.__sdl_surface
+        surf = self._sdl_surface
         pixels = surf.pixels
         surf_format = surf.format
         bpp = surf_format.BytesPerPixel
@@ -315,7 +315,7 @@ class Surface(object):
         self.unlock()
 
     def fill(self, color, rect=None, special_flags=0):
-        surface = self.__sdl_surface
+        surface = self._sdl_surface
         map_color = sdl.mapRGBA if len(color) == 4 else sdl.mapRGB
 
         if SDL_MUSTLOCK(surface):
@@ -334,7 +334,7 @@ class Surface(object):
         self.unlock()
         # return Rect()  # rather a tuple?
     def blit(self, source, dest_rect, area=None, special_flags=0):
-        dest_surface = self.__sdl_surface
+        dest_surface = self._sdl_surface
         if SDL_MUSTLOCK(dest_surface):
             self.lock()
         if area is None:
@@ -361,7 +361,7 @@ class Surface(object):
         self.unlock()
 
     def blit_scaled(self, source, dest_rect, area=None):
-        dest_surface = self.__sdl_surface
+        dest_surface = self._sdl_surface
         if SDL_MUSTLOCK(dest_surface):
             self.lock()
         if area is None:
@@ -404,11 +404,17 @@ class Surface(object):
             if sdl.setSurfaceAlphaMod(self.sdl_surface, value) == -1:
                 raise SDLError()
 
+    @classmethod
+    def _from_sdl_surface(cls, sdl_surface):
+        surface = cls.__new__(cls)
+        surface._sdl_surface = sdl_surface
+        return surface
+
     def convert(self, format=None):
         surf = get_window_list()[0].surface.sdl_surface
         if format is None:
             format = surf.format
-        new_surf = sdl.convertSurface(self.__sdl_surface, format, 0)
+        new_surf = sdl.convertSurface(self._sdl_surface, format, 0)
         if new_surf is None:
             # TODO: proper exception
             raise Exception('could not convert surface')
@@ -486,13 +492,13 @@ class Surface(object):
         return Surface(self)
 
     def lock(self):
-        sdl.lockSurface(self.__sdl_surface)
+        sdl.lockSurface(self._sdl_surface)
 
     def unlock(self):
-        sdl.unlockSurface(self.__sdl_surface)
+        sdl.unlockSurface(self._sdl_surface)
 
     def __getsdlsurface(self):
-        return self.__sdl_surface
+        return self._sdl_surface
 
     sdl_surface = property(__getsdlsurface)
 
@@ -502,10 +508,10 @@ class Surface(object):
 
     def __del__(self):
         # TODO: unreliable
-        if self.__sdl_surface:
+        if self._sdl_surface:
             try:
-                garbage = self.__sdl_surface
-                self.__sdl_surface = None
+                garbage = self._sdl_surface
+                self._sdl_surface = None
                 sdl.freeSurface(garbage)
             except Exception as e:
                 pass
