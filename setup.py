@@ -7,5 +7,6 @@ setup(name='gsdl2',
       author_email='tiberiumk12@gmail.com',
       url='https://github.com/TiberiumPY/gsdl2',
       packages=['gsdl2'],
-      install_requires=['pysdl2-cffi']
+      install_requires=['pysdl2-cffi'],
+      package_data = {'gsdl2':['freesansbold.ttf']}
       )

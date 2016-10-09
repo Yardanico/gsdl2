@@ -1,6 +1,7 @@
 from _sdl.structs import SDLError
 
 from gsdl2.color import convert_to_color
+from gsdl2.pkgdata import getResource
 from gsdl2.sysfont import get_fonts, match_font, SysFont
 
 __all__ = ['Font', 'SysFont']
@@ -29,15 +30,24 @@ log = logging.getLogger(__name__)
 def init():
     sdl.ttf.init()
 
+# Default font
+_font_defaultname = "freesansbold.ttf"
 
 class Font(object):
-    def __init__(self, filename, pointsize):
+    def __init__(self, filename, pointsize=12):
         self.__filename = filename
         self.__pointsize = pointsize
-        try:
-            assert os.access(filename, os.F_OK)
-        except AssertionError:
-            raise AssertionError('cannot read font file: {}'.format(filename))
+        if not filename or filename == _font_defaultname:
+            filename = getResource(_font_defaultname).name
+            # Scaling as from pygame/src/font.c
+            pointsize = int(pointsize * 0.6875)
+            if pointsize < 1:
+                pointsize = 1
+        else:
+            try:
+                assert os.access(filename, os.F_OK)
+            except AssertionError:
+                raise AssertionError('cannot read font file: {}'.format(filename))
 
         self.__sdl_font = sdl.ttf.openFont(utf8(filename), pointsize)
         if self.__sdl_font == sdl.ffi.NULL:

@@ -15,11 +15,22 @@ def get_pressed():
 
 
 def get_pos():
+    '''Get mouse position (x and y)'''
     state, x, y = sdl.getMouseState()
     return x, y
 
 
+def get_mouse_state():
+    '''Get mouse state (buttons list [lbm,mmb,rmb] and x, y)'''
+    state = get_pressed()
+    x, y = get_pos()
+    return state, x, y
+
+
 def set_visible(toggle):
+    '''Set visibility of the mouse
+        :param toggle 1 - visible; 0 - not visible; -1 - get current state
+    '''
     if not isinstance(toggle, int):
         raise TypeError("expected int, got %s" % (toggle,))
     return sdl.showCursor(toggle)
@@ -29,7 +40,7 @@ def get_rel():
     """ get_rel() -> (x, y)
     get the amount of mouse movement
     """
-    x, y = sdl.getRelativeMouseState(x, y)
+    x, y = sdl.getRelativeMouseState()
     return x, y
 
 
@@ -38,14 +49,11 @@ def set_pos(x, y, window=None):
         window = display.get_window()
     return sdl.warpMouseInWindow(window.sdl_window, int(x), int(y))
 
-
-def set_visible(bool):
-    bool = 1 if bool else 0
-    return sdl.showCursor(bool)
-
-
 def get_focused():
-    pass
+    """ get_focused() -> bool
+    check if the display is receiving mouse input
+    """
+    return int(sdl.getWindowFlags(display.Runtime.window.sdl_window) & sdl.WINDOW_MOUSE_FOCUS != 0)
 
 
 def set_cursor(size, hotspot, xormasks, andmasks):

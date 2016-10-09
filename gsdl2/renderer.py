@@ -4,8 +4,8 @@ import sdl
 __all__ = ['Renderer']
 
 # from .window import Window     # see bottom for delayed import
-from .rect import Rect, sdl_rect_from_rect
-from .color import Color
+from gsdl2.rect import Rect, sdl_rect_from_rect
+from gsdl2.color import Color
 
 
 class Renderer(object):
